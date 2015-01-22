@@ -1,0 +1,12 @@
+xterm*faceName: Bitstream Vera Serif Mono
+xterm*faceSize: 11
+xterm*loginShell: true
+xterm*vt100*geometry: 120x30
+xterm*saveLines: 2000
+xterm*termName: xterm-color
+xterm*eightBitInput: false
+xterm*ScrollBar: true
+xterm*rightScrollBar: true
+xterm*scrollTtyOutput: false
+emacs*geometry: 120x30
+emacs24*geometry: 120x30
