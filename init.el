@@ -9,12 +9,24 @@
 ;; Set frame size
 ;;(setq default-frame-alist '((width . 120) (height . 30)))
 
+;; Set coding preference
+(set-default-coding-systems 'utf-8-unix)
+(setq-default default-buffer-file-coding-system 'utf-8-unix)
+(setq-default buffer-file-coding-system 'utf-8-unix)
+(prefer-coding-system 'utf-8-unix)
+
+;; Set default font
+(set-face-attribute 'default nil :font "Ubuntu Mono-11")
+
 ;; Disable startup screen
 (setq inhibit-startup-screen t)
 
 ;; Disable backup and auto-save
 (setq make-backup-files nil)
 (setq auto-save-default nil)
+
+;; Auto-reload buffers on disk file changes
+(global-auto-revert-mode t)
 
 ;; Disable menu, scroll, & tool bars
 (menu-bar-mode -1)
@@ -25,12 +37,16 @@
 (setq split-height-threshold nil)
 (setq split-width-threshold 0)
 
+;; Enable windmove with default bindings
+(when (fboundp 'windmove-default-keybindings)
+  (windmove-default-keybindings 'meta))
+
 ;; Set root directory
 (setq root-dir (file-name-directory
 		(or (buffer-file-name) load-file-name)))
 
-;; Add themes to path
-(load-theme 'solarized-dark t)
+;; Load theme to path
+(load-theme 'zenburn t)
 
 ;; Enable line numbers
 (global-linum-mode t)
@@ -56,6 +72,7 @@
 
 ;; Enable magit
 (require 'magit)
+(setq magit-last-seen-setup-instructions "1.4.0")
 
 ;; Enable flycheck and override defaults
 (add-hook 'after-init-hook #'global-flycheck-mode)
@@ -65,15 +82,14 @@
 
 ;; Enable global company mode
 (add-hook 'after-init-hook #'global-company-mode)
+(setq company-idle-delay 0.1)
+(eval-after-load 'company
+  '(add-to-list 'company-backends 'company-inf-ruby 'company-anaconda))
 
 ;; Enable python
 (require 'python)
 (setq python-shell-interpreter "ipython")
 (add-hook 'python-mode-hook 'anaconda-mode)
-;;(add-to-list 'company-backends 'company-anaconda)
-
-;; Enable fsharp
-(require 'fsharp-mode)
 
 ;; Configure Clojure
 (require 'clojure-mode)
@@ -82,20 +98,14 @@
 (add-hook 'cider-repl-mode-hook 'paredit-mode)
 (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
 
-;; Enable go
-(require 'go-mode)
-(require 'go-eldoc)
-(require 'company)
-(require 'company-go)
-(add-hook 'go-mode-hook 'go-eldoc-setup)
-(add-hook 'go-mode-hook
-          (lambda ()
-            (set (make-local-variable 'company-backends) '(company-go))))
+;; Enable F#
+(require 'fsharp-mode)
 
 ;; Enable web development support
 (require 'php-mode)
 (require 'web-mode)
 (require 'sass-mode)
+(add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode))
 
 (provide 'init)
 ;;; init.el ends here

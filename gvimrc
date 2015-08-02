@@ -9,7 +9,7 @@ filetype plugin indent on
 
 " Custom behaviour
 let mapleader=","               " set mapleader key to comma
-set background=dark             " darken background
+set background=light            " lighten background
 colorscheme solarized           " use solarized as default colorscheme
 set guioptions-=m               " remove menu bar
 set guioptions-=T               " remove tool bar
@@ -36,6 +36,8 @@ set virtualedit=all             " allow the cursor to go in to "invalid" places
 set hlsearch                    " highlight search terms
 set incsearch                   " show search matches as you type
 set gdefault                    " search/replace "globally" (on a line) by default
+set encoding=utf-8
+set fileencoding=utf-8
 scriptencoding utf-8
 set listchars=tab:⇢\ ,nbsp:»,eol:¬
 set list                        " don't show invisible characters by default,
@@ -43,8 +45,18 @@ set list                        " don't show invisible characters by default,
 set mouse=a                     " enable using the mouse if terminal emulator supports it (xterm does)
 set nobackup                    " disable auto-backup
 set noswapfile                  " disable swapfile
-set fileformat=unix
+set fileformat=unix             
+set fileformats=unix,dos
 set laststatus=2                " display airline at all times
 set columns=120 lines=30        " set window size to 120x30
+set guifont=UbuntuMono:h11
+set splitbelow
+set splitright
+
+" Mappings
 nmap <leader>l :set list!<CR>
 map <C-n> :NERDTreeToggle<CR>
+nnoremap <C-h> <C-w><C-h>
+nnoremap <C-j> <C-w><C-j>
+nnoremap <C-k> <C-w><C-k>
+nnoremap <C-l> <C-w><C-l>
