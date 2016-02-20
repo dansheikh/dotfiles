@@ -52,6 +52,10 @@ set fileformats=unix,dos
 set laststatus=2                " display airline at all times
 set splitbelow
 set splitright
+set noerrorbells visualbell t_vb=
+if has('autocmd')
+    autocmd GUIEnter * set visualbell t_vb=
+endif
 
 " Mappings
 nmap <leader>l :set list!<CR>
@@ -60,3 +64,5 @@ nnoremap <C-h> <C-w><C-h>
 nnoremap <C-j> <C-w><C-j>
 nnoremap <C-k> <C-w><C-k>
 nnoremap <C-l> <C-w><C-l>
+nnoremap <C-Tab> :bnext<CR>
+nnoremap <C-S-Tab> :bprevious<CR>
