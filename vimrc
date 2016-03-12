@@ -64,7 +64,8 @@ let g:neocomplete#enable_smart_case = 1 " Use smartcase.
 let g:neocomplete#sources#syntax#min_keyword_length = 3 " Set minimum syntax keyword length.
 
 " Unite
-nnoremap <leader>f :Unite -start-insert file<CR>
+nnoremap <leader>f :Unite -start-insert -auto-preview file<CR>
+nnoremap <leader>b :Unite -quick-match -auto-preview buffer<CR>
 
 " Syntastic
 set statusline+=%#warningmsg#
