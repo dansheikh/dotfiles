@@ -49,3 +49,6 @@
 [submodule "vim/bundle/vim-tomorrow"]
 	path = vim/bundle/vim-tomorrow
 	url = https://github.com/chriskempson/vim-tomorrow-theme.git
+[submodule "vim/bundle/neocomplete.vim"]
+	path = vim/bundle/neocomplete.vim
+	url = https://github.com/Shougo/neocomplete.vim.git

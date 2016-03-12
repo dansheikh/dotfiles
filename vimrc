@@ -57,6 +57,15 @@ if has('autocmd')
     autocmd GUIEnter * set visualbell t_vb=
 endif
 
+" NeoComplete
+let g:acp_enableAtStartup = 0 " Disable AutoComplPop.
+let g:neocomplete#enable_at_startup = 1 " Use neocomplete.
+let g:neocomplete#enable_smart_case = 1 " Use smartcase.
+let g:neocomplete#sources#syntax#min_keyword_length = 3 " Set minimum syntax keyword length.
+
+" Unite
+nnoremap <leader>f :Unite -start-insert file<CR>
+
 " Syntastic
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
