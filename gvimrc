@@ -17,11 +17,13 @@ set guioptions-=m               " remove menu bar
 set guioptions-=T               " remove tool bar
 set showmode                    " always show what mode we're currently editing in
 set nomodeline                  " disable modeline
-set nowrap                      " don't wrap lines
-set tabstop=4                   " a tab is two spaces
-set softtabstop=4               " when hitting <BS>, pretend like a tab is removed, even if spaces
+set wrap                        " wrap lines
+set linebreak
+set nolist
+set tabstop=2                   " a tab is two spaces
+set softtabstop=2               " when hitting <BS>, pretend like a tab is removed, even if spaces
 set expandtab                   " expand tabs by default (overloadable per file type later)
-set shiftwidth=4                " number of spaces to use for autoindenting
+set shiftwidth=2                " number of spaces to use for autoindenting
 set shiftround                  " use multiple of shiftwidth when indenting with '<' and '>'
 set backspace=indent,eol,start  " allow backspacing over everything in insert mode
 set autoindent                  " always set autoindenting on
@@ -67,6 +69,7 @@ let g:syntastic_auto_loc_list = 0
 let g:syntastic_check_on_open = 0
 let g:syntastic_check_on_wq = 0
 let g:syntastic_javascript_checkers = ['eslint']
+let g:syntastic_ruby_checkers = ['rubocop']
 
 " Mappings
 nmap <leader>l :set list!<CR>
@@ -77,3 +80,13 @@ nnoremap <C-k> <C-w><C-k>
 nnoremap <C-l> <C-w><C-l>
 nnoremap <C-Tab> :bnext<CR>
 nnoremap <C-S-Tab> :bprevious<CR>
+vmap <M-j> gj
+vmap <M-k> gk
+vmap <M-4> g$
+vmap <M-6> g^
+vmap <M-0> g^
+nmap <M-j> gj
+nmap <M-k> gk
+nmap <M-4> g$
+nmap <M-6> g^
+nmap <M-0> g^

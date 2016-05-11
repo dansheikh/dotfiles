@@ -3,11 +3,16 @@
   '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
 
+(load "~/.emacs.d/required-packages.el")
+
 ;; Configure load path
-(add-to-list 'load-path "~/.emacs.d/")
+;; (add-to-list 'load-path "~/.emacs.d/")
+
+;; Start server
+(server-start)
 
 ;; Set frame size
-;;(setq default-frame-alist '((width . 120) (height . 30)))
+(setq default-frame-alist '((width . 150) (height . 30)))
 
 ;; Set coding preference
 (set-default-coding-systems 'utf-8-unix)
@@ -75,13 +80,13 @@
 (setq magit-last-seen-setup-instructions "1.4.0")
 
 ;; Enable flycheck and override defaults
-(add-hook 'after-init-hook #'global-flycheck-mode)
+(add-hook 'after-init-hook 'global-flycheck-mode)
 (setq flycheck-check-syntax-automatically '(save idle-change mode-enable)
       flycheck-idle-change-delay 1.0)
 (provide 'init-flycheck)
 
 ;; Enable global company mode
-(add-hook 'after-init-hook #'global-company-mode)
+(add-hook 'after-init-hook 'global-company-mode)
 (setq company-idle-delay 0.1)
 (eval-after-load 'company
   '(add-to-list 'company-backends 'company-inf-ruby 'company-anaconda))
@@ -90,6 +95,9 @@
 (require 'python)
 (setq python-shell-interpreter "ipython")
 (add-hook 'python-mode-hook 'anaconda-mode)
+
+;; Enable go
+(require 'go-mode)
 
 ;; Configure Clojure
 (require 'clojure-mode)
@@ -102,7 +110,7 @@
 (require 'fsharp-mode)
 
 ;; Enable web development support
-(require 'php-mode)
+;; (require 'php-mode)
 (require 'web-mode)
 (require 'sass-mode)
 (add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode))
