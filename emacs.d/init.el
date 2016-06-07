@@ -21,7 +21,7 @@
 (prefer-coding-system 'utf-8-unix)
 
 ;; Set default font
-(set-face-attribute 'default nil :font "Ubuntu Mono-11")
+(set-face-attribute 'default nil :font "Inconsolata-11")
 
 ;; Disable startup screen
 (setq inhibit-startup-screen t)
