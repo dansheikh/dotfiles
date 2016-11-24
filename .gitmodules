@@ -38,10 +38,6 @@
   path = vim/bundle/paredit.vim
   url = https://github.com/vim-scripts/paredit.vim
   ignore = dirty
-[submodule "vim/bundle/unite.vim"]
-  path = vim/bundle/unite.vim
-  url = https://github.com/Shougo/unite.vim.git
-  ignore = dirty
 [submodule "vim/bundle/vim-go"]
   path = vim/bundle/vim-go
   url = https://github.com/fatih/vim-go.git
@@ -67,3 +63,6 @@
 [submodule "vim/bundle/vim-elixir"]
 	path = vim/bundle/vim-elixir
 	url = https://github.com/elixir-lang/vim-elixir.git
+[submodule "vim/bundle/vim-denite"]
+	path = vim/bundle/vim-denite
+	url = https://github.com/Shougo/denite.nvim.git
