@@ -1,5 +1,9 @@
 .netrwhist
+emacs.d/ido.last
+emacs.d/recentf
+emacs.d/tramp
 emacs.d/auto-save-list/
 emacs.d/elpa/
 emacs.d/eshell/
 emacs.d/server/
+emacs.d/ensime/
