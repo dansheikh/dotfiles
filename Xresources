@@ -1,12 +1,92 @@
-xterm*faceName: Bitstream Vera Serif Mono
-xterm*faceSize: 11
-xterm*loginShell: true
-xterm*vt100*geometry: 120x30
-xterm*saveLines: 2000
-xterm*termName: xterm-color
-xterm*eightBitInput: false
-xterm*ScrollBar: true
-xterm*rightScrollBar: true
-xterm*scrollTtyOutput: false
+! URxvt
+! URxvt*termName: screen-256color
+URxvt*geometry: 120x30
+URxvt*scrollBar: false
+URxvt*scrollBar_right: false
+! URxvt*transparent: true
+! URxvt*shading: 35
+URxvt*depth: 32
+URxvt*background: rgba:0000/0000/0220/dddd
+URxvt*font: xft:Droid Sans Mono:size=10:antialias=true:hinting=true,xft:Droid Sans Mono for Powerline:size=10:antialias=true:hinting=true
+! XTerm
+! XTerm*termName: screen-256color
+XTerm*faceName: Droid Sans Mono Slashed for Powerline
+XTerm*faceSize: 10
+XTerm*loginShell: true
+XTerm*vt100*geometry: 120x30
+XTerm*saveLines: 2000
+XTerm*eightBitInput: false
+XTerm*ScrollBar: true
+XTerm*rightScrollBar: true
+XTerm*scrollTtyOutput: false
+
+! Emacs
 emacs*geometry: 120x30
 emacs24*geometry: 120x30
+
+#define _color0        #000d18
+#define _color8        #000d18
+#define _color1        #e89393
+#define _color9        #e89393
+#define _color2        #9ece9e
+#define _color10       #9ece9e
+#define _color3        #f0dfaf
+#define _color11       #f0dfaf
+#define _color4        #8cd0d3
+#define _color12       #8cd0d3
+#define _color5        #c0bed1
+#define _color13       #c0bed1
+#define _color6        #dfaf8f
+#define _color14       #dfaf8f
+#define _color7        #efefef
+#define _color15       #efefef
+#define _colorBD       #ffcfaf
+#define _colorUL       #ccdc90
+#define _colorIT       #80d4aa
+#define _foreground    #dcdccc
+#define _background    #1f1f1f
+#define _cursorColor   #8faf9f
+URxvt*color0         : _color0
+URxvt*color1         : _color1
+URxvt*color2         : _color2
+URxvt*color3         : _color3
+URxvt*color4         : _color4
+URxvt*color5         : _color5
+URxvt*color6         : _color6
+URxvt*color7         : _color7
+URxvt*color8         : _color8
+URxvt*color9         : _color9
+URxvt*color10        : _color10
+URxvt*color11        : _color11
+URxvt*color12        : _color12
+URxvt*color13        : _color13
+URxvt*color14        : _color14
+URxvt*color15        : _color15
+URxvt*colorBD        : _colorBD
+URxvt*colorIT        : _colorIT
+URxvt*colorUL        : _colorUL
+URxvt*foreground     : _foreground
+! URxvt*background     : _background
+URxvt*cursorColor    : _cursorColor
+XTerm*color0         : _color0
+XTerm*color1         : _color1
+XTerm*color2         : _color2
+XTerm*color3         : _color3
+XTerm*color4         : _color4
+XTerm*color5         : _color5
+XTerm*color6         : _color6
+XTerm*color7         : _color7
+XTerm*color8         : _color8
+XTerm*color9         : _color9
+XTerm*color10        : _color10
+XTerm*color11        : _color11
+XTerm*color12        : _color12
+XTerm*color13        : _color13
+XTerm*color14        : _color14
+XTerm*color15        : _color15
+XTerm*colorBD        : _colorBD
+XTerm*colorIT        : _colorIT
+XTerm*colorUL        : _colorUL
+XTerm*foreground     : _foreground
+XTerm*background     : _background
+XTerm*cursorColor    : _cursorColor
