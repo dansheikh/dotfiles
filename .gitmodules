@@ -64,3 +64,6 @@
 [submodule "vim/bundle/vim-rust"]
 	path = vim/bundle/vim-rust
 	url = https://github.com/rust-lang/rust.vim.git
+[submodule "vim/bundle/vim-elixir"]
+	path = vim/bundle/vim-elixir
+	url = https://github.com/elixir-lang/vim-elixir.git
