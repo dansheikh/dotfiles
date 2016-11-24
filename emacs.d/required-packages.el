@@ -8,11 +8,15 @@
     clojure-mode    
     company
     company-anaconda
+    ensime
     flycheck
     fsharp-mode
     go-mode
+    helm
     magit
+    paredit
     python-mode
+    rainbow-delimiters
     sass-mode
     web-mode
     zenburn-theme) "List of required packages.")

@@ -3,7 +3,8 @@
   '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
 
-(load "~/.emacs.d/required-packages.el")
+;; Load required packages list
+;; (load "~/.emacs.d/required-packages.el")
 
 ;; Configure load path
 ;; (add-to-list 'load-path "~/.emacs.d/")
@@ -50,8 +51,9 @@
 (setq root-dir (file-name-directory
 		(or (buffer-file-name) load-file-name)))
 
-;; Load theme to path
-(load-theme 'zenburn t)
+;; Set theme
+(require 'color-theme-sanityinc-tomorrow)
+(color-theme-sanityinc-tomorrow--define-theme eighties)
 
 ;; Enable line numbers
 (global-linum-mode t)
@@ -62,12 +64,38 @@
 
 (show-paren-mode 1)
 
+;; Auto-indent
+(define-key global-map (kbd "RET") 'newline-and-indent)
+
 ;; Set style
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
                         (other . "bsd")))
 
 (setq c-basic-offset 4)
+
+;; Customize keybindings
+(global-set-key (kbd "M-]") 'next-buffer)
+(global-set-key (kbd "M-[") 'previous-buffer)
+(global-set-key (kbd "M-x") 'helm-M-x)
+(global-set-key (kbd "C-x C-m") 'helm-M-x)
+(global-set-key (kbd "C-c C-m") 'helm-M-x)
+(global-set-key (kbd "C-x b") 'helm-mini)
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
+
+;; Load Tuareg
+(load "~/.opam/4.03.0/share/emacs/site-lisp/tuareg-site-file")
+
+;; Add opam emacs directory to the load-path
+(setq opam-share (substring (shell-command-to-string "opam config var share 2> /dev/null") 0 -1))
+(add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
+
+;; Load merlin-mode
+(require 'merlin)
+
+;; Start merlin on ocaml files
+(add-hook 'tuareg-mode-hook 'merlin-mode t)
+(add-hook 'caml-mode-hook 'merlin-mode t)
 
 ;; Enable Ido mode
 (require 'ido)
@@ -85,6 +113,10 @@
       flycheck-idle-change-delay 1.0)
 (provide 'init-flycheck)
 
+(with-eval-after-load 'flycheck
+  (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)
+  (flycheck-pos-tip-mode))
+
 ;; Enable global company mode
 (add-hook 'after-init-hook 'global-company-mode)
 (setq company-idle-delay 0.1)
@@ -99,11 +131,17 @@
 ;; Enable go
 (require 'go-mode)
 
-;; Configure Clojure
+;; Enable Scala
+(require 'ensime)
+(add-hook 'scala-mode-hook 'ensime-mode)
+
+;; Configure Clojure & ClojureScript
 (require 'clojure-mode)
 (add-hook 'clojure-mode-hook 'paredit-mode)
-(add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
+(add-hook 'clojurescript-mode-hook 'paredit-mode)
 (add-hook 'cider-repl-mode-hook 'paredit-mode)
+(add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
+(add-hook 'clojurescript-mode-hook 'rainbow-delimiters-mode)
 (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
 
 ;; Enable F#
@@ -117,3 +155,17 @@
 
 (provide 'init)
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (flycheck-color-mode-line flycheck-pos-tip color-theme-sanityinc-tomorrow groovy-mode slime zenburn-theme web-mode sass-mode rainbow-delimiters python-mode paredit magit helm go-mode fsharp-mode flycheck ensime company-anaconda cider))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
