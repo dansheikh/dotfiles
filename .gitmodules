@@ -52,3 +52,15 @@
 [submodule "vim/bundle/vim-tomorrow-theme"]
   path = vim/bundle/vim-tomorrow-theme
   url = https://github.com/chriskempson/vim-tomorrow-theme.git
+[submodule "vim/bundle/vim-clojure-static"]
+	path = vim/bundle/vim-clojure-static
+	url = https://github.com/guns/vim-clojure-static.git
+[submodule "vim/bundle/vim-fireplace"]
+	path = vim/bundle/vim-fireplace
+	url = https://github.com/tpope/vim-fireplace.git
+[submodule "vim/bundle/vim-fsharp"]
+	path = vim/bundle/vim-fsharp
+	url = https://github.com/fsharp/vim-fsharp.git
+[submodule "vim/bundle/vim-rust"]
+	path = vim/bundle/vim-rust
+	url = https://github.com/rust-lang/rust.vim.git
