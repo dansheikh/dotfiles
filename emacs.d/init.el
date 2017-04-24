@@ -1,16 +1,38 @@
+;;; Code:
+
 (require 'package)
-(add-to-list 'package-archives
-  '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(setq
+ package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+                    ("org" . "http://orgmode.org/elpa/")
+                    ("melpa" . "http://melpa.org/packages/")
+                    ("melpa-stable" . "http://stable.melpa.org/packages/"))
+ package-archive-priorities '(("melpa-stable" . 1)))
+
 (package-initialize)
 
-;; Load required packages list
-;; (load "~/.emacs.d/required-packages.el")
+(when (not package-archive-contents)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
-;; Configure load path
-;; (add-to-list 'load-path "~/.emacs.d/")
+(require 'use-package)
+(setq use-package-always-ensure t)
 
-;; Start server
-(server-start)
+;; Set shell path
+(defun set-shell-path ()
+  (let ((shell-path (shell-command-to-string "$SHELL -i -c 'echo $PATH'")))
+    (setenv "PATH" shell-path)
+    (setq exec-path (split-string shell-path path-separator))))
+
+(if (display-graphic-p)
+    (set-shell-path))
+
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file 'noerror)
+
+;; Configure Multi-term
+(use-package multi-term
+  :init
+  (setq multi-term-program "/bin/zsh"))
 
 ;; Set frame size
 (setq default-frame-alist '((width . 150) (height . 30)))
@@ -22,7 +44,7 @@
 (prefer-coding-system 'utf-8-unix)
 
 ;; Set default font
-(set-face-attribute 'default nil :font "Inconsolata-11")
+(set-face-attribute 'default nil :font "Droid Sans Mono Slashed for Powerline-10")
 
 ;; Disable startup screen
 (setq inhibit-startup-screen t)
@@ -52,8 +74,9 @@
 		(or (buffer-file-name) load-file-name)))
 
 ;; Set theme
-(require 'color-theme-sanityinc-tomorrow)
-(color-theme-sanityinc-tomorrow--define-theme eighties)
+(load-theme 'monokai t)
+; (require 'color-theme-sanityinc-tomorrow)
+; (color-theme-sanityinc-tomorrow--define-theme eighties)
 
 ;; Enable line numbers
 (global-linum-mode t)
@@ -83,6 +106,127 @@
 (global-set-key (kbd "C-x b") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
 
+;; Enable global buffer auto-revert.
+(global-auto-revert-mode 1)
+(setq auto-revert-check-vc-info t)
+
+;; Enable Evil
+(use-package evil
+  :init
+  (evil-mode t)
+  :config
+  (define-key evil-normal-state-map (kbd "C-d") 'evil-scroll-down)
+  (define-key evil-visual-state-map (kbd "C-d") 'evil-scroll-down)
+  (define-key evil-normal-state-map (kbd "C-u") 'evil-scroll-up)
+  (define-key evil-visual-state-map (kbd "C-u") 'evil-scroll-up)
+  (define-key evil-insert-state-map (kbd "C-u")
+    (lambda ()
+      (interactive)
+      (evil-delete (point-at-bol) (point)))))
+
+;; Enable powerline
+(use-package powerline)
+(use-package airline-themes
+  :init
+  (setq powerline-utf-8-separator-left        #xe0b0
+        powerline-utf-8-separator-right       #xe0b2
+        airline-utf-glyph-separator-left      #xe0b0
+        airline-utf-glyph-separator-right     #xe0b2
+        airline-utf-glyph-subseparator-left   #xe0b1
+        airline-utf-glyph-subseparator-right  #xe0b3
+        airline-utf-glyph-branch              #xe0a0
+        airline-utf-glyph-readonly            #xe0a2
+        airline-utf-glyph-linenumber          #xe0a1)
+  :config
+  (load-theme 'airline-molokai))
+
+;; Enable flycheck and override defaults
+(use-package flycheck
+  :config
+  (setq flycheck-check-syntax-automatically '(save idle-change mode-enable)
+        flycheck-idle-change-delay 1.0)
+  (add-hook 'after-init-hook 'global-flycheck-mode)
+  (provide 'init-flycheck))
+
+(with-eval-after-load 'flycheck
+  (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)
+  (flycheck-pos-tip-mode))
+
+;; Enable yasnippet
+(use-package yasnippet
+  :init
+  (yas-global-mode t))
+
+;; Enable Ido mode
+(use-package ido
+  :config
+  (ido-mode t)
+  (setq ido-enable-flex-matching t
+      ido-use-virutal-buffers t))
+
+;; Enable magit
+(use-package magit
+  :config
+  (setq magit-last-seen-setup-instructions "1.4.0")
+  (global-set-key (kbd "C-x g") 'magit-status)
+  (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup))
+
+;; Enable global company mode
+(use-package company
+  :config
+  (setq company-idle-delay 0.1)
+  (setq company-minimum-prefix-length 1)
+  (setq company-backends '((company-capf company-files company-elisp company-inf-ruby company-anaconda company-go company-irony company-clang company-cmake company-css company-yasnippet) (company-dabbrev company-dabbrev-code)))
+  (add-hook 'after-init-hook 'global-company-mode))
+
+;; Enable python
+(use-package python
+  :config
+  (setq python-shell-interpreter (substring (shell-command-to-string "which ipython") 0 -1)
+        python-shell-interpreter-args "--simple-prompt -i")
+  (add-hook 'python-mode-hook 'anaconda-mode)
+  (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
+
+;; Enable irony
+(use-package irony
+  :config
+  (defun custom-irony-mode-hook ()
+    (define-key irony-mode-map [remap completion-at-point]
+      'irony-completion-at-point-async)
+    (define-key irony-mode-map [remap complete-symbol]
+      'irony-completion-at-point-async))
+  (add-hook 'irony-mode-hook 'custom-irony-mode-hook)
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+  (add-hook 'c++-mode-hook 'irony-mode)
+  (add-hook 'c-mode-hook 'irony-mode))
+
+;; Enable rust
+(use-package rust-mode
+  :init
+  (setq rust-format-on-save t))
+
+;; Enable go
+(use-package go-mode)
+
+;; Configure Clojure & ClojureScript
+(use-package clojure-mode
+  :config
+  (add-hook 'clojure-mode-hook 'paredit-mode)
+  (add-hook 'clojurescript-mode-hook 'paredit-mode)
+  (add-hook 'cider-repl-mode-hook 'paredit-mode)
+  (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'clojurescript-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode))
+
+;; Enable web development support
+(use-package web-mode)
+(use-package sass-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode)))
+
+;; Enable F#
+(use-package fsharp-mode)
+
 ;; Load Tuareg
 (load "~/.opam/4.03.0/share/emacs/site-lisp/tuareg-site-file")
 
@@ -90,82 +234,19 @@
 (setq opam-share (substring (shell-command-to-string "opam config var share 2> /dev/null") 0 -1))
 (add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
 
-;; Load merlin-mode
-(require 'merlin)
+;; Load OCaml plugins
+(use-package ocp-indent)
+(use-package merlin
+  :config
+  (add-hook 'tuareg-mode-hook 'merlin-mode t)
+  (add-hook 'caml-mode-hook 'merlin-mode t))
 
-;; Start merlin on ocaml files
-(add-hook 'tuareg-mode-hook 'merlin-mode t)
-(add-hook 'caml-mode-hook 'merlin-mode t)
-
-;; Enable Ido mode
-(require 'ido)
-(ido-mode t)
-(setq ido-enable-flex-matching t
-      ido-use-virutal-buffers t)
-
-;; Enable magit
-(require 'magit)
-(setq magit-last-seen-setup-instructions "1.4.0")
-
-;; Enable flycheck and override defaults
-(add-hook 'after-init-hook 'global-flycheck-mode)
-(setq flycheck-check-syntax-automatically '(save idle-change mode-enable)
-      flycheck-idle-change-delay 1.0)
-(provide 'init-flycheck)
-
-(with-eval-after-load 'flycheck
-  (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)
-  (flycheck-pos-tip-mode))
-
-;; Enable global company mode
-(add-hook 'after-init-hook 'global-company-mode)
-(setq company-idle-delay 0.1)
-(eval-after-load 'company
-  '(add-to-list 'company-backends 'company-inf-ruby 'company-anaconda))
-
-;; Enable python
-(require 'python)
-(setq python-shell-interpreter "ipython")
-(add-hook 'python-mode-hook 'anaconda-mode)
-
-;; Enable go
-(require 'go-mode)
-
-;; Enable Scala
-(require 'ensime)
-(add-hook 'scala-mode-hook 'ensime-mode)
-
-;; Configure Clojure & ClojureScript
-(require 'clojure-mode)
-(add-hook 'clojure-mode-hook 'paredit-mode)
-(add-hook 'clojurescript-mode-hook 'paredit-mode)
-(add-hook 'cider-repl-mode-hook 'paredit-mode)
-(add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
-(add-hook 'clojurescript-mode-hook 'rainbow-delimiters-mode)
-(add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
-
-;; Enable F#
-(require 'fsharp-mode)
-
-;; Enable web development support
-;; (require 'php-mode)
-(require 'web-mode)
-(require 'sass-mode)
-(add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode))
+;; Enable Haskell
+(use-package haskell-mode
+  :config
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation))
 
 (provide 'init)
 ;;; init.el ends here
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (flycheck-color-mode-line flycheck-pos-tip color-theme-sanityinc-tomorrow groovy-mode slime zenburn-theme web-mode sass-mode rainbow-delimiters python-mode paredit magit helm go-mode fsharp-mode flycheck ensime company-anaconda cider))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+

@@ -1,9 +1,13 @@
 alias ls='ls --color=auto'
-alias la='ls -lart'
+alias la='ls -lart --color=auto'
+alias lh='ls -lh --color=auto'
 
 alias mkdir='mkdir -pv'
 alias mv='mv -v'
 alias rm='rm -v'
+alias cp='cp -v'
+
+alias ha='history | ack'
 
 # Redirect stdout and stderr to /dev/null
 alias -g NIL="> /dev/null 2>&1"

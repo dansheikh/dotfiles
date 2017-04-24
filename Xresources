@@ -7,7 +7,8 @@ URxvt*scrollBar_right: false
 ! URxvt*shading: 35
 URxvt*depth: 32
 URxvt*background: rgba:0000/0000/0220/dddd
-URxvt*font: xft:Droid Sans Mono:size=10:antialias=true:hinting=true,xft:Droid Sans Mono for Powerline:size=10:antialias=true:hinting=true
+URxvt*font: xft:Droid Sans Mono Slashed for Powerline:size=10:antialias=true:hinting=true:autohint:true
+URxvt.perl-ext-common: default,tabbed
 ! XTerm
 ! XTerm*termName: screen-256color
 XTerm*faceName: Droid Sans Mono Slashed for Powerline

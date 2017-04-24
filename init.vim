@@ -13,7 +13,7 @@ filetype plugin indent on
 " Custom behaviour
 let mapleader=","                       " set mapleader key to comma
 set t_Co=256                            " set to 256 colors
-set term=xterm-256color                 " set to xterm mode
+" set term=xterm-256color                 " set to xterm mode
 set background=dark                     " darken background
 colorscheme Tomorrow-Night-Eighties     " use Tomorrow-Night as default colorscheme
 set guioptions-=m                       " remove menu bar
@@ -63,6 +63,10 @@ if has('autocmd')
     autocmd GUIEnter * set visualbell t_vb=
 endif
 
+"Neovim Python
+let g:python3_host_prog = '/usr/bin/python3'
+let g:python_host_prog = '/usr/bin/python2'
+
 let s:merlin=substitute(system('opam config var share'),'\n$','','g') . "/merlin/vim"
 set rtp+=s:merlin
 
@@ -70,11 +74,8 @@ set rtp+=s:merlin
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
 
-" NeoComplete
-let g:acp_enableAtStartup = 0 " Disable AutoComplPop.
-let g:neocomplete#enable_at_startup = 1 " Use neocomplete.
-let g:neocomplete#enable_smart_case = 1 " Use smartcase.
-let g:neocomplete#sources#syntax#min_keyword_length = 3 " Set minimum syntax keyword length.
+" Deoplete
+let g:deoplete#enable_at_startup = 1
 
 " Unite
 nnoremap <leader>f :Unite -direction=dynamicbottom -start-insert -auto-preview file<CR>

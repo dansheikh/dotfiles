@@ -55,6 +55,8 @@ set guifont=Droid\ Sans\ Mono\ Slashed\ for\ Powerline\ 10
 set splitbelow
 set splitright
 set noerrorbells visualbell t_vb=
+set completeopt=menuone,longest,preview,noinsert 
+
 if has('autocmd')
     autocmd GUIEnter * set visualbell t_vb=
 endif
