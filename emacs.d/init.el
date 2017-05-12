@@ -247,6 +247,10 @@
   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation))
 
+;; Enable Perl 6
+(use-package perl6-mode
+  :defer t)
+
 (provide 'init)
 ;;; init.el ends here
 
