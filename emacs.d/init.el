@@ -251,6 +251,10 @@
 (use-package perl6-mode
   :defer t)
 
-(provide 'init)
-;;; init.el ends here
+;; Enable Statistics
+(use-package ess
+  :defer t)
 
+(provide 'init)
+
+;;; init.el ends here
