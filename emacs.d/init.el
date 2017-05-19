@@ -228,7 +228,10 @@
 (use-package fsharp-mode)
 
 ;; Load Tuareg
-(load "~/.opam/4.03.0/share/emacs/site-lisp/tuareg-site-file")
+(load
+ (concat "~/.opam/"
+	 (car (directory-files  "~/.opam/" nil "[0-9]+\\(\\.[0-9]\\)"))
+	 "/share/emacs/site-lisp/tuareg-site-file"))
 
 ;; Add opam emacs directory to the load-path
 (setq opam-share (substring (shell-command-to-string "opam config var share 2> /dev/null") 0 -1))
