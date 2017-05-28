@@ -17,22 +17,15 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;; Set shell path
-(defun set-shell-path ()
-  (let ((shell-path (shell-command-to-string "$SHELL -i -c 'echo $PATH'")))
-    (setenv "PATH" shell-path)
-    (setq exec-path (split-string shell-path path-separator))))
-
-(if (display-graphic-p)
-    (set-shell-path))
-
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
+
+;; (require 'shell-path "~/.emacs.d/shell-path.el")
 
 ;; Configure Multi-term
 (use-package multi-term
   :init
-  (setq multi-term-program "/bin/zsh"))
+  (setq multi-term-program "/usr/bin/zsh"))
 
 ;; Set frame size
 (setq default-frame-alist '((width . 150) (height . 30)))
@@ -96,6 +89,17 @@
                         (other . "bsd")))
 
 (setq c-basic-offset 4)
+(setq sh-basic-offset 4)
+
+;; Enable Ido mode
+(use-package ido
+  :config
+  (ido-mode t)
+  (setq ido-enable-flex-matching t
+        ido-use-virutal-buffers t))
+
+;; Enable and customize helm
+(use-package helm)
 
 ;; Customize keybindings
 (global-set-key (kbd "M-]") 'next-buffer)
@@ -106,7 +110,7 @@
 (global-set-key (kbd "C-x b") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
 
-;; Enable global buffer auto-revert.
+;; Enable global buffer auto-revert
 (global-auto-revert-mode 1)
 (setq auto-revert-check-vc-info t)
 
@@ -148,38 +152,29 @@
   (add-hook 'after-init-hook 'global-flycheck-mode)
   (provide 'init-flycheck))
 
-(with-eval-after-load 'flycheck
-  (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)
-  (flycheck-pos-tip-mode))
+(use-package flycheck-color-mode-line
+  :config
+  (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
+
+(use-package flycheck-pos-tip)
 
 ;; Enable yasnippet
 (use-package yasnippet
   :init
   (yas-global-mode t))
 
-;; Enable Ido mode
-(use-package ido
-  :config
-  (ido-mode t)
-  (setq ido-enable-flex-matching t
-      ido-use-virutal-buffers t))
-
-;; Enable magit
-(use-package magit
-  :config
-  (setq magit-last-seen-setup-instructions "1.4.0")
-  (global-set-key (kbd "C-x g") 'magit-status)
-  (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup))
-
 ;; Enable global company mode
+(use-package company-anaconda)
+(use-package company-irony)
 (use-package company
   :config
   (setq company-idle-delay 0.1)
   (setq company-minimum-prefix-length 1)
-  (setq company-backends '((company-capf company-files company-elisp company-inf-ruby company-anaconda company-go company-irony company-clang company-cmake company-css company-yasnippet) (company-dabbrev company-dabbrev-code)))
+  (setq company-backends '((company-capf company-files company-elisp company-inf-ruby company-anaconda company-irony company-clang company-cmake company-css company-yasnippet) (company-dabbrev company-dabbrev-code)))
   (add-hook 'after-init-hook 'global-company-mode))
 
 ;; Enable python
+(use-package anaconda-mode)
 (use-package python
   :config
   (setq python-shell-interpreter (substring (shell-command-to-string "which ipython") 0 -1)
@@ -205,10 +200,10 @@
   :init
   (setq rust-format-on-save t))
 
-;; Enable go
-(use-package go-mode)
-
 ;; Configure Clojure & ClojureScript
+(use-package paredit)
+(use-package rainbow-delimiters)
+(use-package cider)
 (use-package clojure-mode
   :config
   (add-hook 'clojure-mode-hook 'paredit-mode)
@@ -227,22 +222,12 @@
 ;; Enable F#
 (use-package fsharp-mode)
 
-;; Load Tuareg
-(load
- (concat "~/.opam/"
-	 (car (directory-files  "~/.opam/" nil "[0-9]+\\(\\.[0-9]\\)"))
-	 "/share/emacs/site-lisp/tuareg-site-file"))
-
 ;; Add opam emacs directory to the load-path
 (setq opam-share (substring (shell-command-to-string "opam config var share 2> /dev/null") 0 -1))
 (add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
+(load (concat opam-share "/emacs/site-lisp/tuareg-site-file"))
 
-;; Load OCaml plugins
-(use-package ocp-indent)
-(use-package merlin
-  :config
-  (add-hook 'tuareg-mode-hook 'merlin-mode t)
-  (add-hook 'caml-mode-hook 'merlin-mode t))
+(require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
 
 ;; Enable Haskell
 (use-package haskell-mode
@@ -250,17 +235,25 @@
   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation))
 
+;; Enable Groovy
+(use-package groovy-mode)
+
 ;; Enable Ensime
 (use-package ensime
   :pin melpa-stable)
 
 ;; Enable Perl 6
-(use-package perl6-mode
-  :defer t)
+(use-package perl6-mode)
 
 ;; Enable Statistics
-(use-package ess
-  :defer t)
+(use-package ess)
+
+;; Enable magit
+(use-package magit
+  :config
+  ;; (setq magit-last-seen-setup-instructions "1.4.0")
+  (global-set-key (kbd "C-x g") 'magit-status)
+  (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup))
 
 (provide 'init)
 
