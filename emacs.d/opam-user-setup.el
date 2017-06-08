@@ -136,3 +136,12 @@
   (dolist (ext '(".cmo" ".cmx" ".cma" ".cmxa" ".cmxs" ".cmt" ".cmti" ".cmi" ".annot"))
     (add-to-list 'completion-ignored-extensions ext)))
 ;; ## end of OPAM user-setup addition for emacs / tuareg ## keep this line
+;; ## added by OPAM user-setup for emacs / ocp-indent ## 1d3a17c47b93d54a89869dbd247c36fc ## you can edit, but keep this line
+;; Load ocp-indent from its original switch when not found in current switch
+(when (not (assoc "ocp-indent" opam-tools-installed))
+  (autoload 'ocp-setup-indent "/home/dan/.opam/system/share/emacs/site-lisp/ocp-indent.el" "Improved indentation for Tuareg mode")
+  (autoload 'ocp-indent-caml-mode-setup "/home/dan/.opam/system/share/emacs/site-lisp/ocp-indent.el" "Improved indentation for Caml mode")
+  (add-hook 'tuareg-mode-hook 'ocp-setup-indent t)
+  (add-hook 'caml-mode-hook 'ocp-indent-caml-mode-setup  t)
+  (setq ocp-indent-path "/home/dan/.opam/system/bin/ocp-indent"))
+;; ## end of OPAM user-setup addition for emacs / ocp-indent ## keep this line
