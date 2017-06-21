@@ -227,6 +227,9 @@
 (add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
 (load (concat opam-share "/emacs/site-lisp/tuareg-site-file"))
 
+;; Configure UTop
+(setq utop-command "opam config exec -- utop -emacs")
+
 ;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit, but keep this line
 (require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
 ;; ## end of OPAM user-setup addition for emacs / base ## keep this line
