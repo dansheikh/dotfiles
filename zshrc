@@ -37,6 +37,9 @@ if [ -f ~/.aliases ]; then
   source ~/.aliases
 fi
 
+# Activate NVM
+[ -n "$NVM_HOME" ] && [ -d "$NVM_HOME" ] && [ -s "$NVM_HOME"/nvm.sh ] && . "$NVM_HOME"/nvm.sh
+
 eval $(opam config env)
 
 # Launch Tmux.
