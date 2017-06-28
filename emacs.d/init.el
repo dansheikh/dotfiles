@@ -166,11 +166,12 @@
 ;; Enable global company mode
 (use-package company-anaconda)
 (use-package company-irony)
+(use-package company-go)
 (use-package company
   :config
   (setq company-idle-delay 0.1)
   (setq company-minimum-prefix-length 1)
-  (setq company-backends '((company-capf company-files company-elisp company-inf-ruby company-anaconda company-irony company-clang company-cmake company-css company-yasnippet) (company-dabbrev company-dabbrev-code)))
+  (setq company-backends '((company-capf company-files company-elisp company-inf-ruby company-anaconda company-irony company-go company-clang company-cmake company-css company-yasnippet) (company-dabbrev company-dabbrev-code)))
   (add-hook 'after-init-hook 'global-company-mode))
 
 ;; Enable python
@@ -199,6 +200,9 @@
 (use-package rust-mode
   :init
   (setq rust-format-on-save t))
+
+;; Enable go
+(use-package go-mode)
 
 ;; Configure Clojure & ClojureScript
 (use-package paredit)
