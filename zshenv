@@ -1,5 +1,6 @@
 export HISTCONTROL=erasedups
 export LESS="-CQaixr4"
+export DOTFILES=$HOME/Dotfiles
 export CC=$(which clang)
 export CXX=$(which clang++)
 export SDKMAN_DIR="$HOME/.sdkman"

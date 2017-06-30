@@ -5,17 +5,20 @@ set nocompatible
 
 filetype off
 
+if exists('$DOTFILES')
+  source $DOTFILES/vim/autoload/pathogen.vim
+endif
+
 execute pathogen#infect()
 execute pathogen#helptags()
+
 syntax on
 filetype plugin indent on
 
 " Custom behaviour
 let mapleader=","                       " set mapleader key to comma
 set t_Co=256                            " set to 256 colors
-" set term=xterm-256color                 " set to xterm mode
 set background=dark                     " darken background
-colorscheme Tomorrow-Night-Eighties     " use Tomorrow-Night as default colorscheme
 set guioptions-=m                       " remove menu bar
 set guioptions-=T                       " remove tool bar
 set showmode                            " always show what mode we're currently editing in
@@ -39,10 +42,10 @@ set smartcase                           " ignore case if search pattern is all l
 set smarttab                            " insert tabs on the start of a line according to
                                         " shiftwidth, not tabstop
 set scrolloff=4                         " keep 4 lines off the edges of the screen when scrolling
-set virtualedit=all                     " allow the cursor to go in to "invalid" places
+set virtualedit=all                     " allow the cursor to go in to 'invalid' places
 set hlsearch                            " highlight search terms
 set incsearch                           " show search matches as you type
-set gdefault                            " search/replace "globally" (on a line) by default
+set gdefault                            " search/replace 'globally' (on a line) by default
 set fileencoding=utf-8
 let &listchars="tab:\u25B8 ,nbsp:\u00BB,eol:\u00AC"
 set list                                " don't show invisible characters by default,
@@ -53,7 +56,7 @@ set noswapfile                          " disable swapfile
 set fileformat=unix
 set fileformats=unix,dos
 set laststatus=2                        " display airline at all times
-set guifont=Droid\ Sans\ Mono\ Slashed\ for\ Powerline\ 10
+set guifont=Droid\ Sans\ Mono\ Slashed\ for\ Powerline\ 11
 set splitbelow
 set splitright
 set noerrorbells visualbell t_vb=
@@ -63,16 +66,32 @@ if has('autocmd')
     autocmd GUIEnter * set visualbell t_vb=
 endif
 
-"Neovim Python
+" Neomake
+autocmd! BufWritePost, BufEnter * NeoMake
+let g:neomake_open_list = 2
+let g:neomake_ocaml_enabled_markers = ['merlin']
+let g:neomake_javascript_enabled_markers = ['eslint']
+let g:neomake_python_enabled_markers = ['flake8']
+
+" Neovim Python
 let g:python3_host_prog = '/usr/bin/python3'
 let g:python_host_prog = '/usr/bin/python2'
 
+" OCaml
 let s:merlin=substitute(system('opam config var share'),'\n$','','g') . "/merlin/vim"
-set rtp+=s:merlin
+execute "set rtp+=" . s:merlin
+
+if exists('$DOTFILES')
+  let s:ocp_indent=$DOTFILES."/vim/bundle/ocp-indent-vim"
+  let s:base16=$DOTFILES."/vim/bundle/base16-vim"
+  execute "set rtp+=" . s:ocp_indent
+  execute "set rtp+=" . s:base16
+endif
 
 " Airline
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
+let g:airline_theme = 'bubblegum'
 
 " Deoplete
 let g:deoplete#enable_at_startup = 1
@@ -81,19 +100,6 @@ let g:deoplete#enable_at_startup = 1
 nnoremap <leader>f :Unite -direction=dynamicbottom -start-insert -auto-preview file<CR>
 nnoremap <leader>b :Unite -direction=dynamicbottom -quick-match -auto-preview buffer<CR>
 
-" Syntastic
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 0
-let g:syntastic_check_on_open = 0
-let g:syntastic_check_on_wq = 0
-let g:syntastic_javascript_checkers = ['eslint']
-let g:syntastic_python_checkers = ['flake8']
-let g:syntastic_ruby_checkers = ['rubocop']
-
 " Python
 au BufNewFile, BufRead *.py
   \ set tabstop=4
@@ -101,6 +107,13 @@ au BufNewFile, BufRead *.py
   \ set shiftwidth=4
   \ set expandtab
   \ set autoindent
+
+colorscheme base16-dracula     " use Tomorrow-Night as default colorscheme 
+
+if filereadable(expand("~/.vimrc_background"))
+  let base16colorspace=256
+  source ~/.vimrc_background
+endif
 
 " Mappings
 map <C-n> :NERDTreeToggle<CR>

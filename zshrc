@@ -37,6 +37,13 @@ if [ -f ~/.aliases ]; then
   source ~/.aliases
 fi
 
+if [ ! -d ~/.config/base16-shell ]; then
+  git clone https://github.com/chriskempson/base16-shell.git ~/.config/base16-shell
+else
+  BASE16_HOME=$HOME/.config/base16-shell
+  [ -n "$PS1" ] && [ -s $BASE16_HOME/profile_helper.sh ] && eval "$($BASE16_HOME/profile_helper.sh)"
+fi
+
 # Activate NVM
 [ -n "$NVM_HOME" ] && [ -d "$NVM_HOME" ] && [ -s "$NVM_HOME"/nvm.sh ] && . "$NVM_HOME"/nvm.sh
 
