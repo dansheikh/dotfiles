@@ -67,9 +67,7 @@
 		(or (buffer-file-name) load-file-name)))
 
 ;; Set theme
-(load-theme 'monokai t)
-; (require 'color-theme-sanityinc-tomorrow)
-; (color-theme-sanityinc-tomorrow--define-theme eighties)
+(use-package dracula-theme)
 
 ;; Enable line numbers
 (global-linum-mode t)
@@ -260,7 +258,6 @@
 ;; Enable magit
 (use-package magit
   :config
-  ;; (setq magit-last-seen-setup-instructions "1.4.0")
   (global-set-key (kbd "C-x g") 'magit-status)
   (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup))
 
