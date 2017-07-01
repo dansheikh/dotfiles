@@ -10,3 +10,5 @@ emacs.d/irony/
 emacs.d/recentf
 emacs.d/server/
 emacs.d/tramp
+vim/bundle/repos/
+vim/bundle/.cache/

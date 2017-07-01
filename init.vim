@@ -16,7 +16,7 @@ filetype off
 " execute pathogen#helptags()
 
 let s:bundle=$DOTFILES . "/vim/bundle"
-execute "set rtp+=" . s:dein
+execute "set rtp+=" . s:bundle . "/repos/github.com/Shougo/dein.vim"
 
 if dein#load_state(s:bundle)
    call dein#begin(s:bundle)
@@ -37,6 +37,8 @@ if dein#load_state(s:bundle)
    call dein#add('fatih/vim-go')
    call dein#add('chriskempson/base16-vim')
    call dein#add('let-def/ocp-indent-vim')
+   call dein#end()
+   call dein#save_state()
 endif
 
 syntax on
