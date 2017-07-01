@@ -6,10 +6,6 @@
   path = vim/bundle/syntastic
   url = https://github.com/scrooloose/syntastic
   ignore = dirty
-[submodule "vim/bundle/ack"]
-  path = vim/bundle/ack
-  url = https://github.com/mileszs/ack.vim
-  ignore = dirty
 [submodule "vim/bundle/vim-colors-solarized"]
   path = vim/bundle/vim-colors-solarized
   url = https://github.com/altercation/vim-colors-solarized
@@ -66,9 +62,6 @@
 [submodule "vim/bundle/deoplete.nvim"]
 	path = vim/bundle/deoplete.nvim
 	url = https://github.com/Shougo/deoplete.nvim.git
-[submodule "vim/bundle/neocomplete.vim"]
-	path = vim/bundle/neocomplete.vim
-	url = https://github.com/Shougo/neocomplete.vim.git
 [submodule "vim/bundle/jedi-vim"]
 	path = vim/bundle/jedi-vim
 	url = https://github.com/davidhalter/jedi-vim.git

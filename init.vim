@@ -1,16 +1,43 @@
 ﻿scriptencoding utf-8
 set encoding=utf-8
 set termencoding=utf-8
-set nocompatible
+
+if &compatible
+   set nocompatible
+endif   
 
 filetype off
 
-if exists('$DOTFILES')
-  source $DOTFILES/vim/autoload/pathogen.vim
-endif
+" if exists('$DOTFILES')
+"   source $DOTFILES/vim/autoload/pathogen.vim
+" endif
+" 
+" execute pathogen#infect()
+" execute pathogen#helptags()
 
-execute pathogen#infect()
-execute pathogen#helptags()
+let s:bundle=$DOTFILES . "/vim/bundle"
+execute "set rtp+=" . s:dein
+
+if dein#load_state(s:bundle)
+   call dein#begin(s:bundle)
+   call dein#add('Shougo/dein.vim')
+   call dein#add('Shougo/denite.nvim')
+   call dein#add('Shougo/deoplete.nvim')
+   call dein#add('neomake/neomake')
+   call dein#add('tpope/vim-surround')
+   call dein#add('mileszs/ack.vim')
+   call dein#add('vim-airline/vim-airline')
+   call dein#add('vim-airline/vim-airline-themes')
+   call dein#add('vim-scripts/paredit.vim')
+   call dein#add('tpope/vim-fugitive')
+   call dein#add('kien/rainbow_parentheses.vim')
+   call dein#add('guns/vim-clojure-static')
+   call dein#add('tpope/vim-fireplace')
+   call dein#add('fsharp/vim-fsharp')
+   call dein#add('fatih/vim-go')
+   call dein#add('chriskempson/base16-vim')
+   call dein#add('let-def/ocp-indent-vim')
+endif
 
 syntax on
 filetype plugin indent on
