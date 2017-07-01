@@ -8,13 +8,6 @@ endif
 
 filetype off
 
-" if exists('$DOTFILES')
-"   source $DOTFILES/vim/autoload/pathogen.vim
-" endif
-" 
-" execute pathogen#infect()
-" execute pathogen#helptags()
-
 let s:bundle=$DOTFILES . "/vim/bundle"
 execute "set rtp+=" . s:bundle . "/repos/github.com/Shougo/dein.vim"
 
@@ -22,6 +15,7 @@ if dein#load_state(s:bundle)
    call dein#begin(s:bundle)
    call dein#add('Shougo/dein.vim')
    call dein#add('Shougo/denite.nvim')
+   call dein#add('scrooloose/nerdtree')
    call dein#add('Shougo/deoplete.nvim')
    call dein#add('neomake/neomake')
    call dein#add('tpope/vim-surround')
@@ -126,8 +120,8 @@ let g:airline_theme = 'bubblegum'
 let g:deoplete#enable_at_startup = 1
 
 " Unite
-nnoremap <leader>f :Unite -direction=dynamicbottom -start-insert -auto-preview file<CR>
-nnoremap <leader>b :Unite -direction=dynamicbottom -quick-match -auto-preview buffer<CR>
+nnoremap <leader>f :Denite -direction=dynamicbottom -auto-preview file_rec<CR>
+nnoremap <leader>b :Denite -direction=dynamicbottom -auto-preview buffer<CR>
 
 " Python
 au BufNewFile, BufRead *.py
