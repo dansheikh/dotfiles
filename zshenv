@@ -11,6 +11,6 @@ export GOROOT=/usr/local/go
 export GOPATH=$HOME/Workspace/go
 export MONO_GAC_PREFIX=$LINUXBREW
 export XDG_DATA_DIRS="$HOME/.linuxbrew/share:$XDG_DATA_DIRS"
-export PATH=$HOME/.local:$HOME/bin:$ANACONDA3/bin:$LINUXBREW/bin:$GOROOT/bin:$PATH
+export PATH=$HOME/.local:$HOME/bin:$ANACONDA3/bin:$LINUXBREW/bin:$GOROOT/bin:$PATH:$GOPATH/bin
 export MANPATH=$HOME/.linuxbrew/share/man:$MANPATH
 export INFOPATH=$HOME/.linuxbrew/share/info:$INFOPATH
