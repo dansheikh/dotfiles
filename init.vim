@@ -94,6 +94,7 @@ let g:neomake_open_list = 2
 let g:neomake_ocaml_enabled_markers = ['merlin']
 let g:neomake_javascript_enabled_markers = ['eslint']
 let g:neomake_python_enabled_markers = ['flake8']
+let g:neomake_go_enabled_markers = ['go', 'gometalinter']
 
 " Neovim Python:
 let g:python3_host_prog = '/usr/bin/python3'
