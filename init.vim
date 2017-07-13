@@ -93,11 +93,13 @@ endif
 " Neomake:
 autocmd! BufWritePost,BufEnter * Neomake
 let g:neomake_open_list = 2
+let g:neomake_cpp_clang_maker = {'exe': 'clang++', 'args': ['-Wall', '-Wextra', '-Weverything', '-Wpedantic']}
 let g:neomake_ocaml_enabled_makers = ['merlin']
 let g:neomake_javascript_enabled_makers = ['eslint']
 let g:neomake_python_enabled_makers = ['flake8']
 let g:neomake_go_enabled_makers = ['go', 'gometalinter']
 let g:neomake_haskell_enabled_makers = ['hlint']
+let g:neomake_cpp_enabled_makers = ['clang']
 
 " Neovim Python:
 let g:python3_host_prog = '/usr/bin/python3'
