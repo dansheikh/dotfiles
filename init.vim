@@ -18,6 +18,7 @@ if dein#load_state(s:bundle)
    call dein#add('scrooloose/nerdtree')
    call dein#add('Shougo/deoplete.nvim')
    call dein#add('zchee/deoplete-jedi')
+   call dein#add('zchee/deoplete-clang')
    call dein#add('zchee/deoplete-go', {'build': 'make'})
    call dein#add('neomake/neomake')
    call dein#add('tpope/vim-surround')
@@ -33,6 +34,7 @@ if dein#load_state(s:bundle)
    call dein#add('fatih/vim-go')
    call dein#add('chriskempson/base16-vim')
    call dein#add('let-def/ocp-indent-vim')
+   call dein#add('eagletmt/neco-ghc')
    call dein#end()
    call dein#save_state()
 endif
@@ -89,12 +91,13 @@ if has('autocmd')
 endif
 
 " Neomake:
-autocmd! BufWritePost, BufEnter * NeoMake
+autocmd! BufWritePost,BufEnter * Neomake
 let g:neomake_open_list = 2
-let g:neomake_ocaml_enabled_markers = ['merlin']
-let g:neomake_javascript_enabled_markers = ['eslint']
-let g:neomake_python_enabled_markers = ['flake8']
-let g:neomake_go_enabled_markers = ['go', 'gometalinter']
+let g:neomake_ocaml_enabled_makers = ['merlin']
+let g:neomake_javascript_enabled_makers = ['eslint']
+let g:neomake_python_enabled_makers = ['flake8']
+let g:neomake_go_enabled_makers = ['go', 'gometalinter']
+let g:neomake_haskell_enabled_makers = ['hlint']
 
 " Neovim Python:
 let g:python3_host_prog = '/usr/bin/python3'
