@@ -4,4 +4,4 @@
 [core]
 	editor = emacsclient -c
 [alias]
-	hist = log --pretty=format:'%an %ad [%h]: %s%d' --graph --all --date=short
+	hist = log --pretty=format:'%C(bold blue)%an%C(reset) %C(green)%ad%C(reset) [%C(red)%h%C(reset)]: %s%d' --graph --all --date=short
