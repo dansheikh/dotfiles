@@ -1,5 +1,7 @@
 [user]
-	email = dan.sheikh@outlook.com
 	name = Dan Sheikh
+	email = dan.sheikh@outlook.com
 [core]
-	editor = vim
+	editor = emacsclient -c
+[alias]
+	hist = log --pretty=format:'%an %ad [%h]: %s%d' --graph --all --date=short
