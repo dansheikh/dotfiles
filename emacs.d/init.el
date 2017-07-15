@@ -36,6 +36,9 @@
 (setq-default buffer-file-coding-system 'utf-8-unix)
 (prefer-coding-system 'utf-8-unix)
 
+;; Set theme
+(use-package dracula-theme)
+
 ;; Set default font
 (set-face-attribute 'default nil :font "Droid Sans Mono Slashed for Powerline-10")
 
@@ -65,9 +68,6 @@
 ;; Set root directory
 (setq root-dir (file-name-directory
 		(or (buffer-file-name) load-file-name)))
-
-;; Set theme
-(use-package dracula-theme)
 
 ;; Enable line numbers
 (global-linum-mode t)
@@ -165,11 +165,14 @@
 (use-package company-anaconda)
 (use-package company-irony)
 (use-package company-go)
+(use-package company-ghc
+  :config
+  (setq company-ghc-show-info t))
 (use-package company
   :config
   (setq company-idle-delay 0.1)
   (setq company-minimum-prefix-length 1)
-  (setq company-backends '((company-capf company-files company-elisp company-inf-ruby company-anaconda company-irony company-go company-clang company-cmake company-css company-yasnippet) (company-dabbrev company-dabbrev-code)))
+  (setq company-backends '((company-capf company-files company-elisp company-inf-ruby company-anaconda company-irony company-go company-ghc company-clang company-cmake company-css company-yasnippet) (company-dabbrev company-dabbrev-code)))
   (add-hook 'after-init-hook 'global-company-mode))
 
 ;; Enable python
@@ -238,9 +241,21 @@
 
 ;; Enable Haskell
 (use-package haskell-mode
-  :config
+  :init
+  (autoload 'ghc-init "ghc" nil t)
+  (autoload 'ghc-debug "ghc" nil t)
+  (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation))
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+  (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+  :config
+  (define-key haskell-mode-map (kbd "C-`") 'haskell-interactive-bring)
+  (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-or-reload)
+  (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+  (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+  (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+  (define-key haskell-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
+  (define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal))
 
 ;; Enable Groovy
 (use-package groovy-mode)
