@@ -267,6 +267,8 @@
 ;; Enable Haskell
 (use-package haskell-mode
   :init
+  (setq haskell-tags-on-save t)
+  (setq haskell-interactive-mode-eval-mode 'haskell-mode)
   (autoload 'ghc-init "ghc" nil t)
   (autoload 'ghc-debug "ghc" nil t)
   (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
@@ -283,6 +285,7 @@
   (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
   (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
   (define-key haskell-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
+  (define-key haskell-mode-map (kbd "C-c .") 'haskell-mode-jump-to-def-or-tag)
   (define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal))
 
 ;; Enable Groovy
