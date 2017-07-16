@@ -15,6 +15,7 @@ if dein#load_state(s:bundle)
    call dein#begin(s:bundle)
    call dein#add('Shougo/dein.vim')
    call dein#add('Shougo/denite.nvim')
+   call dein#add('Shougo/vimproc.vim', {'build': 'make'})
    call dein#add('scrooloose/nerdtree')
    call dein#add('Shougo/deoplete.nvim')
    call dein#add('zchee/deoplete-jedi')
@@ -34,6 +35,7 @@ if dein#load_state(s:bundle)
    call dein#add('fatih/vim-go')
    call dein#add('chriskempson/base16-vim')
    call dein#add('let-def/ocp-indent-vim')
+   call dein#add('eagletmt/ghcmod-vim')
    call dein#add('eagletmt/neco-ghc')
    call dein#end()
    call dein#save_state()
@@ -149,6 +151,10 @@ endif
 map <C-n> :NERDTreeToggle<CR>
 map <ESC>[C <C-Right>
 map <ESC>[D <C-Left>
+map <silent> tw :GhcModTypeInsert<CR>
+map <silent> ts :GhcModSplitFunCase<CR>
+map <silent> tq :GhcModType<CR>
+map <silent> te :GhcModTypeClear<CR>
 nmap <leader>l :set list!<CR>
 nnoremap <C-h> <C-w><C-h>
 nnoremap <C-j> <C-w><C-j>
