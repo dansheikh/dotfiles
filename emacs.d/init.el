@@ -161,19 +161,29 @@
   :init
   (yas-global-mode t))
 
-;; Enable global company mode
+;; Enable company backends
 (use-package company-anaconda)
 (use-package company-irony)
 (use-package company-go)
 (use-package company-ghc
-  :config
+  :init
   (setq company-ghc-show-info t))
+
+;; Enable company mode
 (use-package company
-  :config
+  :init
   (setq company-idle-delay 0.1)
   (setq company-minimum-prefix-length 1)
-  (setq company-backends '((company-capf company-files company-elisp company-inf-ruby company-anaconda company-irony company-go company-ghc company-clang company-cmake company-css company-yasnippet) (company-dabbrev company-dabbrev-code)))
+  (setq company-backends '((company-dabbrev company-dabbrev-code) (company-files company-keywords company-yasnippet)))
   (add-hook 'after-init-hook 'global-company-mode))
+
+(add-hook 'emacs-lisp-mode-hook
+	  (lambda ()
+	    (add-to-list (make-local-variable 'company-backends) 'company-elisp)))
+
+(add-hook 'cmake-mode-hook
+	  (lambda ()
+	    (add-to-list (make-local-variable 'company-backends) 'company-cmake)))
 
 ;; Enable python
 (use-package anaconda-mode)
@@ -182,20 +192,27 @@
   (setq python-shell-interpreter (substring (shell-command-to-string "which ipython") 0 -1)
         python-shell-interpreter-args "--simple-prompt -i")
   (add-hook 'python-mode-hook 'anaconda-mode)
-  (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
+  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+  (add-hook 'python-mode-hook
+	    (lambda ()
+	      (add-to-list (make-local-variable 'company-backends) 'company-anaconda))))
 
 ;; Enable irony
 (use-package irony
+  :init
+  (add-hook 'irony-mode-hook 'custom-irony-mode-hook)
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+  (add-hook 'c++-mode-hook 'irony-mode)
+  (add-hook 'c-mode-hook 'irony-mode)
+  (add-hook 'irony-mode-hook
+	    (lambda ()
+	      (add-to-list (make-local-variable 'company-backends) 'company-irony)))
   :config
   (defun custom-irony-mode-hook ()
     (define-key irony-mode-map [remap completion-at-point]
       'irony-completion-at-point-async)
     (define-key irony-mode-map [remap complete-symbol]
-      'irony-completion-at-point-async))
-  (add-hook 'irony-mode-hook 'custom-irony-mode-hook)
-  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-  (add-hook 'c++-mode-hook 'irony-mode)
-  (add-hook 'c-mode-hook 'irony-mode))
+      'irony-completion-at-point-async)))
 
 ;; Enable rust
 (use-package rust-mode
@@ -203,7 +220,11 @@
   (setq rust-format-on-save t))
 
 ;; Enable go
-(use-package go-mode)
+(use-package go-mode
+  :init
+  (add-hook 'go-mode-hook
+	    (lambda ()
+	      (add-to-list (make-local-variable 'company-backends) 'company-go))))
 
 ;; Configure Clojure & ClojureScript
 (use-package paredit)
@@ -219,9 +240,13 @@
   (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode))
 
 ;; Enable web development support
-(use-package web-mode)
+(use-package web-mode
+  :init
+  (add-hook 'web-mode-hook
+	    (lambda ()
+	      (add-to-list (make-local-variable 'company-backends) 'company-css))))
 (use-package sass-mode
-  :config
+  :init
   (add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode)))
 
 ;; Enable F#
@@ -248,6 +273,9 @@
   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
   (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+  (add-hook 'haskell-mode-hook
+	    (lambda ()
+	      (add-to-list (make-local-variable 'company-backends) 'company-ghc)))
   :config
   (define-key haskell-mode-map (kbd "C-`") 'haskell-interactive-bring)
   (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-or-reload)
