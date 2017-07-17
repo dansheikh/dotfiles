@@ -97,16 +97,23 @@
         ido-use-virutal-buffers t))
 
 ;; Enable and customize helm
-(use-package helm)
+(use-package helm
+  :config
+  ;; Customize keybindings
+  (global-set-key (kbd "M-]") 'next-buffer)
+  (global-set-key (kbd "M-[") 'previous-buffer)
+  (global-set-key (kbd "M-x") 'helm-M-x)
+  (global-set-key (kbd "C-x C-m") 'helm-M-x)
+  (global-set-key (kbd "C-c C-m") 'helm-M-x)
+  (global-set-key (kbd "C-x b") 'helm-mini)
+  (global-set-key (kbd "C-x C-f") 'helm-find-files))
 
-;; Customize keybindings
-(global-set-key (kbd "M-]") 'next-buffer)
-(global-set-key (kbd "M-[") 'previous-buffer)
-(global-set-key (kbd "M-x") 'helm-M-x)
-(global-set-key (kbd "C-x C-m") 'helm-M-x)
-(global-set-key (kbd "C-c C-m") 'helm-M-x)
-(global-set-key (kbd "C-x b") 'helm-mini)
-(global-set-key (kbd "C-x C-f") 'helm-find-files)
+(use-package helm-ag
+  :init
+  (setq helm-follow-mode-persistent t)
+  (setq helm-ag-base-command "ack --nocolor --nogroup")
+  :config
+  (global-set-key (kbd "M-f") 'helm-do-ag))
 
 ;; Enable global buffer auto-revert
 (global-auto-revert-mode 1)
@@ -180,6 +187,8 @@
 (add-hook 'emacs-lisp-mode-hook
 	  (lambda ()
 	    (add-to-list (make-local-variable 'company-backends) 'company-elisp)))
+(add-hook 'emacs-lisp-mode-hook 'paredit-mode)
+(add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
 
 (add-hook 'cmake-mode-hook
 	  (lambda ()
@@ -269,6 +278,7 @@
   :init
   (setq haskell-tags-on-save t)
   (setq haskell-interactive-mode-eval-mode 'haskell-mode)
+  (setq ghc-report-errors nil)
   (autoload 'ghc-init "ghc" nil t)
   (autoload 'ghc-debug "ghc" nil t)
   (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
