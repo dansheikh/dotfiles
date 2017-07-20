@@ -1,7 +1,7 @@
-alias cp cp -v
-alias rm rm -v
-alias mv mv -v
-alias mkdir mkdir -pv
-alias lh ls -lh
-alias la ls -lart
-alias ll ls -l
+alias ll ls -l $*
+alias la ls -lart $*
+alias lh ls -lh $*
+alias mkdir mkdir -pv $*
+alias mv mv -v $*
+alias rm rm -v $*
+alias cp cp -v $*
