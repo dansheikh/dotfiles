@@ -44,7 +44,7 @@ else
   [ -n "$PS1" ] && [ -s $BASE16_HOME/profile_helper.sh ] && eval "$($BASE16_HOME/profile_helper.sh)"
 fi
 
-# Activate NVM
+# Activate NVM.
 [ -n "$NVM_HOME" ] && [ -d "$NVM_HOME" ] && [ -s "$NVM_HOME"/nvm.sh ] && . "$NVM_HOME"/nvm.sh
 
 eval $(opam config env)
@@ -53,3 +53,6 @@ eval $(opam config env)
 if command -v tmux &> /dev/null; then
   [[ ! $TERM =~ dumb ]] && [[ ! $TERM =~ screen ]] && [[ -z $TMUX ]] && exec tmux -u
 fi
+
+# Source sdkman.
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
