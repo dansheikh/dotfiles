@@ -131,6 +131,10 @@ let g:deoplete#enable_at_startup = 1
 nnoremap <leader>f :Denite -direction=dynamicbottom -auto-preview file_rec<CR>
 nnoremap <leader>b :Denite -direction=dynamicbottom -auto-preview buffer<CR>
 
+" Paredit
+let g:paredit_electric_return = 0
+let g:clojure_align_subforms = 1
+
 " Python:
 au BufNewFile, BufRead *.py
   \ set tabstop=4
