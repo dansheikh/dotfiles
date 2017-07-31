@@ -40,7 +40,8 @@
 (use-package dracula-theme)
 
 ;; Set default font
-(set-face-attribute 'default nil :font "Droid Sans Mono Slashed for Powerline-10")
+(set-frame-font "Droid Sans Mono Slashed for Powerline-10")
+(setq default-frame-alist '((font . "Droid Sans Mono Slashed for Powerline-10")))
 
 ;; Disable startup screen
 (setq inhibit-startup-screen t)

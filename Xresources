@@ -24,6 +24,7 @@ XTerm*scrollTtyOutput: false
 ! Emacs
 emacs*geometry: 120x30
 emacs24*geometry: 120x30
+emacs.font: Droid Sans Mono Slashed for Powerline-10
 
 #define _color0        #000d18
 #define _color8        #000d18
