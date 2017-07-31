@@ -181,7 +181,7 @@
   :init
   (setq company-idle-delay 0.1)
   (setq company-minimum-prefix-length 1)
-  (setq company-backends '(company-dabbrev company-dabbrev-code company-yasnippet company-files company-keywords))
+  (setq company-backends '(company-capf company-dabbrev company-dabbrev-code company-yasnippet company-files company-keywords))
   (add-hook 'after-init-hook 'global-company-mode))
 
 (add-hook 'emacs-lisp-mode-hook
@@ -238,9 +238,14 @@
 ;; Configure Clojure & ClojureScript
 (use-package paredit)
 (use-package rainbow-delimiters)
-(use-package cider)
+(use-package cider
+  :init
+  (add-hook 'cider-mode-hook 'cider-company-enable-fuzzy-completion)
+  (add-hook 'cider-repl-mode-hook 'cider-company-enable-fuzzy-completion))
 (use-package clojure-mode
-  :config
+  :init
+  (add-hook 'clojure-mode-hook 'cider-mode)
+  (add-hook 'clojurescript-mode-hook 'cider-mode)
   (add-hook 'clojure-mode-hook 'paredit-mode)
   (add-hook 'clojurescript-mode-hook 'paredit-mode)
   (add-hook 'cider-repl-mode-hook 'paredit-mode)
