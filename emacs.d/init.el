@@ -241,6 +241,8 @@
 (use-package rainbow-delimiters)
 (use-package cider
   :init
+  (setq cider-show-error-buffer nil)
+  (setq cider-repl-display-help-banner nil)
   (add-hook 'cider-mode-hook 'cider-company-enable-fuzzy-completion)
   (add-hook 'cider-repl-mode-hook 'cider-company-enable-fuzzy-completion))
 (use-package clojure-mode
