@@ -243,6 +243,7 @@
   :init
   (setq cider-show-error-buffer nil)
   (setq cider-repl-display-help-banner nil)
+  (cider-auto-test-mode 1)
   (add-hook 'cider-mode-hook 'cider-company-enable-fuzzy-completion)
   (add-hook 'cider-repl-mode-hook 'cider-company-enable-fuzzy-completion))
 (use-package clojure-mode
