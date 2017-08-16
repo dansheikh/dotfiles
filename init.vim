@@ -33,6 +33,7 @@ if dein#load_state(s:bundle)
    call dein#add('tpope/vim-fireplace')
    call dein#add('fsharp/vim-fsharp')
    call dein#add('fatih/vim-go')
+   call dein#add('dracula/vim')
    call dein#add('chriskempson/base16-vim')
    call dein#add('let-def/ocp-indent-vim')
    call dein#add('eagletmt/ghcmod-vim')
@@ -144,7 +145,7 @@ au BufNewFile, BufRead *.py
   \ set autoindent
 
 " Color Settings:
-colorscheme base16-dracula     " Use base16-dracula as default colorscheme.
+colorscheme dracula     " Use dracula as default color scheme.
 
 if filereadable(expand("~/.vimrc_background"))
   let base16colorspace=256
