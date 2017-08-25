@@ -114,7 +114,8 @@
   (setq helm-follow-mode-persistent t)
   (setq helm-ag-base-command "ack --nocolor --nogroup")
   :config
-  (global-set-key (kbd "M-f") 'helm-do-ag))
+  (global-set-key (kbd "M-f") 'helm-do-ag)
+  (global-set-key (kbd "M-s") 'helm-do-ag-this-file))
 
 ;; Enable global buffer auto-revert
 (global-auto-revert-mode 1)
