@@ -18,9 +18,10 @@ if dein#load_state(s:bundle)
    call dein#add('Shougo/vimproc.vim', {'build': 'make'})
    call dein#add('scrooloose/nerdtree')
    call dein#add('Shougo/deoplete.nvim')
-   call dein#add('zchee/deoplete-jedi')
-   call dein#add('zchee/deoplete-clang')
-   call dein#add('zchee/deoplete-go', {'build': 'make'})
+   call dein#add('zchee/deoplete-jedi', {'depends': ['deoplete.nvim']})
+   call dein#add('zchee/deoplete-clang', {'depends': ['deoplete.nvim']})
+   call dein#add('zchee/deoplete-go', {'build': 'make', 'depends': ['deoplete.nvim']})
+   call dein#add('carlitux/deoplete-ternjs', {'build': 'npm install -g tern', 'depends': ['deoplete.nvim']})
    call dein#add('neomake/neomake')
    call dein#add('tpope/vim-surround')
    call dein#add('mileszs/ack.vim')
@@ -62,7 +63,7 @@ set expandtab                           " Expand tabs by default.
 set shiftwidth=2                        " Set number of spaces to use for autoindenting.
 set shiftround                          " Use multiple of shiftwidth when indenting with '<' and '>'.
 set backspace=indent,eol,start          " Allow backspacing over everything in insert mode.
-set autoindent                          " Always set autoindenting on.
+set autoindent                          " Auto-indenting by default.
 set copyindent                          " Copy the previous indentation on autoindenting.
 set number                              " Always show line numbers.
 set showmatch                           " Show matching parenthesis.
@@ -132,17 +133,15 @@ let g:deoplete#enable_at_startup = 1
 nnoremap <leader>f :Denite -direction=dynamicbottom -auto-preview file_rec<CR>
 nnoremap <leader>b :Denite -direction=dynamicbottom -auto-preview buffer<CR>
 
-" Paredit
+" Paredit:
 let g:paredit_electric_return = 0
 let g:clojure_align_subforms = 1
 
+" JavaScript:
+au BufNewFile,BufRead *.js setlocal tabstop=4 softtabstop=4 shiftwidth=4
+
 " Python:
-au BufNewFile, BufRead *.py
-  \ set tabstop=4
-  \ set softtabstop=4
-  \ set shiftwidth=4
-  \ set expandtab
-  \ set autoindent
+au BufNewFile,BufRead *.py setlocal tabstop=4 softtabstop=4 shiftwidth=4
 
 " Color Settings:
 colorscheme dracula     " Use dracula as default color scheme.

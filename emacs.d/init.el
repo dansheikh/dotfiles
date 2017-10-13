@@ -172,6 +172,7 @@
 
 ;; Enable company backends
 (use-package company-anaconda)
+(use-package company-tern)
 (use-package company-irony)
 (use-package company-go)
 (use-package company-ghc
@@ -264,6 +265,17 @@
   (add-hook 'web-mode-hook
 	    (lambda ()
 	      (add-to-list (make-local-variable 'company-backends) 'company-css))))
+
+(use-package js2-mode
+  :mode (("\\.js\\'" . js2-mode))
+  :interpreter ("node" . js2-mode)
+  :init
+  (add-hook 'js2-mode-hook
+	    (lambda ()
+	      (add-to-list (make-local-variable 'company-backends) 'company-tern)
+          (when (executable-find "eslint")
+            (flycheck-select-checker 'javascript-eslint)))))
+
 (use-package sass-mode
   :init
   (add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode)))
