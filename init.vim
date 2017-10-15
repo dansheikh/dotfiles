@@ -4,7 +4,7 @@ set termencoding=utf-8
 
 if &compatible
    set nocompatible
-endif   
+endif
 
 filetype off
 
@@ -46,12 +46,18 @@ endif
 syntax on
 filetype plugin indent on
 
+" GUI Settings:
+if has('gui_running')
+  set guioptions-=m                       " Remove menu bar.
+  set guioptions-=T                       " Remove tool bar.
+  set guioptions-=r                       " Remove right scroll bar.
+  set guifont=Droid\ Sans\ Mono\ Slashed\ for\ Powerline\ 11
+endif
+
 " Custom Behaviour:
 let mapleader=","                       " Set mapleader key to comma.
 set t_Co=256                            " Set to 256 colors.
 set background=dark                     " Darken background.
-set guioptions-=m                       " Remove menu bar.
-set guioptions-=T                       " Remove tool bar.
 set showmode                            " Always display current mode.
 set nomodeline                          " Disable modeline.
 set wrap                                " Wrap lines.
@@ -84,7 +90,6 @@ set noswapfile                          " Disable swapfile.
 set fileformat=unix
 set fileformats=unix,dos
 set laststatus=2                        " Display airline at all times.
-set guifont=Droid\ Sans\ Mono\ Slashed\ for\ Powerline\ 11
 set splitbelow
 set splitright
 set noerrorbells visualbell t_vb=

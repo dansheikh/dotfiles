@@ -1,60 +1,85 @@
 ﻿scriptencoding utf-8
 set encoding=utf-8
 set termencoding=utf-8
-set nocompatible
+
+if &compatible
+   set nocompatible
+endif
 
 filetype off
 
-execute pathogen#infect()
-execute pathogen#helptags()
+call plug#begin('~/.vim/plugins')
+  Plug 'chriskempson/base16-vim'
+  Plug 'davidhalter/jedi-vim'
+  Plug 'dracula/vim'
+  Plug 'eagletmt/ghcmod-vim'
+  Plug 'eagletmt/neco-ghc'
+  Plug 'fatih/vim-go'
+  Plug 'fsharp/vim-fsharp'
+  Plug 'let-def/ocp-indent-vim'
+  Plug 'mileszs/ack.vim'
+  Plug 'neomake/neomake'
+  Plug 'Shougo/denite.nvim'
+  Plug 'Shougo/neocomplete.vim'
+  Plug 'Shougo/vimproc.vim', {'do': 'make'}
+  Plug 'scrooloose/nerdtree'
+  Plug 'ternjs/tern_for_vim', {'do': 'cd ~/.vim/plugins/tern_for_vim && npm install'}
+  Plug 'tpope/vim-surround'
+  Plug 'tpope/vim-fugitive'
+  Plug 'vim-airline/vim-airline'
+  Plug 'vim-airline/vim-airline-themes'
+  Plug 'vim-scripts/paredit.vim'
+call plug#end()
 
 syntax on
 filetype plugin indent on
 
-" Custom behaviour
-let mapleader=","                       " set mapleader key to comma
-set t_Co=256                            " set to 256 colors
-set term=xterm-256color                 " set to xterm mode
-set background=dark                     " darken background
-colorscheme Tomorrow-Night-Eighties     " use Tomorrow-Night as default colorscheme
-set guioptions-=m                       " remove menu bar
-set guioptions-=T                       " remove tool bar
-set showmode                            " always show what mode we're currently editing in
-set nomodeline                          " disable modeline
-set wrap                                " wrap lines
+" GUI Settings:
+if has('gui_running')
+  set guioptions-=m                       " Remove menu bar.
+  set guioptions-=T                       " Remove tool bar.
+  set guioptions-=r                       " Remove right scroll bar.
+  set guifont=Droid\ Sans\ Mono\ Slashed\ for\ Powerline\ 11
+  set columns=120                         " Window width.
+  set lines=30                            " Window height.
+endif
+
+" Custom Behaviour:
+let mapleader=","                       " Set mapleader key to comma.
+set t_Co=256                            " Set to 256 colors.
+set background=dark                     " Darken background.
+set showmode                            " Always display current mode.
+set nomodeline                          " Disable modeline.
+set wrap                                " Wrap lines.
 set linebreak
 set nolist
-set tabstop=2                           " a tab is two spaces
-set softtabstop=2                       " when hitting <BS>, pretend like a tab is removed, even if spaces
-set expandtab                           " expand tabs by default (overloadable per file type later)
-set shiftwidth=2                        " number of spaces to use for autoindenting
-set shiftround                          " use multiple of shiftwidth when indenting with '<' and '>'
-set backspace=indent,eol,start          " allow backspacing over everything in insert mode
-set autoindent                          " always set autoindenting on
-set copyindent                          " copy the previous indentation on autoindenting
-set number                              " always show line numbers
-set showmatch                           " set show matching parenthesis
-set ignorecase                          " ignore case when searching
-set smartcase                           " ignore case if search pattern is all lowercase,
-                                        " case-sensitive otherwise
-set smarttab                            " insert tabs on the start of a line according to
-                                        " shiftwidth, not tabstop
-set scrolloff=4                         " keep 4 lines off the edges of the screen when scrolling
-set virtualedit=all                     " allow the cursor to go in to "invalid" places
-set hlsearch                            " highlight search terms
-set incsearch                           " show search matches as you type
-set gdefault                            " search/replace "globally" (on a line) by default
+set tabstop=2                           " Set tab to two spaces.
+set softtabstop=2                       " On <BS> key press, even in the event of spaces, pretend as if a tab is removed.
+set expandtab                           " Expand tabs by default.
+set shiftwidth=2                        " Set number of spaces to use for autoindenting.
+set shiftround                          " Use multiple of shiftwidth when indenting with '<' and '>'.
+set backspace=indent,eol,start          " Allow backspacing over everything in insert mode.
+set autoindent                          " Auto-indenting by default.
+set copyindent                          " Copy the previous indentation on autoindenting.
+set number                              " Always show line numbers.
+set showmatch                           " Show matching parenthesis.
+set ignorecase                          " Ignore case when searching.
+set smartcase                           " Ignore case if search pattern is all lowercase, case-sensitive otherwise.
+set smarttab                            " Insert tabs on the start of a line according to shiftwidth, not tabstop.
+set scrolloff=4                         " Keep 4 lines off the edges of the screen when scrolling.
+set virtualedit=all                     " Allow the cursor to go in to 'invalid' places.
+set hlsearch                            " Highlight search terms.
+set incsearch                           " Show search matches as typed.
+set gdefault                            " Search/replace 'globally' (on a line) by default.
 set fileencoding=utf-8
 let &listchars="tab:\u25B8 ,nbsp:\u00BB,eol:\u00AC"
-set list                                " don't show invisible characters by default,
-                                        " but it is enabled for some file types (see later)
-set mouse=a                             " enable using the mouse if terminal emulator supports it (xterm does)
-set nobackup                            " disable auto-backup
-set noswapfile                          " disable swapfile
+set list                                " Disable invisible characters by default, enable on-demand.
+set mouse=a                             " Enable mouse if terminal emulator support is available.
+set nobackup                            " Disable auto-backup.
+set noswapfile                          " Disable swapfile.
 set fileformat=unix
 set fileformats=unix,dos
-set laststatus=2                        " display airline at all times
-set guifont=Droid\ Sans\ Mono\ Slashed\ for\ Powerline\ 10
+set laststatus=2                        " Display airline at all times.
 set splitbelow
 set splitright
 set noerrorbells visualbell t_vb=
@@ -64,48 +89,72 @@ if has('autocmd')
     autocmd GUIEnter * set visualbell t_vb=
 endif
 
+" Neomake:
+autocmd! BufWritePost,BufEnter * Neomake
+let g:neomake_open_list = 2
+let g:neomake_cpp_clang_maker = {'exe': 'clang++', 'args': ['-Wall', '-Wextra', '-Weverything', '-Wpedantic']}
+let g:neomake_ocaml_enabled_makers = ['merlin']
+let g:neomake_javascript_enabled_makers = ['eslint']
+let g:neomake_python_enabled_makers = ['flake8']
+let g:neomake_go_enabled_makers = ['go', 'gometalinter']
+let g:neomake_haskell_enabled_makers = ['hlint']
+let g:neomake_cpp_enabled_makers = ['clang']
+
+" Neovim Python:
+let g:python3_host_prog = '/usr/bin/python3'
+let g:python_host_prog = '/usr/bin/python2'
+
+" OCaml:
 let s:merlin=substitute(system('opam config var share'),'\n$','','g') . "/merlin/vim"
 execute "set rtp+=" . s:merlin
 
-" Airline
+" Runtime Path Configurations:
+if exists('$DOTFILES')
+  let s:ocp_indent=$DOTFILES."/vim/bundle/ocp-indent-vim"
+  let s:base16=$DOTFILES."/vim/bundle/base16-vim"
+  execute "set rtp+=" . s:ocp_indent
+  execute "set rtp+=" . s:base16
+endif
+
+" Airline:
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
+let g:airline_theme = 'bubblegum'
 
-" NeoComplete
-let g:acp_enableAtStartup = 0 " Disable AutoComplPop.
-let g:neocomplete#enable_at_startup = 1 " Use neocomplete.
-let g:neocomplete#enable_smart_case = 1 " Use smartcase.
-let g:neocomplete#sources#syntax#min_keyword_length = 3 " Set minimum syntax keyword length.
+" Neocomplete:
+let g:neocomplete#enable_at_startup = 1
+let g:neocomplete#enable_smart_case = 1
 
-" Unite
-nnoremap <leader>f :Unite -direction=dynamicbottom -start-insert -auto-preview file<CR>
-nnoremap <leader>b :Unite -direction=dynamicbottom -quick-match -auto-preview buffer<CR>
+" Denite:
+nnoremap <leader>f :Denite -direction=dynamicbottom -auto-preview file_rec<CR>
+nnoremap <leader>b :Denite -direction=dynamicbottom -auto-preview buffer<CR>
 
-" Syntastic
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
+" Paredit:
+let g:paredit_electric_return = 0
+let g:clojure_align_subforms = 1
 
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 0
-let g:syntastic_check_on_open = 0
-let g:syntastic_check_on_wq = 0
-let g:syntastic_javascript_checkers = ['eslint']
-let g:syntastic_python_checkers = ['flake8']
-let g:syntastic_ruby_checkers = ['rubocop']
+" JavaScript:
+au BufNewFile,BufRead *.js setlocal tabstop=4 softtabstop=4 shiftwidth=4
 
-" Python
-au BufNewFile, BufRead *.py
-  \ set tabstop=4
-  \ set softtabstop=4
-  \ set shiftwidth=4
-  \ set expandtab
-  \ set autoindent
+" Python:
+au BufNewFile,BufRead *.py setlocal tabstop=4 softtabstop=4 shiftwidth=4
 
-" Mappings
+" Color Settings:
+colorscheme dracula     " Use dracula as default color scheme.
+
+if filereadable(expand("~/.vimrc_background"))
+  let base16colorspace=256
+  source ~/.vimrc_background
+endif
+
+" Mappings:
 map <C-n> :NERDTreeToggle<CR>
 map <ESC>[C <C-Right>
 map <ESC>[D <C-Left>
+map <silent> tw :GhcModTypeInsert<CR>
+map <silent> ts :GhcModSplitFunCase<CR>
+map <silent> tq :GhcModType<CR>
+map <silent> te :GhcModTypeClear<CR>
 nmap <leader>l :set list!<CR>
 nnoremap <C-h> <C-w><C-h>
 nnoremap <C-j> <C-w><C-j>
