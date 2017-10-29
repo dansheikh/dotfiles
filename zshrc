@@ -47,7 +47,10 @@ fi
 # Activate NVM.
 [ -n "$NVM_HOME" ] && [ -d "$NVM_HOME" ] && [ -s "$NVM_HOME"/nvm.sh ] && . "$NVM_HOME"/nvm.sh
 
-eval $(opam config env)
+# Configure OPAM.
+if command -v opam &> /dev/null; then
+   eval $(opam config env)
+fi
 
 # Launch Tmux.
 if command -v tmux &> /dev/null; then
