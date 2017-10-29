@@ -3,8 +3,8 @@ Description=Emacs: the extensible, self-documenting text editor
 
 [Service]
 Type=forking
-ExecStart=/usr/local/bin/emacs --daemon --user=$USER
-ExecStop=/usr/local/bin/emacsclient --eval "(progn (setq kill-emacs-hook 'nil) (kill-emacs))"
+ExecStart=/usr/bin/emacs --daemon --user=$USER
+ExecStop=/usr/bin/emacsclient --eval "(progn (setq kill-emacs-hook 'nil) (kill-emacs))"
 Environment=SSH_AUTH_SOCK=%t/keyring/ssh
 Restart=always
 TimeoutStartSec=0
