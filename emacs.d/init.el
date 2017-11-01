@@ -5,7 +5,8 @@
  package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
                     ("org" . "http://orgmode.org/elpa/")
                     ("melpa" . "http://melpa.org/packages/")
-                    ("melpa-stable" . "http://stable.melpa.org/packages/"))
+                    ("melpa-stable" . "http://stable.melpa.org/packages/")
+		    ("emacs-pe" . "http://emacs-pe.github.io/packages/"))
  package-archive-priorities '(("melpa-stable" . 1)))
 
 (package-initialize)
@@ -284,16 +285,17 @@
 (use-package fsharp-mode)
 
 ;; Add opam emacs directory to the load-path
-(setq opam-share (substring (shell-command-to-string "opam config var share 2> /dev/null") 0 -1))
-(add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
-(load (concat opam-share "/emacs/site-lisp/tuareg-site-file"))
-
-;; Configure UTop
-(setq utop-command "opam config exec -- utop -emacs")
-
-;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit, but keep this line
-(require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
-;; ## end of OPAM user-setup addition for emacs / base ## keep this line
+(if (executable-find "opam")
+    (progn
+      (setq opam-share (substring (shell-command-to-string "opam config var share 2> /dev/null") 0 -1))
+      (add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
+      (load (concat opam-share "/emacs/site-lisp/tuareg-site-file"))
+      ;; Configure UTop
+      (setq utop-command "opam config exec -- utop -emacs")
+      ;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit, but keep this line
+      (require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
+      ;; ## end of OPAM user-setup addition for emacs / base ## keep this line
+      ))
 
 ;; Enable Haskell
 (use-package haskell-mode
@@ -319,6 +321,14 @@
   (define-key haskell-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
   (define-key haskell-mode-map (kbd "C-c .") 'haskell-mode-jump-to-def-or-tag)
   (define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal))
+
+;; Enable PureScript
+(use-package purescript-mode
+  :pin emacs-pe
+  :init
+  (add-hook 'purescript-mode-hook #'haskell-indentation-mode))
+(use-package psci
+  :pin emacs-pe)
 
 ;; Enable Groovy
 (use-package groovy-mode)
