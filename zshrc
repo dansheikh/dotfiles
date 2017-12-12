@@ -59,6 +59,3 @@ fi
 
 # Source sdkman.
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-
-# Set systemd environment.
-[ -x "$(command -v systemctl)" ] && systemctl --user import-environment PATH
