@@ -5,9 +5,10 @@ SAVEHIST=1000
 if [[ $TERM =~ (screen*|rxvt*|xterm*) ]]; then
   autoload -Uz compinit && compinit
 
+  setopt EXTENDED_GLOB
   setopt INTERACTIVE_COMMENTS
-  setopt PROMPT_SUBST
   setopt NO_BEEP
+  setopt PROMPT_SUBST
 
   PS1="%n@%m:%~%# "
 
