@@ -111,12 +111,14 @@ let g:neomake_haskell_enabled_makers = ['hlint']
 let g:neomake_cpp_enabled_makers = ['clang']
 
 " Neovim Python:
-let g:python3_host_prog = '/usr/bin/python3'
-let g:python_host_prog = '/usr/bin/python2'
+let g:python3_host_prog = '/usr/local/bin/python3'
+let g:python_host_prog = '/usr/bin/python'
 
 " OCaml:
-let s:merlin=substitute(system('opam config var share'),'\n$','','g') . "/merlin/vim"
-execute "set rtp+=" . s:merlin
+if executable("opam")
+  let s:merlin=substitute(system('opam config var share'),'\n$','','g') . "/merlin/vim"
+  execute "set rtp+=" . s:merlin
+endif
 
 " Runtime Path Configurations:
 if exists('$DOTFILES')
