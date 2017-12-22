@@ -1,7 +1,7 @@
-alias ll='ls -l --color=auto'
-alias ls='ls --color=auto'
-alias la='ls -lart --color=auto'
-alias lh='ls -lh --color=auto'
+alias ll='ls -lG'
+alias ls='ls -G'
+alias la='ls -lartG'
+alias lh='ls -lhG'
 
 alias mkdir='mkdir -pv'
 alias mv='mv -v'
