@@ -29,7 +29,7 @@
   (setq multi-term-program "/usr/bin/zsh"))
 
 ;; Set frame size
-(setq default-frame-alist '((width . 150) (height . 30)))
+(setq default-frame-alist '((width . 240) (height . 60)))
 
 ;; Set coding preference
 (set-default-coding-systems 'utf-8-unix)

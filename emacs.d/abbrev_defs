@@ -39,9 +39,15 @@
 
 (define-abbrev-table 'anaconda-mode-view-mode-abbrev-table '())
 
+(define-abbrev-table 'apropos-mode-abbrev-table '())
+
 (define-abbrev-table 'awk-mode-abbrev-table
   '(
    ))
+
+(define-abbrev-table 'bookmark-bmenu-mode-abbrev-table '())
+
+(define-abbrev-table 'bookmark-edit-annotation-mode-abbrev-table '())
 
 (define-abbrev-table 'c++-mode-abbrev-table
   '(
@@ -54,6 +60,8 @@
 (define-abbrev-table 'calendar-mode-abbrev-table '())
 
 (define-abbrev-table 'cider-browse-ns-mode-abbrev-table '())
+
+(define-abbrev-table 'cider-clojure-interaction-mode-abbrev-table '())
 
 (define-abbrev-table 'cider-connections-buffer-mode-abbrev-table '())
 
@@ -86,6 +94,8 @@
 (define-abbrev-table 'debugger-mode-abbrev-table '())
 
 (define-abbrev-table 'diff-mode-abbrev-table '())
+
+(define-abbrev-table 'edebug-eval-mode-abbrev-table '())
 
 (define-abbrev-table 'edit-abbrevs-mode-abbrev-table '())
 
@@ -137,9 +147,7 @@
 
 (define-abbrev-table 'grep-mode-abbrev-table '())
 
-(define-abbrev-table 'groovy-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'groovy-mode-abbrev-table '())
 
 (define-abbrev-table 'gud-mode-abbrev-table '())
 
@@ -147,7 +155,17 @@
 
 (define-abbrev-table 'haskell-cabal-mode-abbrev-table '())
 
+(define-abbrev-table 'haskell-compilation-mode-abbrev-table '())
+
+(define-abbrev-table 'haskell-debug-mode-abbrev-table '())
+
+(define-abbrev-table 'haskell-error-mode-abbrev-table '())
+
+(define-abbrev-table 'haskell-interactive-mode-abbrev-table '())
+
 (define-abbrev-table 'haskell-mode-abbrev-table '())
+
+(define-abbrev-table 'haskell-presentation-mode-abbrev-table '())
 
 (define-abbrev-table 'haskell-yesod-parse-routes-mode-abbrev-table '())
 
@@ -165,7 +183,13 @@
 
 (define-abbrev-table 'idl-mode-abbrev-table '())
 
+(define-abbrev-table 'image-dired-display-image-mode-abbrev-table '())
+
+(define-abbrev-table 'image-dired-thumbnail-mode-abbrev-table '())
+
 (define-abbrev-table 'inferior-fsharp-mode-abbrev-table '())
+
+(define-abbrev-table 'inferior-haskell-mode-abbrev-table '())
 
 (define-abbrev-table 'inferior-julia-mode-abbrev-table '())
 
@@ -178,6 +202,10 @@
 (define-abbrev-table 'js-jsx-mode-abbrev-table '())
 
 (define-abbrev-table 'js-mode-abbrev-table '())
+
+(define-abbrev-table 'js2-jsx-mode-abbrev-table '())
+
+(define-abbrev-table 'js2-mode-abbrev-table '())
 
 (define-abbrev-table 'julia-mode-abbrev-table '())
 
@@ -214,6 +242,12 @@
 (define-abbrev-table 'process-menu-mode-abbrev-table '())
 
 (define-abbrev-table 'prog-mode-abbrev-table '())
+
+(define-abbrev-table 'psci-mode-abbrev-table '())
+
+(define-abbrev-table 'psci-script-mode-abbrev-table '())
+
+(define-abbrev-table 'purescript-mode-abbrev-table '())
 
 (define-abbrev-table 'python-mode-abbrev-table '())
 
