@@ -29,7 +29,7 @@
   (setq multi-term-program "/usr/bin/zsh"))
 
 ;; Set frame size
-(setq default-frame-alist '((width . 240) (height . 60)))
+(setq default-frame-alist '((width . 160) (height . 40)))
 
 ;; Set coding preference
 (set-default-coding-systems 'utf-8-unix)
@@ -41,8 +41,8 @@
 (use-package dracula-theme)
 
 ;; Set default font
-(add-to-list 'default-frame-alist '(font . "Droid Sans Mono Slashed for Powerline-10"))
-(set-frame-font "Droid Sans Mono Slashed for Powerline-10")
+(add-to-list 'default-frame-alist '(font . "Droid Sans Mono Slashed for Powerline-12"))
+(set-frame-font "Droid Sans Mono Slashed for Powerline-12")
 
 ;; Disable startup screen
 (setq inhibit-startup-screen t)
