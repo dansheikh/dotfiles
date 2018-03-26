@@ -39,9 +39,9 @@ if has('gui_running')
   set guioptions-=m                       " Remove menu bar.
   set guioptions-=T                       " Remove tool bar.
   set guioptions-=r                       " Remove right scroll bar.
-  set guifont=Droid\ Sans\ Mono\ Slashed\ for\ Powerline\ 11
-  set columns=120                         " Window width.
-  set lines=30                            " Window height.
+  set guifont=Droid\ Sans\ Mono\ Slashed\ for\ Powerline:h12
+  set columns=160                         " Window width.
+  set lines=40                            " Window height.
 endif
 
 " Custom Behaviour:
