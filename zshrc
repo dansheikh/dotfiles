@@ -13,7 +13,7 @@ if [[ $TERM =~ (screen*|rxvt*|xterm*) ]]; then
   PS1="%n@%m:%~%# "
 
   # Bindings.
-  bindkey -e
+  bindkey -v
   bindkey "^[[1~" beginning-of-line
   bindkey "^[[3~" delete-char
   bindkey "^[[4~" end-of-line
