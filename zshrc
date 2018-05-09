@@ -14,6 +14,10 @@ if [[ $TERM =~ (screen*|rxvt*|xterm*) ]]; then
 
   # Bindings.
   bindkey -v
+  bindkey -M viins "^R" history-incremental-pattern-search-backward
+  bindkey -M vicmd "/" history-incremental-pattern-search-backward
+  bindkey -M viins "^F" history-incremental-pattern-search-forward
+  bindkey -M vicmd "?" history-incremental-pattern-search-forward
   bindkey "^[[1~" beginning-of-line
   bindkey "^[[3~" delete-char
   bindkey "^[[4~" end-of-line
