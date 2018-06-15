@@ -26,7 +26,7 @@
 ;; Configure Multi-term
 (use-package multi-term
   :init
-  (setq multi-term-program "/usr/bin/zsh"))
+  (setq multi-term-program "/bin/zsh"))
 
 ;; Set frame size
 (setq default-frame-alist '((width . 160) (height . 40)))

@@ -1,0 +1,19 @@
+precmd() {
+  vcs_info
+}
+
+zstyle ':vcs_info:git*' formats '%b'
+
+setopt PROMPT_SUBST
+
+BRANCH_MARK=$'\ue0a0'
+TIME_MARK=$'\u23f3'
+
+scm_branch() {
+  if [ -n "${vcs_info_msg_0_}" ]; then
+    echo -e "${BRANCH_MARK} ${vcs_info_msg_0_}"
+  fi
+}
+
+PROMPT='%n@%m:%~%# '
+RPROMPT='$(scm_branch) ${TIME_MARK}  %*'

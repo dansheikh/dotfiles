@@ -3,14 +3,16 @@ HISTSIZE=1000
 SAVEHIST=1000
 
 if [[ $TERM =~ (screen*|rxvt*|xterm*) ]]; then
-  autoload -Uz compinit && compinit
+  autoload -Uz compinit && compinit 
+  autoload -Uz vcs_info
 
   setopt EXTENDED_GLOB
   setopt INTERACTIVE_COMMENTS
   setopt NO_BEEP
-  setopt PROMPT_SUBST
 
-  PS1="%n@%m:%~%# "
+  if [ -f $HOME/.zsh_theme ]; then
+     . $HOME/.zsh_theme
+  fi
 
   # Bindings.
   bindkey -v
@@ -38,19 +40,19 @@ if [[ $TERM =~ (screen*|rxvt*|xterm*) ]]; then
   zstyle ':completion:*' verbose yes
 fi
 
-if [ -f ~/.aliases ]; then
-  source ~/.aliases
+if [ -f $HOME/.aliases ]; then
+  . $HOME/.aliases
 fi
 
-if [ ! -d ~/.config/base16-shell ]; then
-  git clone https://github.com/chriskempson/base16-shell.git ~/.config/base16-shell
+if [ ! -d $HOME/.config/base16-shell ]; then
+  git clone https://github.com/chriskempson/base16-shell.git $HOME/.config/base16-shell
 else
   BASE16_HOME=$HOME/.config/base16-shell
-  [ -n "$PS1" ] && [ -s $BASE16_HOME/profile_helper.sh ] && eval "$($BASE16_HOME/profile_helper.sh)"
+  [ -n $PROMPT ] && [ -s $BASE16_HOME/profile_helper.sh ] && eval "$($BASE16_HOME/profile_helper.sh)"
 fi
 
 # Activate NVM.
-[ -n "$NVM_HOME" ] && [ -d "$NVM_HOME" ] && [ -s "$NVM_HOME"/nvm.sh ] && . "$NVM_HOME"/nvm.sh
+[ -n $NVM_HOME ] && [ -d $NVM_HOME ] && [ -s $NVM_HOME/nvm.sh ] && . $NVM_HOME/nvm.sh
 
 # Configure OPAM.
 if command -v opam &> /dev/null; then
@@ -59,8 +61,8 @@ fi
 
 # Launch Tmux.
 if command -v tmux &> /dev/null; then
-  [[ ! $TERM =~ dumb ]] && [[ ! $TERM =~ screen ]] && [[ -z $TMUX ]] && exec tmux -u
+  [[ ! $TERM =~ dumb ]] && [[ ! $TERM =~ screen ]] && [[ -z $EMACS ]] && [[ -z $TMUX ]] && exec tmux -u
 fi
 
 # Source sdkman.
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+[[ -s $HOME/.sdkman/bin/sdkman-init.sh ]] && source $HOME/.sdkman/bin/sdkman-init.sh
