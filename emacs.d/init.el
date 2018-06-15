@@ -260,6 +260,16 @@
   (add-hook 'clojurescript-mode-hook 'rainbow-delimiters-mode)
   (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode))
 
+;; Enable Elixir
+(use-package elixir-mode
+  :init
+  (add-hook 'elixir-mode-hook
+            (lambda ()
+              (add-hook 'before-save-hook 'elixir-format nil t))))
+(use-package alchemist
+  :init
+  (setq alchemist-key-command-prefix (kbd "C-c ,")))
+
 ;; Enable web development support
 (use-package web-mode
   :init
