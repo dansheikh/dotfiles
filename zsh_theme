@@ -7,7 +7,8 @@ zstyle ':vcs_info:git*' formats '%b'
 setopt PROMPT_SUBST
 
 BRANCH_MARK=$'\ue0a0'
-TIME_MARK=$'\u23f3'
+ARROW_PROMPT=$'\u2192'
+STATUS="%(?:%{$fg[green]%}$ARROW_PROMPT:%{$fg[red]%}$ARROW_PROMPT)"
 
 scm_branch() {
   if [ -n "${vcs_info_msg_0_}" ]; then
@@ -15,5 +16,5 @@ scm_branch() {
   fi
 }
 
-PROMPT='%n@%m:%~%# '
-RPROMPT='$(scm_branch) ${TIME_MARK}  %*'
+PROMPT='%n@%m:%{$fg[cyan]%}%~%{$reset_color%}%# ${STATUS} %{$reset_color%}'
+RPROMPT='$(scm_branch) [%*]'

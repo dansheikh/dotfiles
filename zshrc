@@ -4,6 +4,7 @@ SAVEHIST=1000
 
 if [[ $TERM =~ (screen*|rxvt*|xterm*) ]]; then
   autoload -Uz compinit && compinit 
+  autoload -Uz colors && colors
   autoload -Uz vcs_info
 
   setopt EXTENDED_GLOB
