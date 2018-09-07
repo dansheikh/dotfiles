@@ -287,6 +287,8 @@
           (when (executable-find "eslint")
             (flycheck-select-checker 'javascript-eslint)))))
 
+(use-package json-mode)
+
 (use-package sass-mode
   :init
   (add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode)))
