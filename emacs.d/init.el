@@ -136,7 +136,7 @@
       (interactive)
       (evil-delete (point-at-bol) (point)))))
 
-;; Enable powerline
+;; Enable Powerline
 (use-package powerline)
 (use-package airline-themes
   :init
@@ -152,7 +152,7 @@
   :config
   (load-theme 'airline-molokai))
 
-;; Enable flycheck and override defaults
+;; Enable Flycheck and override defaults
 (use-package flycheck
   :config
   (setq flycheck-check-syntax-automatically '(save idle-change mode-enable)
@@ -166,12 +166,12 @@
 
 (use-package flycheck-pos-tip)
 
-;; Enable yasnippet
+;; Enable YASnippet
 (use-package yasnippet
   :init
   (yas-global-mode t))
 
-;; Enable company backends
+;; Enable Company backends
 (use-package company-anaconda)
 (use-package company-tern)
 (use-package company-irony)
@@ -180,7 +180,7 @@
   :init
   (setq company-ghc-show-info t))
 
-;; Enable company mode
+;; Enable Company mode
 (use-package company
   :init
   (setq company-idle-delay 0.1)
@@ -198,7 +198,7 @@
 	  (lambda ()
 	    (add-to-list (make-local-variable 'company-backends) 'company-cmake)))
 
-;; Enable python
+;; Enable Python
 (use-package anaconda-mode)
 (use-package python
   :config
@@ -210,7 +210,7 @@
 	    (lambda ()
 	      (add-to-list (make-local-variable 'company-backends) 'company-anaconda))))
 
-;; Enable irony
+;; Enable Irony
 (use-package irony
   :init
   (add-hook 'irony-mode-hook 'custom-irony-mode-hook)
@@ -227,12 +227,12 @@
     (define-key irony-mode-map [remap complete-symbol]
       'irony-completion-at-point-async)))
 
-;; Enable rust
+;; Enable Rust
 (use-package rust-mode
   :init
   (setq rust-format-on-save t))
 
-;; Enable go
+;; Enable Go
 (use-package go-mode
   :init
   (add-hook 'go-mode-hook
@@ -355,7 +355,7 @@
 ;; Enable Statistics
 (use-package ess)
 
-;; Enable magit
+;; Enable Magit
 (use-package magit
   :config
   (global-set-key (kbd "C-x g") 'magit-status)
