@@ -29,7 +29,7 @@
   (setq multi-term-program "/bin/zsh"))
 
 ;; Set frame size
-(setq default-frame-alist '((width . 160) (height . 40)))
+(setq default-frame-alist '((width . 200) (height . 50)))
 
 ;; Set coding preference
 (set-default-coding-systems 'utf-8-unix)
@@ -135,6 +135,12 @@
     (lambda ()
       (interactive)
       (evil-delete (point-at-bol) (point)))))
+
+;; Enable Evil Surround
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
 
 ;; Enable Powerline
 (use-package powerline)
