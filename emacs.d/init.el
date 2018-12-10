@@ -1,3 +1,11 @@
+;;; init.el -- Emacs configuration file
+
+;; Author: Dan Sheikh
+
+;;; Commentary:
+
+;; Custom Emacs configuration.
+
 ;;; Code:
 
 (require 'package)
@@ -90,6 +98,25 @@
 
 (setq c-basic-offset 2)
 (setq sh-basic-offset 2)
+
+;; Globally prettify symbols
+(global-prettify-symbols-mode 1)
+(setq prettify-symbols-alist '(("lambda" . 955)
+                               ("->" . 8594)
+                               ("->>" . 21A0)
+                               ("=>" . 8658)
+                               ("map" . 8614)
+                               ("/=" . 2260)
+                               ("==" . 2261)
+                               ("<=" . 2264)
+                               (">=" . 2265)
+                               ("=<<" . 226A)
+                               (">>=" . 226B)
+                               ("<=<" . 21A2)
+                               (">=>" . 21A3)
+                               ("&&" . 2227)
+                               ("||" . 2228)
+                               ("not" . 00AC)))
 
 ;; Enable Ido mode
 (use-package ido
