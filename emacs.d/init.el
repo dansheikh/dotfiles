@@ -52,6 +52,35 @@
 (add-to-list 'default-frame-alist '(font . "Fira Code Retina-12"))
 (set-frame-font "Fira Code Retina-12")
 
+;; Set character table
+(let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
+               (35 . ".\\(?:###\\|##\\|_(\\|[#(?[_{]\\)")
+               (36 . ".\\(?:>\\)")
+               (37 . ".\\(?:\\(?:%%\\)\\|%\\)")
+               (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+               (42 . ".\\(?:\\(?:\\*\\*/\\)\\|\\(?:\\*[*/]\\)\\|[*/>]\\)")
+               (43 . ".\\(?:\\(?:\\+\\+\\)\\|[+>]\\)")
+               (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+               (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=-]\\)")
+               (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+               (48 . ".\\(?:x[a-zA-Z]\\)")
+               (58 . ".\\(?:::\\|[:=]\\)")
+               (59 . ".\\(?:;;\\|;\\)")
+               (60 . ".\\(?:\\(?:!--\\)\\|\\(?:~~\\|->\\|\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[*$+~/<=>|-]\\)")
+               (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+               (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+               (63 . ".\\(?:\\(\\?\\?\\)\\|[:=?]\\)")
+               (91 . ".\\(?:]\\)")
+               (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+               (94 . ".\\(?:=\\)")
+               (119 . ".\\(?:ww\\)")
+               (123 . ".\\(?:-\\)")
+               (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+               (126 . ".\\(?:~>\\|~~\\|[>=@~-]\\)"))))
+  (dolist (char-regexp alist)
+    (set-char-table-range composition-function-table (car char-regexp)
+                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
+
 ;; Disable startup screen
 (setq inhibit-startup-screen t)
 
@@ -103,24 +132,10 @@
 (global-prettify-symbols-mode 1)
 (defun configure-prettify-symbols-alist ()
   "Set prettify symbols alist."
-  (setq prettify-symbols-alist '(("lambda" . ?λ)
-                                 ("->" . ?→)
-                                 ("->>" . (?→ (Br . Bl) ?→))
-                                 ("=>" . ?⇒)
-                                 ("map" . ?↦)
-                                 ("/=" . ?≠)
-                                 ("!=" . ?≠)
-                                 ("==" . ?≡)
-                                 ("<=" . ?≤)
-                                 (">=" . ?≥)
-                                 ("=<<" . (?= (Br . Bl) ?≪))
-                                 (">>=" . (?≫ (Br . Bl) ?=))
-                                 ("<=<" . ?↢)
-                                 (">=>" . ?↣)
+  (setq prettify-symbols-alist '(("map" . ?↦)
                                  ("&&" . ?∧)
                                  ("||" . ?∨)
                                  ("not" . ?¬))))
-
 
 ;; Enable Ido mode
 (use-package ido
@@ -284,12 +299,10 @@
   (setq cider-show-error-buffer nil)
   (setq cider-repl-display-help-banner nil)
   (cider-auto-test-mode 1)
-  (add-hook 'cider-mode-hook 'configure-prettify-symbols-alist)
   (add-hook 'cider-mode-hook 'cider-company-enable-fuzzy-completion)
   (add-hook 'cider-repl-mode-hook 'cider-company-enable-fuzzy-completion))
 (use-package clojure-mode
   :init
-  (add-hook 'clojure-mode-hook 'configure-prettify-symbols-alist)
   (add-hook 'clojure-mode-hook 'cider-mode)
   (add-hook 'clojurescript-mode-hook 'cider-mode)
   (add-hook 'clojure-mode-hook 'paredit-mode)
@@ -356,6 +369,7 @@
   (setq ghc-report-errors nil)
   (autoload 'ghc-init "ghc" nil t)
   (autoload 'ghc-debug "ghc" nil t)
+  (add-hook 'haskell-mode-hook 'configure-prettify-symbols-alist)
   (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
