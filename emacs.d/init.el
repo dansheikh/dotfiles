@@ -49,8 +49,8 @@
 (use-package dracula-theme)
 
 ;; Set default font
-(add-to-list 'default-frame-alist '(font . "Droid Sans Mono Slashed for Powerline-12"))
-(set-frame-font "Droid Sans Mono Slashed for Powerline-12")
+(add-to-list 'default-frame-alist '(font . "Fira Code Retina-12"))
+(set-frame-font "Fira Code Retina-12")
 
 ;; Disable startup screen
 (setq inhibit-startup-screen t)
@@ -101,22 +101,26 @@
 
 ;; Globally prettify symbols
 (global-prettify-symbols-mode 1)
-(setq prettify-symbols-alist '(("lambda" . 955)
-                               ("->" . 8594)
-                               ("->>" . 21A0)
-                               ("=>" . 8658)
-                               ("map" . 8614)
-                               ("/=" . 2260)
-                               ("==" . 2261)
-                               ("<=" . 2264)
-                               (">=" . 2265)
-                               ("=<<" . 226A)
-                               (">>=" . 226B)
-                               ("<=<" . 21A2)
-                               (">=>" . 21A3)
-                               ("&&" . 2227)
-                               ("||" . 2228)
-                               ("not" . 00AC)))
+(defun configure-prettify-symbols-alist ()
+  "Set prettify symbols alist."
+  (setq prettify-symbols-alist '(("lambda" . ?λ)
+                                 ("->" . ?→)
+                                 ("->>" . (?→ (Br . Bl) ?→))
+                                 ("=>" . ?⇒)
+                                 ("map" . ?↦)
+                                 ("/=" . ?≠)
+                                 ("!=" . ?≠)
+                                 ("==" . ?≡)
+                                 ("<=" . ?≤)
+                                 (">=" . ?≥)
+                                 ("=<<" . (?= (Br . Bl) ?≪))
+                                 (">>=" . (?≫ (Br . Bl) ?=))
+                                 ("<=<" . ?↢)
+                                 (">=>" . ?↣)
+                                 ("&&" . ?∧)
+                                 ("||" . ?∨)
+                                 ("not" . ?¬))))
+
 
 ;; Enable Ido mode
 (use-package ido
@@ -280,10 +284,12 @@
   (setq cider-show-error-buffer nil)
   (setq cider-repl-display-help-banner nil)
   (cider-auto-test-mode 1)
+  (add-hook 'cider-mode-hook 'configure-prettify-symbols-alist)
   (add-hook 'cider-mode-hook 'cider-company-enable-fuzzy-completion)
   (add-hook 'cider-repl-mode-hook 'cider-company-enable-fuzzy-completion))
 (use-package clojure-mode
   :init
+  (add-hook 'clojure-mode-hook 'configure-prettify-symbols-alist)
   (add-hook 'clojure-mode-hook 'cider-mode)
   (add-hook 'clojurescript-mode-hook 'cider-mode)
   (add-hook 'clojure-mode-hook 'paredit-mode)
