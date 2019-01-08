@@ -5,6 +5,6 @@ export DOTFILES="$HOME/Dotfiles"
 # export CXX=$(which clang++)
 export SDKMAN_DIR="$HOME/.sdkman"
 export NVM_HOME="$HOME/.nvm"
-export GOROOT=/usr/local/go
+export GOROOT="$(brew --prefix go)/libexec"
 export GOPATH="$HOME/Workspace/go"
 export PATH="$HOME/.local/bin:$HOME/bin:$GOROOT/bin:$GOPATH/bin:$PATH"
