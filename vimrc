@@ -8,19 +8,30 @@ endif
 
 filetype off
 
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
 call plug#begin('~/.vim/plugins')
   Plug 'chriskempson/base16-vim'
   Plug 'davidhalter/jedi-vim'
   Plug 'dracula/vim'
   Plug 'eagletmt/ghcmod-vim'
   Plug 'eagletmt/neco-ghc'
-  Plug 'fatih/vim-go'
+  Plug 'fatih/vim-go', {'do': ':GoUpdateBinaries'}
   Plug 'fsharp/vim-fsharp'
   Plug 'let-def/ocp-indent-vim'
   Plug 'mileszs/ack.vim'
   Plug 'neomake/neomake'
+  if has('nvim')
+    Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
+  else
+    Plug 'Shougo/deoplete.nvim'
+    Plug 'roxma/nvim-yarp'
+    Plug 'roxma/vim-hug-neovim-rpc'
+  endif
   Plug 'Shougo/denite.nvim'
-  Plug 'Shougo/neocomplete.vim'
   Plug 'Shougo/vimproc.vim', {'do': 'make'}
   Plug 'scrooloose/nerdtree'
   Plug 'ternjs/tern_for_vim', {'do': 'cd ~/.vim/plugins/tern_for_vim && npm install'}
@@ -39,7 +50,7 @@ if has('gui_running')
   set guioptions-=m                       " Remove menu bar.
   set guioptions-=T                       " Remove tool bar.
   set guioptions-=r                       " Remove right scroll bar.
-  set guifont=Droid\ Sans\ Mono\ Slashed\ for\ Powerline:h12
+  set guifont=Fira\ Code:h12
   set columns=160                         " Window width.
   set lines=40                            " Window height.
 endif
@@ -121,13 +132,21 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'bubblegum'
 
-" Neocomplete:
-let g:neocomplete#enable_at_startup = 1
-let g:neocomplete#enable_smart_case = 1
-
 " Denite:
 nnoremap <leader>f :Denite -direction=dynamicbottom -auto-preview file_rec<CR>
 nnoremap <leader>b :Denite -direction=dynamicbottom -auto-preview buffer<CR>
+
+call denite#custom#var('file/rec', 'command', ['ag', '--follow', '-g', '--nogroup', '--nocolor', '-u', ''])
+call denite#custom#var('grep', 'command', ['ag'])
+call denite#custom#var('grep', 'default_opts', ['-i', '--vimgrep'])
+call denite#custom#var('grep', 'recursive_opts', [])
+call denite#custom#var('grep', 'pattern_opt', [])
+call denite#custom#var('grep', 'separator', ['--'])
+call denite#custom#var('grep', 'final_opts', [])
+
+" Deoplete
+let g:deoplete#enable_at_startup = 1
+let g:python3_host_prog = '/usr/local/bin/python3'
 
 " Paredit:
 let g:paredit_electric_return = 0
@@ -148,6 +167,10 @@ if filereadable(expand("~/.vimrc_background"))
 endif
 
 " Mappings:
+inoremap <C-h> <Esc><c-w>h
+inoremap <C-j> <Esc><c-w>j
+inoremap <C-k> <Esc><c-w>k
+inoremap <C-l> <Esc><c-w>l
 map <C-n> :NERDTreeToggle<CR>
 map <ESC>[C <C-Right>
 map <ESC>[D <C-Left>
@@ -156,6 +179,12 @@ map <silent> ts :GhcModSplitFunCase<CR>
 map <silent> tq :GhcModType<CR>
 map <silent> te :GhcModTypeClear<CR>
 nmap <leader>l :set list!<CR>
+nmap <M-j> gj
+nmap <M-k> gk
+nmap <M-4> g$
+nmap <M-6> g^
+nmap <M-0> g^
+nnoremap <C-p> :<C-u>FZF<CR>
 nnoremap <C-h> <C-w><C-h>
 nnoremap <C-j> <C-w><C-j>
 nnoremap <C-k> <C-w><C-k>
@@ -164,13 +193,16 @@ nnoremap <C-Tab> :bnext<CR>
 nnoremap <C-S-Tab> :bprevious<CR>
 nnoremap <C-Right> :bnext<CR>
 nnoremap <C-Left> :bprevious<CR>
+tnoremap <C-h> <C-\><C-n><C-w>h
+tnoremap <C-j> <C-\><C-n><C-w>j
+tnoremap <C-k> <C-\><C-n><C-w>k
+tnoremap <C-l> <C-\><C-n><C-w>l
 vmap <M-j> gj
 vmap <M-k> gk
 vmap <M-4> g$
 vmap <M-6> g^
 vmap <M-0> g^
-nmap <M-j> gj
-nmap <M-k> gk
-nmap <M-4> g$
-nmap <M-6> g^
-nmap <M-0> g^
+vnoremap <C-h> <Esc><C-w>h
+vnoremap <C-j> <Esc><C-w>j
+vnoremap <C-k> <Esc><C-w>k
+vnoremap <C-l> <Esc><C-w>l

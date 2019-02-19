@@ -2,7 +2,7 @@ HISTFILE=$HOME/.zsh_history
 HISTSIZE=1000
 SAVEHIST=1000
 
-if [[ $TERM =~ (screen*|rxvt*|xterm*) ]]; then
+if [[ $TERM =~ (eterm*|rxvt*|screen*|xterm*) ]]; then
   autoload -Uz compinit && compinit 
   autoload -Uz colors && colors
   autoload -Uz vcs_info
@@ -62,7 +62,7 @@ fi
 
 # Launch Tmux.
 if command -v tmux &> /dev/null; then
-  [[ ! $TERM =~ dumb ]] && [[ ! $TERM =~ screen ]] && [[ -z $EMACS ]] && [[ -z $TMUX ]] && exec tmux -u
+  [[ -n $TERM ]] && [[ ! $TERM =~ dumb ]] && [[ ! $TERM =~ screen ]] && [[ -z $INSIDE_EMACS ]] && [[ -z $TMUX ]] && exec tmux new-session -A -s $HOST
 fi
 
 # Source sdkman.

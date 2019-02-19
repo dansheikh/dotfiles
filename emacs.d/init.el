@@ -29,7 +29,13 @@
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
 
-;; (require 'shell-path "~/.emacs.d/shell-path.el")
+;; Set execution path
+; (require 'shell-path "~/.emacs.d/shell-path.el")
+
+(use-package exec-path-from-shell
+  :init
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
 
 ;; Configure Multi-term
 (use-package multi-term
