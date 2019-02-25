@@ -15,4 +15,5 @@ vim/bundle/repos/
 vim/bundle/.cache/
 vim/bundle/cache_nvim
 vim/bundle/state_nvim.vim
+vim/pack/
 vim/plugins/

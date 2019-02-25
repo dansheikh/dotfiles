@@ -1,14 +1,18 @@
-alias ll='ls -lG'
-alias ls='ls -G'
-alias la='ls -lartG'
-alias lh='ls -lhG'
-
-alias mkdir='mkdir -pv'
-alias mv='mv -v'
-alias rm='rm -v'
 alias cp='cp -v'
 
 alias ha='history | ack'
+
+alias la='ls -lartG'
+alias lh='ls -lhG'
+alias ll='ls -lG'
+alias ls='ls -G'
+
+alias mkdir='mkdir -pv'
+alias mv='mv -v'
+
+alias rm='rm -v'
+
+alias tmux='tmux -2'
 
 # Redirect stdout and stderr to /dev/null
 alias -g NIL="> /dev/null 2>&1"

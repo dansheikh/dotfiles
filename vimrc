@@ -8,39 +8,45 @@ endif
 
 filetype off
 
-if empty(glob('~/.vim/autoload/plug.vim'))
-  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+if empty(glob('~/.vim/pack/minpac/opt/minpac'))
+  silent !mkdir -p ~/.vim/pack/bundle
+  silent !mkdir -p ~/.vim/pack/minpac/{start,opt}
+  silent !git clone https://github.com/k-takata/minpac.git ~/.vim/pack/minpac/opt/minpac
 endif
 
-call plug#begin('~/.vim/plugins')
-  Plug 'chriskempson/base16-vim'
-  Plug 'davidhalter/jedi-vim'
-  Plug 'dracula/vim'
-  Plug 'eagletmt/ghcmod-vim'
-  Plug 'eagletmt/neco-ghc'
-  Plug 'fatih/vim-go', {'do': ':GoUpdateBinaries'}
-  Plug 'fsharp/vim-fsharp'
-  Plug 'let-def/ocp-indent-vim'
-  Plug 'mileszs/ack.vim'
-  Plug 'neomake/neomake'
+if exists('*minpac#init')
+  call minpac#init()
+  call minpac#add('k-takata/minpac', {'type': 'opt'})
+  call minpac#add('davidhalter/jedi-vim')
+  call minpac#add('dracula/vim')
+  call minpac#add('eagletmt/ghcmod-vim')
+  call minpac#add('eagletmt/neco-ghc')
+  call minpac#add('fatih/vim-go', {'do': ':GoUpdateBinaries'})
+  call minpac#add('fsharp/vim-fsharp')
+  call minpac#add('junegunn/fzf.vim')
+  call minpac#add('let-def/ocp-indent-vim')
+  call minpac#add('mileszs/ack.vim')
   if has('nvim')
-    Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
+    call minpac#add('Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'})
   else
-    Plug 'Shougo/deoplete.nvim'
-    Plug 'roxma/nvim-yarp'
-    Plug 'roxma/vim-hug-neovim-rpc'
+    call minpac#add('Shougo/deoplete.nvim')
+    call minpac#add('roxma/nvim-yarp')
+    call minpac#add('roxma/vim-hug-neovim-rpc')
   endif
-  Plug 'Shougo/denite.nvim'
-  Plug 'Shougo/vimproc.vim', {'do': 'make'}
-  Plug 'scrooloose/nerdtree'
-  Plug 'ternjs/tern_for_vim', {'do': 'cd ~/.vim/plugins/tern_for_vim && npm install'}
-  Plug 'tpope/vim-surround'
-  Plug 'tpope/vim-fugitive'
-  Plug 'vim-airline/vim-airline'
-  Plug 'vim-airline/vim-airline-themes'
-  Plug 'vim-scripts/paredit.vim'
-call plug#end()
+  call minpac#add('Shougo/vimproc.vim', {'do': 'make'})
+  call minpac#add('scrooloose/nerdtree')
+  call minpac#add('ternjs/tern_for_vim', {'do': 'cd ~/.vim/pack/minpac/start/tern_for_vim && npm install'})
+  call minpac#add('tpope/vim-surround')
+  call minpac#add('tpope/vim-fugitive')
+  call minpac#add('vim-airline/vim-airline')
+  call minpac#add('vim-airline/vim-airline-themes')
+  call minpac#add('vim-scripts/paredit.vim')
+  call minpac#add('w0rp/ale')
+endif
+
+command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
+command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
+command! PackClean packadd minpac | source $MYVIMRC | call minpac#clean()
 
 syntax on
 filetype plugin indent on
@@ -50,9 +56,10 @@ if has('gui_running')
   set guioptions-=m                       " Remove menu bar.
   set guioptions-=T                       " Remove tool bar.
   set guioptions-=r                       " Remove right scroll bar.
+  set macligatures
   set guifont=Fira\ Code:h12
-  set columns=160                         " Window width.
-  set lines=40                            " Window height.
+  set columns=200                         " Window width.
+  set lines=50                            " Window height.
 endif
 
 " Custom Behaviour:
@@ -100,49 +107,20 @@ if has('autocmd')
     autocmd GUIEnter * set visualbell t_vb=
 endif
 
-" Neomake:
-autocmd! BufWritePost,BufEnter * Neomake
-let g:neomake_open_list = 2
-let g:neomake_cpp_clang_maker = {'exe': 'clang++', 'args': ['-Wall', '-Wextra', '-Weverything', '-Wpedantic']}
-let g:neomake_ocaml_enabled_makers = ['merlin']
-let g:neomake_javascript_enabled_makers = ['eslint']
-let g:neomake_python_enabled_makers = ['flake8']
-let g:neomake_go_enabled_makers = ['go', 'gometalinter']
-let g:neomake_haskell_enabled_makers = ['hlint']
-let g:neomake_cpp_enabled_makers = ['clang']
-
-" Neovim Python:
+" Python binaries:
 let g:python3_host_prog = '/usr/bin/python3'
 let g:python_host_prog = '/usr/bin/python2'
 
-" OCaml:
-let s:merlin=substitute(system('opam config var share'),'\n$','','g') . "/merlin/vim"
-execute "set rtp+=" . s:merlin
-
-" Runtime Path Configurations:
-if exists('$DOTFILES')
-  let s:ocp_indent=$DOTFILES."/vim/bundle/ocp-indent-vim"
-  let s:base16=$DOTFILES."/vim/bundle/base16-vim"
-  execute "set rtp+=" . s:ocp_indent
-  execute "set rtp+=" . s:base16
-endif
+" Ale
+let g:ale_linters_explicit = 0
+let g:ale_sign_error = '✗'
+let g:ale_sign_warning = '⚠'
+let g:airline#extensions#ale#enabled = 1
 
 " Airline:
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'bubblegum'
-
-" Denite:
-nnoremap <leader>f :Denite -direction=dynamicbottom -auto-preview file_rec<CR>
-nnoremap <leader>b :Denite -direction=dynamicbottom -auto-preview buffer<CR>
-
-call denite#custom#var('file/rec', 'command', ['ag', '--follow', '-g', '--nogroup', '--nocolor', '-u', ''])
-call denite#custom#var('grep', 'command', ['ag'])
-call denite#custom#var('grep', 'default_opts', ['-i', '--vimgrep'])
-call denite#custom#var('grep', 'recursive_opts', [])
-call denite#custom#var('grep', 'pattern_opt', [])
-call denite#custom#var('grep', 'separator', ['--'])
-call denite#custom#var('grep', 'final_opts', [])
 
 " Deoplete
 let g:deoplete#enable_at_startup = 1
@@ -152,19 +130,8 @@ let g:python3_host_prog = '/usr/local/bin/python3'
 let g:paredit_electric_return = 0
 let g:clojure_align_subforms = 1
 
-" JavaScript:
-au BufNewFile,BufRead *.js setlocal tabstop=4 softtabstop=4 shiftwidth=4
-
-" Python:
-au BufNewFile,BufRead *.py setlocal tabstop=4 softtabstop=4 shiftwidth=4
-
 " Color Settings:
-colorscheme dracula     " Use dracula as default color scheme.
-
-if filereadable(expand("~/.vimrc_background"))
-  let base16colorspace=256
-  source ~/.vimrc_background
-endif
+colorscheme dracula
 
 " Mappings:
 inoremap <C-h> <Esc><c-w>h
@@ -172,31 +139,37 @@ inoremap <C-j> <Esc><c-w>j
 inoremap <C-k> <Esc><c-w>k
 inoremap <C-l> <Esc><c-w>l
 map <C-n> :NERDTreeToggle<CR>
-map <ESC>[C <C-Right>
-map <ESC>[D <C-Left>
+map <Esc>[1;5D <C-Left>
+map <Esc>[1;5C <C-Right>
 map <silent> tw :GhcModTypeInsert<CR>
 map <silent> ts :GhcModSplitFunCase<CR>
 map <silent> tq :GhcModType<CR>
 map <silent> te :GhcModTypeClear<CR>
+nmap <leader>b :Buffers<CR>
+nmap <leader>f :Files<CR>
+nmap <leader>g :GFiles<CR>
+nmap <leader>h :History<CR>
 nmap <leader>l :set list!<CR>
 nmap <M-j> gj
 nmap <M-k> gk
 nmap <M-4> g$
 nmap <M-6> g^
 nmap <M-0> g^
-nnoremap <C-p> :<C-u>FZF<CR>
 nnoremap <C-h> <C-w><C-h>
 nnoremap <C-j> <C-w><C-j>
 nnoremap <C-k> <C-w><C-k>
 nnoremap <C-l> <C-w><C-l>
-nnoremap <C-Tab> :bnext<CR>
 nnoremap <C-S-Tab> :bprevious<CR>
-nnoremap <C-Right> :bnext<CR>
-nnoremap <C-Left> :bprevious<CR>
+nnoremap <C-Tab> :bnext<CR>
+nnoremap <M-h> :bprevious<CR>
+nnoremap <M-l> :bnext<CR>
 tnoremap <C-h> <C-\><C-n><C-w>h
 tnoremap <C-j> <C-\><C-n><C-w>j
 tnoremap <C-k> <C-\><C-n><C-w>k
 tnoremap <C-l> <C-\><C-n><C-w>l
+tnoremap <Esc> <C-\><C-n>
+tnoremap <C-v><Esc> <Esc>
+tnoremap <M-[> <Esc>
 vmap <M-j> gj
 vmap <M-k> gk
 vmap <M-4> g$

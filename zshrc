@@ -3,13 +3,26 @@ HISTSIZE=1000
 SAVEHIST=1000
 
 if [[ $TERM =~ (eterm*|rxvt*|screen*|xterm*) ]]; then
-  autoload -Uz compinit && compinit 
+  autoload -Uz compinit && compinit
   autoload -Uz colors && colors
   autoload -Uz vcs_info
 
+  setopt AUTO_CD
+  setopt AUTO_REMOVE_SLASH
+  setopt BANG_HIST
   setopt EXTENDED_GLOB
+  setopt HIST_EXPIRE_DUPS_FIRST
+  setopt HIST_FIND_NO_DUPS
+  setopt HIST_IGNORE_DUPS
+  setopt HIST_IGNORE_ALL_DUPS
+  setopt HIST_IGNORE_SPACE
+  setopt HIST_REDUCE_BLANKS
+  setopt HIST_SAVE_NO_DUPS
+  setopt HIST_VERIFY
+  setopt INC_APPEND_HISTORY
   setopt INTERACTIVE_COMMENTS
   setopt NO_BEEP
+  setopt SHARE_HISTORY
 
   if [ -f $HOME/.zsh_theme ]; then
      . $HOME/.zsh_theme
@@ -39,17 +52,15 @@ if [[ $TERM =~ (eterm*|rxvt*|screen*|xterm*) ]]; then
   zstyle ':completion:*' menu select=1
   zstyle ':completion:*' completer _expand _complete _correct
   zstyle ':completion:*' verbose yes
+  zstyle ':completion:*' squeeze-slashes true
+  zstyle ':completion:*' completer _expand _complete _approximate _correct
+  zstyle ':completion:*:cd:*' ignore-parents parent pwd
+  zstyle ':completion::complete:*' use-cache on
+  zstyle -e ':completion:*:approximate:*' max-errors 'reply=( $((($#PREFIX+$#SUFFIX)/3 )) numeric )'
 fi
 
 if [ -f $HOME/.aliases ]; then
   . $HOME/.aliases
-fi
-
-if [ ! -d $HOME/.config/base16-shell ]; then
-  git clone https://github.com/chriskempson/base16-shell.git $HOME/.config/base16-shell
-else
-  BASE16_HOME=$HOME/.config/base16-shell
-  [ -n $PROMPT ] && [ -s $BASE16_HOME/profile_helper.sh ] && eval "$($BASE16_HOME/profile_helper.sh)"
 fi
 
 # Activate NVM.
