@@ -74,11 +74,12 @@ set nolist
 set tabstop=2                           " Set tab to two spaces.
 set softtabstop=2                       " On <BS> key press, even in the event of spaces, pretend as if a tab is removed.
 set expandtab                           " Expand tabs by default.
-set shiftwidth=2                        " Set number of spaces to use for autoindenting.
+set shiftwidth=2                        " Set number of spaces to use for auto-indenting.
 set shiftround                          " Use multiple of shiftwidth when indenting with '<' and '>'.
 set backspace=indent,eol,start          " Allow backspacing over everything in insert mode.
-set autoindent                          " Auto-indenting by default.
-set copyindent                          " Copy the previous indentation on autoindenting.
+set autoindent                          " Indent by default.
+set autoread                            " Read file on-change.
+set copyindent                          " Copy the previous indentation on auto-indenting.
 set number                              " Always show line numbers.
 set showmatch                           " Show matching parenthesis.
 set ignorecase                          " Ignore case when searching.
@@ -105,6 +106,8 @@ set completeopt=menuone,longest,preview,noinsert
 
 if has('autocmd')
     autocmd GUIEnter * set visualbell t_vb=
+    autocmd FocusGained,BufEnter * :checktime
+    autocmd FileType fzf tunmap <Esc>
 endif
 
 " Python binaries:
