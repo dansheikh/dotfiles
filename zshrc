@@ -73,8 +73,19 @@ fi
 
 # Launch Tmux.
 if command -v tmux &> /dev/null; then
-  [[ -n $TERM ]] && [[ ! $TERM =~ dumb ]] && [[ ! $TERM =~ screen ]] && [[ -z $INSIDE_EMACS ]] && [[ -z $TMUX ]] && exec tmux new-session -A -s $HOST
+  SESSION_NAME=$(date +"%H%M%S")
+  [[ -n $TERM ]] && [[ ! $TERM =~ dumb ]] && [[ ! $TERM =~ screen ]] && [[ -z $INSIDE_EMACS ]] && [[ -z $TMUX ]] && exec tmux new-session -s $SESSION_NAME
 fi
 
 # Source sdkman.
 [[ -s $HOME/.sdkman/bin/sdkman-init.sh ]] && source $HOME/.sdkman/bin/sdkman-init.sh
+
+# tabtab source for serverless package
+# uninstall by removing these lines or running `tabtab uninstall serverless`
+[[ -f /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh
+# tabtab source for sls package
+# uninstall by removing these lines or running `tabtab uninstall sls`
+[[ -f /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh ]] && . /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh
+# tabtab source for slss package
+# uninstall by removing these lines or running `tabtab uninstall slss`
+[[ -f /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/slss.zsh ]] && . /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/slss.zsh

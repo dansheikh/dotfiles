@@ -21,8 +21,9 @@ if exists('*minpac#init')
   call minpac#add('dracula/vim')
   call minpac#add('eagletmt/ghcmod-vim')
   call minpac#add('eagletmt/neco-ghc')
+  call minpac#add('elmcast/elm-vim')
   call minpac#add('fatih/vim-go', {'do': ':GoUpdateBinaries'})
-  call minpac#add('fsharp/vim-fsharp')
+  call minpac#add('fsharp/vim-fsharp', {'do': 'make fsautocomplete'})
   call minpac#add('junegunn/fzf.vim')
   call minpac#add('let-def/ocp-indent-vim')
   call minpac#add('mileszs/ack.vim')
@@ -107,7 +108,7 @@ set completeopt=menuone,longest,preview,noinsert
 if has('autocmd')
     autocmd GUIEnter * set visualbell t_vb=
     autocmd FocusGained,BufEnter * :checktime
-    autocmd FileType fzf tunmap <Esc>
+    autocmd FileType fzf silent! tunmap <Esc>
 endif
 
 " Python binaries:
