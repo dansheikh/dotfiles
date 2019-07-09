@@ -55,8 +55,8 @@
 (use-package dracula-theme)
 
 ;; Set default font
-(add-to-list 'default-frame-alist '(font . "Fira Code Retina-12"))
-(set-frame-font "Fira Code Retina-12")
+(add-to-list 'default-frame-alist '(font . "Dank Mono-12"))
+(set-frame-font "Dank Mono-12")
 
 ;; Set character table
 (let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
@@ -176,9 +176,11 @@
 
 ;; Enable Evil
 (use-package evil
+  :ensure t
   :init
   (evil-mode t)
   :config
+  (evil-set-initial-state 'term-mode 'emacs)
   (define-key evil-normal-state-map (kbd "C-d") 'evil-scroll-down)
   (define-key evil-visual-state-map (kbd "C-d") 'evil-scroll-down)
   (define-key evil-normal-state-map (kbd "C-u") 'evil-scroll-up)
@@ -243,7 +245,7 @@
   :init
   (setq company-idle-delay 0.1)
   (setq company-minimum-prefix-length 1)
-  (setq company-backends '(company-capf company-dabbrev company-dabbrev-code company-yasnippet company-files company-keywords))
+  (setq company-backends '(company-capf company-dabbrev-code company-dabbrev company-yasnippet company-files company-keywords))
   (add-hook 'after-init-hook 'global-company-mode))
 
 (add-hook 'emacs-lisp-mode-hook
@@ -400,6 +402,17 @@
   (add-hook 'purescript-mode-hook #'haskell-indentation-mode))
 (use-package psci
   :pin emacs-pe)
+
+;; Enable Elm
+(use-package elm-mode
+  :ensure t
+  :init
+  (add-hook 'elm-mode-hook #'elm-oracle-setup-completion)
+  (add-hook 'elm-mode-hook
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends) 'company-elm)))
+  :config
+  (setq elm-format-on-save t))
 
 ;; Enable Groovy
 (use-package groovy-mode)

@@ -18,15 +18,19 @@ if exists('*minpac#init')
   call minpac#init()
   call minpac#add('k-takata/minpac', {'type': 'opt'})
   call minpac#add('davidhalter/jedi-vim')
-  call minpac#add('dracula/vim')
   call minpac#add('eagletmt/ghcmod-vim')
   call minpac#add('eagletmt/neco-ghc')
   call minpac#add('elmcast/elm-vim')
   call minpac#add('fatih/vim-go', {'do': ':GoUpdateBinaries'})
   call minpac#add('fsharp/vim-fsharp', {'do': 'make fsautocomplete'})
+  call minpac#add('guns/vim-sexp')
+  call minpac#add('haishanh/night-owl.vim', {'name': 'night_owl'})
   call minpac#add('junegunn/fzf.vim')
+  call minpac#add('kien/rainbow_parentheses.vim')
   call minpac#add('let-def/ocp-indent-vim')
   call minpac#add('mileszs/ack.vim')
+  call minpac#add('racer-rust/vim-racer')
+  call minpac#add('rust-lang/rust.vim')
   if has('nvim')
     call minpac#add('Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'})
   else
@@ -41,7 +45,6 @@ if exists('*minpac#init')
   call minpac#add('tpope/vim-fugitive')
   call minpac#add('vim-airline/vim-airline')
   call minpac#add('vim-airline/vim-airline-themes')
-  call minpac#add('vim-scripts/paredit.vim')
   call minpac#add('w0rp/ale')
 endif
 
@@ -52,16 +55,26 @@ command! PackClean packadd minpac | source $MYVIMRC | call minpac#clean()
 syntax on
 filetype plugin indent on
 
+let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
+let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
+
+if has('termguicolors')
+  set termguicolors
+endif
+
 " GUI Settings:
 if has('gui_running')
   set guioptions-=m                       " Remove menu bar.
   set guioptions-=T                       " Remove tool bar.
   set guioptions-=r                       " Remove right scroll bar.
   set macligatures
-  set guifont=Fira\ Code:h12
+  set guifont=Dank\ Mono:h12
   set columns=200                         " Window width.
   set lines=50                            " Window height.
 endif
+
+" Color Settings:
+colorscheme night-owl
 
 " Custom Behaviour:
 let mapleader=","                       " Set mapleader key to comma.
@@ -111,7 +124,7 @@ if has('autocmd')
     autocmd FileType fzf silent! tunmap <Esc>
 endif
 
-" Python binaries:
+" Python binaries
 let g:python3_host_prog = '/usr/bin/python3'
 let g:python_host_prog = '/usr/bin/python2'
 
@@ -121,7 +134,7 @@ let g:ale_sign_error = '✗'
 let g:ale_sign_warning = '⚠'
 let g:airline#extensions#ale#enabled = 1
 
-" Airline:
+" Airline
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'bubblegum'
@@ -130,14 +143,13 @@ let g:airline_theme = 'bubblegum'
 let g:deoplete#enable_at_startup = 1
 let g:python3_host_prog = '/usr/local/bin/python3'
 
-" Paredit:
-let g:paredit_electric_return = 0
-let g:clojure_align_subforms = 1
+" Rainbow Parentheses
+autocmd VimEnter * RainbowParenthesesToggle
+autocmd Syntax * RainbowParenthesesLoadRound
+autocmd Syntax * RainbowParenthesesLoadSquare
+autocmd Syntax * RainbowParenthesesLoadBraces
 
-" Color Settings:
-colorscheme dracula
-
-" Mappings:
+" Mappings
 inoremap <C-h> <Esc><c-w>h
 inoremap <C-j> <Esc><c-w>j
 inoremap <C-k> <Esc><c-w>k
@@ -183,3 +195,40 @@ vnoremap <C-h> <Esc><C-w>h
 vnoremap <C-j> <Esc><C-w>j
 vnoremap <C-k> <Esc><C-w>k
 vnoremap <C-l> <Esc><C-w>l
+" ## added by OPAM user-setup for vim / base ## 93ee63e278bdfc07d1139a748ed3fff2 ## you can edit, but keep this line
+let s:opam_share_dir = system("opam config var share")
+let s:opam_share_dir = substitute(s:opam_share_dir, '[\r\n]*$', '', '')
+
+let s:opam_configuration = {}
+
+function! OpamConfOcpIndent()
+  execute "set rtp^=" . s:opam_share_dir . "/ocp-indent/vim"
+endfunction
+let s:opam_configuration['ocp-indent'] = function('OpamConfOcpIndent')
+
+function! OpamConfOcpIndex()
+  execute "set rtp+=" . s:opam_share_dir . "/ocp-index/vim"
+endfunction
+let s:opam_configuration['ocp-index'] = function('OpamConfOcpIndex')
+
+function! OpamConfMerlin()
+  let l:dir = s:opam_share_dir . "/merlin/vim"
+  execute "set rtp+=" . l:dir
+endfunction
+let s:opam_configuration['merlin'] = function('OpamConfMerlin')
+
+let s:opam_packages = ["ocp-indent", "ocp-index", "merlin"]
+let s:opam_check_cmdline = ["opam list --installed --short --safe --color=never"] + s:opam_packages
+let s:opam_available_tools = split(system(join(s:opam_check_cmdline)))
+for tool in s:opam_packages
+  " Respect package order (merlin should be after ocp-index)
+  if count(s:opam_available_tools, tool) > 0
+    call s:opam_configuration[tool]()
+  endif
+endfor
+" ## end of OPAM user-setup addition for vim / base ## keep this line
+" ## added by OPAM user-setup for vim / ocp-indent ## c16b8c6b84b367252095415dd07a2749 ## you can edit, but keep this line
+if count(s:opam_available_tools,"ocp-indent") == 0
+  source "/Users/sheikh_dan/.opam/4.08.0/share/ocp-indent/vim/indent/ocaml.vim"
+endif
+" ## end of OPAM user-setup addition for vim / ocp-indent ## keep this line

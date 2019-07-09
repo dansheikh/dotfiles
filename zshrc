@@ -2,6 +2,8 @@ HISTFILE=$HOME/.zsh_history
 HISTSIZE=1000
 SAVEHIST=1000
 
+fpath+=$HOME/.zfunc
+
 if [[ $TERM =~ (eterm*|rxvt*|screen*|xterm*) ]]; then
   autoload -Uz compinit && compinit
   autoload -Uz colors && colors
@@ -61,6 +63,10 @@ fi
 
 if [ -f $HOME/.aliases ]; then
   . $HOME/.aliases
+fi
+
+if [ -f $HOME/.helpers ]; then
+  . $HOME/.helpers
 fi
 
 # Activate NVM.

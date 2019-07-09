@@ -16,15 +16,3 @@ alias tmux='tmux -2'
 
 # Redirect stdout and stderr to /dev/null
 alias -g NIL="> /dev/null 2>&1"
-
-# Docker aliases
-alias docker-vol-clean="docker volume rm $(docker volume ls | awk 'NR > 1 {print $2}')"
-alias docker-img-clean="docker rmi $(docker images -a -q)"
-
-function docker-vol-rm {
-  docker volume ls | grep "$1" | awk '{print $3}' | xargs docker volume rm
-}
-
-function docker-img-rm {
-  docker images -a | grep "$1" | awk '{print $3}' | xargs docker rmi
-}
