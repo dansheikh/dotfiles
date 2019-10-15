@@ -1,0 +1,15 @@
+{
+ :mvn/repos {
+             "sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}
+             "central" {:url "https://repo1.maven.org/maven2/"}
+             "clojars" {:url "https://repo.clojars.org/"}}
+ :paths ["src"]
+ :aliases {
+           :test {:extra-paths ["test" "src/test/clojure" "src/test/clojurescript"]
+                  :extra-deps {org.clojure/test.check {:mvn/version "RELEASE"}}}
+           :eastwood {:extra-deps {jonase/eastwood {:mvn/version "RELEASE"}}
+                      :main-opts ["-m" "eastwood.lint" "{:source-paths [\"src\"] :test-paths [\"test\"]}"]}
+           :nrepl {:extra-deps {nrepl {:mvn/version "RELEASE"}}
+                   :main-opts ["-m" "nrepl.cmdline"]}
+           :socket {:jvm-opts ["-Dclojure.server.repl={:port 5000 :accept clojure.core.server/repl}"]}
+           :compliment {:extra-deps {compliment {:mvn/version "RELEASE"}}}}}

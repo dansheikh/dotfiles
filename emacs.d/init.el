@@ -10,11 +10,11 @@
 
 (require 'package)
 (setq
- package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                    ("org" . "http://orgmode.org/elpa/")
-                    ("melpa" . "http://melpa.org/packages/")
-                    ("melpa-stable" . "http://stable.melpa.org/packages/")
-		    ("emacs-pe" . "http://emacs-pe.github.io/packages/"))
+ package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                    ("org" . "https://orgmode.org/elpa/")
+                    ("melpa" . "https://melpa.org/packages/")
+                    ("melpa-stable" . "https://stable.melpa.org/packages/")
+		    ("emacs-pe" . "https://emacs-pe.github.io/packages/"))
  package-archive-priorities '(("melpa-stable" . 1)))
 
 (package-initialize)
@@ -33,9 +33,10 @@
 ; (require 'shell-path "~/.emacs.d/shell-path.el")
 
 (use-package exec-path-from-shell
-  :init
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)))
+  :if (memq window-system '(mac ns))
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize))
 
 ;; Configure Multi-term
 (use-package multi-term

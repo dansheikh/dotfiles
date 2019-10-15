@@ -61,6 +61,10 @@ if [[ $TERM =~ (eterm*|rxvt*|screen*|xterm*) ]]; then
   zstyle -e ':completion:*:approximate:*' max-errors 'reply=( $((($#PREFIX+$#SUFFIX)/3 )) numeric )'
 fi
 
+if [ ! -d $HOME/.config ]; then
+  mkdir -p $HOME/.config
+fi
+
 if [ -f $HOME/.aliases ]; then
   . $HOME/.aliases
 fi
@@ -69,8 +73,11 @@ if [ -f $HOME/.helpers ]; then
   . $HOME/.helpers
 fi
 
-# Activate NVM.
-[ -n $NVM_HOME ] && [ -d $NVM_HOME ] && [ -s $NVM_HOME/nvm.sh ] && . $NVM_HOME/nvm.sh
+[ ! -d $BASE16_SHELL ] && git clone https://github.com/chriskempson/base16-shell.git $HOME/.config/base16-shell
+[ -n "$PS1" ] && [ -s "$BASE16_SHELL/profile_helper.sh" ] && eval "$("$BASE16_SHELL/profile_helper.sh")"
+
+# Activate ASDF.
+asdf_prefix=$(brew --prefix asdf) && [ -n $asdf_prefix ] && . $asdf_prefix/asdf.sh && . $asdf_prefix/etc/bash_completion.d/asdf.bash
 
 # Configure OPAM.
 if command -v opam &> /dev/null; then
@@ -85,13 +92,3 @@ fi
 
 # Source sdkman.
 [[ -s $HOME/.sdkman/bin/sdkman-init.sh ]] && source $HOME/.sdkman/bin/sdkman-init.sh
-
-# tabtab source for serverless package
-# uninstall by removing these lines or running `tabtab uninstall serverless`
-[[ -f /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh
-# tabtab source for sls package
-# uninstall by removing these lines or running `tabtab uninstall sls`
-[[ -f /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh ]] && . /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh
-# tabtab source for slss package
-# uninstall by removing these lines or running `tabtab uninstall slss`
-[[ -f /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/slss.zsh ]] && . /Users/sheikh_dan/.nvm/versions/node/v10.15.3/lib/node_modules/serverless/node_modules/tabtab/.completions/slss.zsh

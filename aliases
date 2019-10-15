@@ -10,6 +10,8 @@ alias ls='ls -G'
 alias mkdir='mkdir -pv'
 alias mv='mv -v'
 
+alias please='sudo $(fc -ln -1)'
+
 alias rm='rm -v'
 
 alias tmux='tmux -2'

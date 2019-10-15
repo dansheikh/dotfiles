@@ -17,6 +17,8 @@ endif
 if exists('*minpac#init')
   call minpac#init()
   call minpac#add('k-takata/minpac', {'type': 'opt'})
+  call minpac#add('bhurlow/vim-parinfer')
+  call minpac#add('chriskempson/base16-vim')
   call minpac#add('davidhalter/jedi-vim')
   call minpac#add('eagletmt/ghcmod-vim')
   call minpac#add('eagletmt/neco-ghc')
@@ -24,13 +26,15 @@ if exists('*minpac#init')
   call minpac#add('fatih/vim-go', {'do': ':GoUpdateBinaries'})
   call minpac#add('fsharp/vim-fsharp', {'do': 'make fsautocomplete'})
   call minpac#add('guns/vim-sexp')
-  call minpac#add('haishanh/night-owl.vim', {'name': 'night_owl'})
   call minpac#add('junegunn/fzf.vim')
   call minpac#add('kien/rainbow_parentheses.vim')
   call minpac#add('let-def/ocp-indent-vim')
+  call minpac#add('mattn/emmet-vim')
   call minpac#add('mileszs/ack.vim')
   call minpac#add('racer-rust/vim-racer')
+  call minpac#add('reasonml-editor/vim-reason-plus')
   call minpac#add('rust-lang/rust.vim')
+  call minpac#add('scrooloose/nerdtree')
   if has('nvim')
     call minpac#add('Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'})
   else
@@ -39,7 +43,6 @@ if exists('*minpac#init')
     call minpac#add('roxma/vim-hug-neovim-rpc')
   endif
   call minpac#add('Shougo/vimproc.vim', {'do': 'make'})
-  call minpac#add('scrooloose/nerdtree')
   call minpac#add('ternjs/tern_for_vim', {'do': 'cd ~/.vim/pack/minpac/start/tern_for_vim && npm install'})
   call minpac#add('tpope/vim-surround')
   call minpac#add('tpope/vim-fugitive')
@@ -74,7 +77,10 @@ if has('gui_running')
 endif
 
 " Color Settings:
-colorscheme night-owl
+if filereadable(expand("~/.vimrc_background"))
+  let base16colorspace=256
+  source ~/.vimrc_background
+endif
 
 " Custom Behaviour:
 let mapleader=","                       " Set mapleader key to comma.
@@ -129,7 +135,8 @@ let g:python3_host_prog = '/usr/bin/python3'
 let g:python_host_prog = '/usr/bin/python2'
 
 " Ale
-let g:ale_linters_explicit = 0
+let g:ale_fix_on_save = 1
+let g:ale_linters_explicit = 1
 let g:ale_sign_error = '✗'
 let g:ale_sign_warning = '⚠'
 let g:airline#extensions#ale#enabled = 1
@@ -137,11 +144,17 @@ let g:airline#extensions#ale#enabled = 1
 " Airline
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
-let g:airline_theme = 'bubblegum'
+let g:airline_theme = 'base16'
 
 " Deoplete
+let g:deoplete#auto_complete = 1
 let g:deoplete#enable_at_startup = 1
+let g:deoplete#enable_ignore_case = 0
 let g:python3_host_prog = '/usr/local/bin/python3'
+
+" Emmet
+let g:user_emmet_leader_key = '<TAB>'
+let g:user_emmet_settings = {'javascript.jsx': {'extends': 'jsx'}}
 
 " Rainbow Parentheses
 autocmd VimEnter * RainbowParenthesesToggle
