@@ -53,7 +53,9 @@
 (prefer-coding-system 'utf-8-unix)
 
 ;; Set theme
-(use-package dracula-theme)
+(use-package gruvbox-theme
+  :config
+  (load-theme 'gruvbox-light-medium t))
 
 ;; Set default font
 (add-to-list 'default-frame-alist '(font . "Dank Mono-12"))
@@ -155,6 +157,9 @@
 (use-package helm
   :config
   ;; Customize keybindings
+  (define-key helm-map (kbd "TAB") #'helm-execute-persistent-action)
+  (define-key helm-map (kbd "<tab>") #'helm-execute-persistent-action)
+  (define-key helm-map (kbd "C-z") #'helm-select-action)
   (global-set-key (kbd "M-]") 'next-buffer)
   (global-set-key (kbd "M-[") 'previous-buffer)
   (global-set-key (kbd "M-x") 'helm-M-x)
@@ -231,6 +236,22 @@
 (use-package yasnippet
   :init
   (yas-global-mode t))
+
+;; Enable LSP
+(use-package lsp-mode
+  :commands lsp)
+
+(use-package lsp-ui
+  :commands lsp-ui-mode)
+
+(use-package helm-lsp
+  :commands helm-lsp-workspace-symbol)
+
+(use-package lsp-treemacs
+  :commands lsp-treemacs-errors-list)
+
+(use-package company-lsp
+  :commands company-lsp)
 
 ;; Enable Company backends
 (use-package company-anaconda)

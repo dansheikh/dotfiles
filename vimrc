@@ -17,6 +17,7 @@ endif
 if exists('*minpac#init')
   call minpac#init()
   call minpac#add('k-takata/minpac', {'type': 'opt'})
+  call minpac#add('autozimu/LanguageClient-neovim', {'branch': 'next', 'do': '!bash install.sh'})
   call minpac#add('bhurlow/vim-parinfer')
   call minpac#add('chriskempson/base16-vim')
   call minpac#add('davidhalter/jedi-vim')
@@ -24,7 +25,7 @@ if exists('*minpac#init')
   call minpac#add('eagletmt/neco-ghc')
   call minpac#add('elmcast/elm-vim')
   call minpac#add('fatih/vim-go', {'do': ':GoUpdateBinaries'})
-  call minpac#add('fsharp/vim-fsharp', {'do': 'make fsautocomplete'})
+  call minpac#add('fsharp/vim-fsharp', {'do': '!make fsautocomplete'})
   call minpac#add('guns/vim-sexp')
   call minpac#add('junegunn/fzf.vim')
   call minpac#add('kien/rainbow_parentheses.vim')
@@ -42,8 +43,8 @@ if exists('*minpac#init')
     call minpac#add('roxma/nvim-yarp')
     call minpac#add('roxma/vim-hug-neovim-rpc')
   endif
-  call minpac#add('Shougo/vimproc.vim', {'do': 'make'})
-  call minpac#add('ternjs/tern_for_vim', {'do': 'cd ~/.vim/pack/minpac/start/tern_for_vim && npm install'})
+  call minpac#add('Shougo/vimproc.vim', {'do': '!make'})
+  call minpac#add('ternjs/tern_for_vim', {'do': '!npm install'})
   call minpac#add('tpope/vim-surround')
   call minpac#add('tpope/vim-fugitive')
   call minpac#add('vim-airline/vim-airline')
@@ -136,6 +137,9 @@ let g:python_host_prog = '/usr/bin/python2'
 
 " Ale
 let g:ale_fix_on_save = 1
+let g:ale_linters = {
+      \ 'go': ['gopls']
+      \ }
 let g:ale_linters_explicit = 1
 let g:ale_sign_error = '✗'
 let g:ale_sign_warning = '⚠'
@@ -156,6 +160,12 @@ let g:python3_host_prog = '/usr/local/bin/python3'
 let g:user_emmet_leader_key = '<TAB>'
 let g:user_emmet_settings = {'javascript.jsx': {'extends': 'jsx'}}
 
+" LanguageClient
+autocmd BufWritePre *.go :call LanguageClient#textDocument_formatting_sync()
+let g:LanguageClient_serverCommans = {
+    \ 'go': ['gopls']
+    \ }
+
 " Rainbow Parentheses
 autocmd VimEnter * RainbowParenthesesToggle
 autocmd Syntax * RainbowParenthesesLoadRound
@@ -163,10 +173,12 @@ autocmd Syntax * RainbowParenthesesLoadSquare
 autocmd Syntax * RainbowParenthesesLoadBraces
 
 " Mappings
-inoremap <C-h> <Esc><c-w>h
-inoremap <C-j> <Esc><c-w>j
-inoremap <C-k> <Esc><c-w>k
-inoremap <C-l> <Esc><c-w>l
+inoremap <C-c> <Esc><C-w>c
+inoremap <C-h> <Esc><C-w>h
+inoremap <C-j> <Esc><C-w>j
+inoremap <C-k> <Esc><C-w>k
+inoremap <C-l> <Esc><C-w>l
+inoremap <C-o> <Esc><C-w>o
 map <C-n> :NERDTreeToggle<CR>
 map <Esc>[1;5D <C-Left>
 map <Esc>[1;5C <C-Right>
@@ -184,10 +196,12 @@ nmap <M-k> gk
 nmap <M-4> g$
 nmap <M-6> g^
 nmap <M-0> g^
+nnoremap <C-c> <C-w>c
 nnoremap <C-h> <C-w><C-h>
 nnoremap <C-j> <C-w><C-j>
 nnoremap <C-k> <C-w><C-k>
 nnoremap <C-l> <C-w><C-l>
+nnoremap <C-o> <C-w>o
 nnoremap <C-S-Tab> :bprevious<CR>
 nnoremap <C-Tab> :bnext<CR>
 nnoremap <M-h> :bprevious<CR>
