@@ -76,6 +76,11 @@ fi
 [ ! -d $BASE16_SHELL ] && git clone https://github.com/chriskempson/base16-shell.git $HOME/.config/base16-shell
 [ -n "$PS1" ] && [ -s "$BASE16_SHELL/profile_helper.sh" ] && eval "$("$BASE16_SHELL/profile_helper.sh")"
 
+# Activate Nix
+if [ -f $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
+   . $HOME/.nix-profile/etc/profile.d/nix.sh
+fi
+
 # Activate ASDF.
 asdf_prefix=$(brew --prefix asdf) && [ -n $asdf_prefix ] && . $asdf_prefix/asdf.sh && . $asdf_prefix/etc/bash_completion.d/asdf.bash
 

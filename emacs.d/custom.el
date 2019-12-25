@@ -8,7 +8,7 @@
     ("73a13a70fd111a6cd47f3d4be2260b1e4b717dbf635a9caee6442c949fad41cd" default)))
  '(package-selected-packages
    (quote
-    (gruvbox-theme company-lsp lsp-treemacs helm-lsp lsp-ui lsp-mode gruvbox-light-medium exec-path-from-shell elm-mode evil-surround json-mode alchemist elixir-mode purescript-mode psci js2-mode company-tern helm-ag company-ghc go-mode dracula-theme company-go clojure-mode ensime ess haskell-mode airline-themes powerline use-package perl6-mode company-anaconda cargo rust-mode multi-term evil anaconda-mode company yasnippet company-irony irony flycheck-color-mode-line flycheck-pos-tip color-theme-sanityinc-tomorrow groovy-mode slime zenburn-theme web-mode sass-mode rainbow-delimiters python-mode paredit magit helm fsharp-mode flycheck cider))))
+    (treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil projectile gruvbox-theme company-lsp lsp-treemacs helm-lsp lsp-ui lsp-mode gruvbox-light-medium exec-path-from-shell elm-mode evil-surround json-mode alchemist elixir-mode purescript-mode psci js2-mode company-tern helm-ag company-ghc go-mode dracula-theme company-go clojure-mode ensime ess haskell-mode airline-themes powerline use-package perl6-mode company-anaconda cargo rust-mode multi-term evil anaconda-mode company yasnippet company-irony irony flycheck-color-mode-line flycheck-pos-tip color-theme-sanityinc-tomorrow groovy-mode slime zenburn-theme web-mode sass-mode rainbow-delimiters python-mode paredit magit helm fsharp-mode flycheck cider))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
