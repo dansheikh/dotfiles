@@ -73,8 +73,8 @@ if [ -f $HOME/.helpers ]; then
   . $HOME/.helpers
 fi
 
-[ ! -d $BASE16_SHELL ] && git clone https://github.com/chriskempson/base16-shell.git $HOME/.config/base16-shell
-[ -n "$PS1" ] && [ -s "$BASE16_SHELL/profile_helper.sh" ] && eval "$("$BASE16_SHELL/profile_helper.sh")"
+[ -z $INSIDE_EMACS ] && [ ! -d $BASE16_SHELL ] && git clone https://github.com/chriskempson/base16-shell.git $HOME/.config/base16-shell
+[ -z $INSIDE_EMACS ] && [ -n "$PS1" ] && [ -s "$BASE16_SHELL/profile_helper.sh" ] && eval "$("$BASE16_SHELL/profile_helper.sh")"
 
 # Activate Nix
 if [ -f $HOME/.nix-profile/etc/profile.d/nix.sh ]; then

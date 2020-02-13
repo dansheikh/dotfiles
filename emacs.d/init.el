@@ -97,6 +97,10 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 
+;; Enable (explicit) auto-save
+(auto-save-visited-mode 1)
+(setq auto-save-visited-interval 3)
+
 ;; Auto-reload buffers on disk file changes
 (global-auto-revert-mode t)
 
@@ -288,9 +292,6 @@
 (use-package lsp-treemacs
   :commands lsp-treemacs-errors-list)
 
-(use-package company-lsp
-  :commands company-lsp)
-
 ;; Enable Company backends
 (use-package company-anaconda)
 (use-package company-tern)
@@ -317,6 +318,11 @@
 (add-hook 'cmake-mode-hook
 	  (lambda ()
 	    (add-to-list (make-local-variable 'company-backends) 'company-cmake)))
+
+(use-package company-lsp
+  :commands company-lsp
+  :config
+  (push 'company-lsp company-backends))
 
 ;; Enable Python
 (use-package anaconda-mode)
@@ -366,6 +372,7 @@
   :init
   (setq cider-show-error-buffer nil)
   (setq cider-repl-display-help-banner nil)
+  (setq cider-repl-shortcut-dispatch-char ?\;)
   (cider-auto-test-mode 1)
   (add-hook 'cider-mode-hook 'cider-company-enable-fuzzy-completion)
   (add-hook 'cider-repl-mode-hook 'cider-company-enable-fuzzy-completion))
@@ -394,8 +401,13 @@
 (use-package web-mode
   :init
   (add-hook 'web-mode-hook
-	    (lambda ()
-	      (add-to-list (make-local-variable 'company-backends) 'company-css))))
+      (lambda ()
+        (add-to-list (make-local-variable 'company-backends) 'company-cs))))
+
+(use-package emmet-mode
+  :config
+  (add-hook 'sgml-mode-hook 'emmet-mode)
+  (add-hook 'css-mode-hook 'emmet-mode))
 
 (use-package js2-mode
   :mode (("\\.js\\'" . js2-mode))
