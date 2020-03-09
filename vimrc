@@ -57,6 +57,16 @@ filetype plugin indent on
 let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
 let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
 
+if exists("$TMUX")
+    let &t_SI .= "\<Esc>Ptmux;\<Esc>\<Esc>[3 q\<Esc>\\"
+    let &t_SR .= "\<Esc>Ptmux;\<Esc>\<Esc>[3 q\<Esc>\\"
+    let &t_EI .= "\<Esc>Ptmux;\<Esc>\<Esc>[4 q\<Esc>\\"
+else
+    let &t_SI .= "\<Esc>[3 q"
+    let &t_SR .= "\<Esc>[3 q"
+    let &t_EI .= "\<Esc>[4 q"
+endif
+
 if has('termguicolors')
   set termguicolors
 endif
@@ -181,6 +191,7 @@ map <silent> tw :GhcModTypeInsert<CR>
 map <silent> ts :GhcModSplitFunCase<CR>
 map <silent> tq :GhcModType<CR>
 map <silent> te :GhcModTypeClear<CR>
+noremap <space> :
 nmap <leader>b :Buffers<CR>
 nmap <leader>f :Files<CR>
 nmap <leader>g :GFiles<CR>

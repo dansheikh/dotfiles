@@ -82,7 +82,7 @@ if [ -f $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
 fi
 
 # Activate ASDF.
-asdf_prefix=$(brew --prefix asdf) && [ -n $asdf_prefix ] && . $asdf_prefix/asdf.sh && . $asdf_prefix/etc/bash_completion.d/asdf.bash
+asdf_prefix=$(brew --prefix asdf) && [ -n $asdf_prefix ] && . $asdf_prefix/asdf.sh
 
 # Configure OPAM.
 if command -v opam &> /dev/null; then
