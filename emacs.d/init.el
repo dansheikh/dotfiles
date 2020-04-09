@@ -14,7 +14,7 @@
                     ("org" . "https://orgmode.org/elpa/")
                     ("melpa" . "https://melpa.org/packages/")
                     ("melpa-stable" . "https://stable.melpa.org/packages/")
-		    ("emacs-pe" . "https://emacs-pe.github.io/packages/"))
+                    ("emacs-pe" . "https://emacs-pe.github.io/packages/"))
  package-archive-priorities '(("melpa-stable" . 1)))
 
 (package-initialize)
@@ -38,13 +38,16 @@
   :config
   (exec-path-from-shell-initialize))
 
-;; Configure Multi-term
+;; Configure multi-term
 (use-package multi-term
   :init
   (setq multi-term-program "/bin/zsh"))
 
 ;; Set frame size
 (setq default-frame-alist '((width . 200) (height . 50)))
+
+;; Set cursor type
+(setq-default cursor-type 'hbar)
 
 ;; Set coding preference
 (set-default-coding-systems 'utf-8-unix)
@@ -55,7 +58,7 @@
 ;; Set theme
 (use-package gruvbox-theme
   :config
-  (load-theme 'gruvbox-light-medium t))
+  (load-theme 'gruvbox-dark-soft t))
 
 ;; Set default font
 (add-to-list 'default-frame-alist '(font . "Dank Mono-12"))
@@ -119,14 +122,14 @@
 
 ;; Set root directory
 (setq root-dir (file-name-directory
-		(or (buffer-file-name) load-file-name)))
+                (or (buffer-file-name) load-file-name)))
 
 ;; Enable line numbers
 (global-linum-mode t)
 
 ;; Set tab (space) width
 (setq-default tab-width 2
-	      indent-tabs-mode nil)
+              indent-tabs-mode nil)
 
 (show-paren-mode 1)
 
@@ -150,7 +153,7 @@
                                  ("||" . ?∨)
                                  ("not" . ?¬))))
 
-;; Enable Ido mode
+;; Enable ido mode
 (use-package ido
   :config
   (ido-mode t)
@@ -170,6 +173,7 @@
   (global-set-key (kbd "C-x C-m") 'helm-M-x)
   (global-set-key (kbd "C-c C-m") 'helm-M-x)
   (global-set-key (kbd "C-x b") 'helm-mini)
+  (global-set-key (kbd "C-s") 'helm-do-grep-ag)
   (global-set-key (kbd "C-x C-f") 'helm-find-files))
 
 (use-package helm-ag
@@ -180,17 +184,91 @@
   (global-set-key (kbd "M-f") 'helm-do-ag)
   (global-set-key (kbd "M-s") 'helm-do-ag-this-file))
 
+;; Enable which-key
+(use-package which-key
+  :config
+  (which-key-mode 1)
+  :ensure t
+  :init
+  (setq which-key-idle-delay 0.5)
+  (setq which-key-prefix-prefix "+"))
+
+;; Enable general
+(use-package general
+  :after which-key
+  :config
+  (general-override-mode 1)
+  (general-create-definer benevolent-dictator
+    :states '(normal visual insert emacs)
+    :prefix "SPC"
+    :non-normal-prefix "M-SPC")
+  (benevolent-dictator
+    "c" (general-simulate-key "C-c" :which-key "C-c")
+    "h" (general-simulate-key "C-h" :which-key "C-h")
+    "x" (general-simulate-key "C-x" :which-key "C-x")
+    "TAB" '(switch-to-prev-buffer :which-key "previous buffer")
+    "SPC" '(helm-M-x :which-key "M-x")
+    "/"   '(helm-ag :which-key "silver searcher")
+    ; Buffer management
+    "b"  '(:ignore t :which-key "buffer")
+    "bc" '(ido-kill-buffer :which-key "buffer close")
+    "bf" '(helm-do-ag-this-file :which-key "buffer find")
+    "bl" '(helm-mini :which-key "buffer list")
+    "bn" '(next-buffer :which-key "next buffer")
+    "bp" '(previous-buffer :which-key "previous buffer")
+    "bs" '(save-some-buffers :which-key "buffer save")
+    "bq" '(save-buffers-kill-terminal :which-key "buffer quit")
+    ; File management
+    "f"  '(:ignore t :which-key "file")
+    "fs" '(helm-find-files :which-key "file search")
+    ; Git management
+    "g"  '(:ignore t :which-key "git")
+    "gs" '(magit-status :which-key "git status")
+    "gd" '(magit-dispatch-popup :which-key "git dispatch")
+    ; Interface management
+    "i"  '(:ignore t :which-key "interface")
+    "ie" '(eshell :which-key "open eshell")
+    ; Search management
+    "s"  '(:ignore t :which-key "search")
+    "sg" '(helm-do-grep-ag :which-key "grep")
+    ; Tree management
+    "t"  '(:ignore t :which-key "tree")
+    "tf" '(treemacs-find-file :which-key "treemacs find file")
+    "tt" '(treemacs :which-key "treemacs")
+    "tw" '(treemacs-select-window :which-key "treemacs window")
+    ; Window management
+    "w"  '(:ignore t :which-key "window")
+    "wl" '(windmove-right :which-key "move right")
+    "wh" '(windmove-left :which-key "move left")
+    "wk" '(windmove-up :which-key "move up")
+    "wj" '(windmove-down :which-key "move down")
+    "w+" '(split-window-right :which-key "split right")
+    "w-" '(split-window-below :which-key "split below")
+    "wo" '(delete-other-windows :which-key "delete other window")
+    "wx" '(delete-window :which-key "delete window"))
+  :ensure t
+  :init
+  (setq which-key-idle-delay 0.5))
+
 ;; Enable global buffer auto-revert
 (global-auto-revert-mode 1)
 (setq auto-revert-check-vc-info t)
 
-;; Enable Evil
+;; Enable evil
 (use-package evil
   :ensure t
   :init
   (evil-mode t)
   :config
   (evil-set-initial-state 'term-mode 'emacs)
+  (setq evil-default-cursor 'hbar
+        evil-emacs-state-cursor 'hbar
+        evil-normal-state-cursor 'hbar
+        evil-motion-state-cursor 'hbar
+        evil-visual-state-cursor 'hbar
+        evil-insert-state-cursor 'hbar
+        evil-replace-state-cursor 'hbar
+        evil-operator-state-cursor 'hbar)
   (define-key evil-normal-state-map (kbd "C-d") 'evil-scroll-down)
   (define-key evil-visual-state-map (kbd "C-d") 'evil-scroll-down)
   (define-key evil-normal-state-map (kbd "C-u") 'evil-scroll-up)
@@ -200,13 +278,13 @@
       (interactive)
       (evil-delete (point-at-bol) (point)))))
 
-;; Enable Evil Surround
+;; Enable evil surround
 (use-package evil-surround
   :ensure t
   :config
   (global-evil-surround-mode 1))
 
-;; Enable Powerline
+;; Enable powerline
 (use-package powerline)
 (use-package airline-themes
   :init
@@ -222,7 +300,7 @@
   :config
   (load-theme 'airline-molokai))
 
-;; Enable Flycheck and override defaults
+;; Enable flycheck and override defaults
 (use-package flycheck
   :config
   (setq flycheck-check-syntax-automatically '(save idle-change mode-enable)
@@ -236,7 +314,7 @@
 
 (use-package flycheck-pos-tip)
 
-;; Enable Projectile
+;; Enable projectile
 (use-package projectile
   :ensure t
   :config
@@ -244,7 +322,44 @@
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
   (projectile-mode +1))
 
-;; Enable Treemacs
+;; Enable org mode
+(use-package org
+  :config
+  (visual-line-mode 1)
+  :ensure t
+  :init
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "IN PROGRESS(i)" "|" "CANCELLED(c)" "DONE(d)")))
+	(setq org-log-done 'time)
+	(setq org-agenda-files
+        (append (file-expand-wildcards "~/org/agendas/*.org"))))
+
+(use-package org-bullets
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+  :ensure t
+  :requires org)
+
+(use-package org-journal
+  :ensure t
+  :requires org)
+
+(use-package org-sticky-header
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-sticky-header-mode)))
+  :ensure t
+  :requires org)
+
+(use-package org-projectile
+  :after org
+  :after projectile
+  :config
+  (setq org-projectile-projects-file "~/.org/projects/todos.org"
+        org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+  (push (org-projectile-project-todo-entry) org-capture-templates)
+  :ensure t)
+
+;; Enable treemacs
 (use-package treemacs
   :ensure t
   :defer t
@@ -292,7 +407,7 @@
 (use-package lsp-treemacs
   :commands lsp-treemacs-errors-list)
 
-;; Enable Company backends
+;; Enable company backends
 (use-package company-anaconda)
 (use-package company-tern)
 (use-package company-irony)
@@ -301,7 +416,7 @@
   :init
   (setq company-ghc-show-info t))
 
-;; Enable Company mode
+;; Enable company mode
 (use-package company
   :init
   (setq company-idle-delay 0.1)
@@ -310,21 +425,21 @@
   (add-hook 'after-init-hook 'global-company-mode))
 
 (add-hook 'emacs-lisp-mode-hook
-	  (lambda ()
-	    (add-to-list (make-local-variable 'company-backends) 'company-elisp)))
+          (lambda ()
+            (add-to-list (make-local-variable 'company-backends) 'company-elisp)))
 (add-hook 'emacs-lisp-mode-hook 'paredit-mode)
 (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
 
 (add-hook 'cmake-mode-hook
-	  (lambda ()
-	    (add-to-list (make-local-variable 'company-backends) 'company-cmake)))
+          (lambda ()
+            (add-to-list (make-local-variable 'company-backends) 'company-cmake)))
 
 (use-package company-lsp
   :commands company-lsp
   :config
   (push 'company-lsp company-backends))
 
-;; Enable Python
+;; Enable python
 (use-package anaconda-mode)
 (use-package python
   :config
@@ -333,10 +448,10 @@
   (add-hook 'python-mode-hook 'anaconda-mode)
   (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
   (add-hook 'python-mode-hook
-	    (lambda ()
-	      (add-to-list (make-local-variable 'company-backends) 'company-anaconda))))
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends) 'company-anaconda))))
 
-;; Enable Irony
+;; Enable irony
 (use-package irony
   :init
   (add-hook 'irony-mode-hook 'custom-irony-mode-hook)
@@ -344,8 +459,8 @@
   (add-hook 'c++-mode-hook 'irony-mode)
   (add-hook 'c-mode-hook 'irony-mode)
   (add-hook 'irony-mode-hook
-	    (lambda ()
-	      (add-to-list (make-local-variable 'company-backends) 'company-irony)))
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends) 'company-irony)))
   :config
   (defun custom-irony-mode-hook ()
     (define-key irony-mode-map [remap completion-at-point]
@@ -353,19 +468,19 @@
     (define-key irony-mode-map [remap complete-symbol]
       'irony-completion-at-point-async)))
 
-;; Enable Rust
+;; Enable rust
 (use-package rust-mode
   :init
   (setq rust-format-on-save t))
 
-;; Enable Go
+;; Enable go
 (use-package go-mode
   :init
   (add-hook 'go-mode-hook
-	    (lambda ()
-	      (add-to-list (make-local-variable 'company-backends) 'company-go))))
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends) 'company-go))))
 
-;; Configure Clojure & ClojureScript
+;; Configure clojure & clojurescript
 (use-package paredit)
 (use-package rainbow-delimiters)
 (use-package cider
@@ -387,7 +502,7 @@
   (add-hook 'clojurescript-mode-hook 'rainbow-delimiters-mode)
   (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode))
 
-;; Enable Elixir
+;; Enable elixir
 (use-package elixir-mode
   :init
   (add-hook 'elixir-mode-hook
@@ -401,8 +516,8 @@
 (use-package web-mode
   :init
   (add-hook 'web-mode-hook
-      (lambda ()
-        (add-to-list (make-local-variable 'company-backends) 'company-cs))))
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends) 'company-cs))))
 
 (use-package emmet-mode
   :config
@@ -414,10 +529,16 @@
   :interpreter ("node" . js2-mode)
   :init
   (add-hook 'js2-mode-hook
-	    (lambda ()
-	      (add-to-list (make-local-variable 'company-backends) 'company-tern)
-          (when (executable-find "eslint")
-            (flycheck-select-checker 'javascript-eslint)))))
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends) 'company-tern)
+              (when (executable-find "eslint")
+                (flycheck-select-checker 'javascript-eslint)))))
+
+(use-package prettier-js
+  :ensure t
+  :init
+  (add-hook 'j2-mode-hook 'prettier-js-mode)
+  (add-hook 'web-mode-hook 'prettier-js-mode))
 
 (use-package json-mode)
 
@@ -441,7 +562,7 @@
       ;; ## end of OPAM user-setup addition for emacs / base ## keep this line
       ))
 
-;; Enable Haskell
+;; Enable haskell
 (use-package haskell-mode
   :init
   (setq haskell-tags-on-save t)
@@ -455,8 +576,8 @@
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
   (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
   (add-hook 'haskell-mode-hook
-	    (lambda ()
-	      (add-to-list (make-local-variable 'company-backends) 'company-ghc)))
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends) 'company-ghc)))
   :config
   (define-key haskell-mode-map (kbd "C-`") 'haskell-interactive-bring)
   (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-or-reload)
@@ -467,7 +588,7 @@
   (define-key haskell-mode-map (kbd "C-c .") 'haskell-mode-jump-to-def-or-tag)
   (define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal))
 
-;; Enable PureScript
+;; Enable purescript
 (use-package purescript-mode
   :pin emacs-pe
   :init
@@ -475,7 +596,7 @@
 (use-package psci
   :pin emacs-pe)
 
-;; Enable Elm
+;; Enable elm
 (use-package elm-mode
   :ensure t
   :init
@@ -486,20 +607,20 @@
   :config
   (setq elm-format-on-save t))
 
-;; Enable Groovy
+;; Enable groovy
 (use-package groovy-mode)
 
-;; Enable Ensime
+;; Enable ensime
 (use-package ensime
   :pin melpa-stable)
 
-;; Enable Perl 6
+;; Enable perl 6
 (use-package perl6-mode)
 
-;; Enable Statistics
+;; Enable statistics
 (use-package ess)
 
-;; Enable Magit
+;; Enable magit
 (use-package magit
   :config
   (global-set-key (kbd "C-x g") 'magit-status)

@@ -23,6 +23,7 @@ if exists('*minpac#init')
   call minpac#add('davidhalter/jedi-vim')
   call minpac#add('eagletmt/ghcmod-vim')
   call minpac#add('eagletmt/neco-ghc')
+  call minpac#add('elixir-editors/vim-elixir')
   call minpac#add('elmcast/elm-vim')
   call minpac#add('fatih/vim-go', {'do': ':GoUpdateBinaries'})
   call minpac#add('fsharp/vim-fsharp', {'do': '!make fsautocomplete'})
@@ -34,6 +35,7 @@ if exists('*minpac#init')
   call minpac#add('mileszs/ack.vim')
   call minpac#add('neoclide/coc.nvim', {'branch': 'release'})
   call minpac#add('Olical/conjure', {'tag': 'v2.1.2', 'do': '!bin/compile'})
+  call minpac#add('prettier/vim-prettier', {'do': 'npm install'})
   call minpac#add('racer-rust/vim-racer')
   call minpac#add('reasonml-editor/vim-reason-plus')
   call minpac#add('rust-lang/rust.vim')
@@ -142,6 +144,10 @@ let g:python_host_prog = '/usr/bin/python2'
 
 " Ale
 let g:ale_fix_on_save = 1
+let g:ale_fixers = {
+      \ 'javascript': ['prettier'],
+      \ 'css': ['prettier']
+      \ }
 let g:ale_linters = {
       \ 'go': ['gopls']
       \ }
@@ -170,6 +176,9 @@ autocmd BufWritePre *.go :call LanguageClient#textDocument_formatting_sync()
 let g:LanguageClient_serverCommans = {
     \ 'go': ['gopls']
     \ }
+
+" Prettier
+let g:prettier#auto_format_config_present = 1
 
 " Rainbow Parentheses
 autocmd VimEnter * RainbowParenthesesToggle
@@ -228,3 +237,40 @@ vnoremap <C-h> <Esc><C-w>h
 vnoremap <C-j> <Esc><C-w>j
 vnoremap <C-k> <Esc><C-w>k
 vnoremap <C-l> <Esc><C-w>l
+" ## added by OPAM user-setup for vim / base ## 93ee63e278bdfc07d1139a748ed3fff2 ## you can edit, but keep this line
+let s:opam_share_dir = system("opam config var share")
+let s:opam_share_dir = substitute(s:opam_share_dir, '[\r\n]*$', '', '')
+
+let s:opam_configuration = {}
+
+function! OpamConfOcpIndent()
+  execute "set rtp^=" . s:opam_share_dir . "/ocp-indent/vim"
+endfunction
+let s:opam_configuration['ocp-indent'] = function('OpamConfOcpIndent')
+
+function! OpamConfOcpIndex()
+  execute "set rtp+=" . s:opam_share_dir . "/ocp-index/vim"
+endfunction
+let s:opam_configuration['ocp-index'] = function('OpamConfOcpIndex')
+
+function! OpamConfMerlin()
+  let l:dir = s:opam_share_dir . "/merlin/vim"
+  execute "set rtp+=" . l:dir
+endfunction
+let s:opam_configuration['merlin'] = function('OpamConfMerlin')
+
+let s:opam_packages = ["ocp-indent", "ocp-index", "merlin"]
+let s:opam_check_cmdline = ["opam list --installed --short --safe --color=never"] + s:opam_packages
+let s:opam_available_tools = split(system(join(s:opam_check_cmdline)))
+for tool in s:opam_packages
+  " Respect package order (merlin should be after ocp-index)
+  if count(s:opam_available_tools, tool) > 0
+    call s:opam_configuration[tool]()
+  endif
+endfor
+" ## end of OPAM user-setup addition for vim / base ## keep this line
+" ## added by OPAM user-setup for vim / ocp-indent ## f2668e36c4f1549661c95f4bb2b19a85 ## you can edit, but keep this line
+if count(s:opam_available_tools,"ocp-indent") == 0
+  source "/Users/sheikh_dan/.opam/4.09.0/share/ocp-indent/vim/indent/ocaml.vim"
+endif
+" ## end of OPAM user-setup addition for vim / ocp-indent ## keep this line
