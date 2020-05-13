@@ -1,6 +1,9 @@
 .netrwhist
+emacs.d/.lsp*
+emacs.d/.last-package-update-day
 emacs.d/anaconda-mode/
 emacs.d/auto-save-list/
+emacs.d/bookmarks
 emacs.d/.cache/
 emacs.d/elpa/
 emacs.d/ensime/

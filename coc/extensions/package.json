@@ -1,16 +1,16 @@
 {
   "dependencies": {
-    "coc-css": ">=1.2.2",
-    "coc-elixir": ">=0.2.3",
-    "coc-git": ">=1.7.9",
+    "coc-css": ">=1.2.3",
+    "coc-elixir": ">=0.2.5",
+    "coc-git": ">=1.7.13",
     "coc-html": ">=1.2.4",
-    "coc-json": ">=1.2.5",
-    "coc-metals": ">=0.7.4",
-    "coc-python": ">=1.2.9",
+    "coc-json": ">=1.2.6",
+    "coc-metals": ">=0.8.3",
+    "coc-python": ">=1.2.12",
     "coc-reason": ">=0.1.1",
-    "coc-rls": ">=1.1.4",
-    "coc-tsserver": ">=1.4.12",
-    "coc-xml": ">=1.11.0",
+    "coc-rls": ">=1.1.6",
+    "coc-tsserver": ">=1.4.15",
+    "coc-xml": ">=1.11.1",
     "coc-yaml": ">=1.0.4"
   }
 }

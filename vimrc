@@ -21,6 +21,7 @@ if exists('*minpac#init')
   call minpac#add('bhurlow/vim-parinfer')
   call minpac#add('chriskempson/base16-vim')
   call minpac#add('davidhalter/jedi-vim')
+  call minpac#add('derekwyatt/vim-scala')
   call minpac#add('eagletmt/ghcmod-vim')
   call minpac#add('eagletmt/neco-ghc')
   call minpac#add('elixir-editors/vim-elixir')
@@ -237,6 +238,10 @@ vnoremap <C-h> <Esc><C-w>h
 vnoremap <C-j> <Esc><C-w>j
 vnoremap <C-k> <Esc><C-w>k
 vnoremap <C-l> <Esc><C-w>l
+
+" Scala
+autocmd BufRead,BufNewFile *.sbt set FileType=scala
+
 " ## added by OPAM user-setup for vim / base ## 93ee63e278bdfc07d1139a748ed3fff2 ## you can edit, but keep this line
 let s:opam_share_dir = system("opam config var share")
 let s:opam_share_dir = substitute(s:opam_share_dir, '[\r\n]*$', '', '')

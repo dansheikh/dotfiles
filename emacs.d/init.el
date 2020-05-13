@@ -13,11 +13,14 @@
  package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                     ("org" . "https://orgmode.org/elpa/")
                     ("melpa" . "https://melpa.org/packages/")
-                    ("melpa-stable" . "https://stable.melpa.org/packages/")
-                    ("emacs-pe" . "https://emacs-pe.github.io/packages/"))
- package-archive-priorities '(("melpa-stable" . 1)))
+                    ("melpa-stable" . "https://stable.melpa.org/packages/"))
+ package-archive-priorities '(("gnu" . 9)
+                              ("org" . 9)
+                              ("melpa-stable" . 10)
+                              ("melpa" . 0)))
 
 (package-initialize)
+(package-refresh-contents)
 
 (when (not package-archive-contents)
   (package-refresh-contents)
@@ -29,12 +32,23 @@
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
 
+(setq config-file "~/.emacs.d/config.el")
+(load config-file 'noerror)
+
+;; Disable bell
+(setq ring-bell-function 'ignore)
+
+(use-package auto-package-update
+  :config
+  (setq auto-package-update-delete-old-versions t)
+  (setq auto-package-update-hide-results t)
+  (auto-package-update-maybe))
+
 ;; Set execution path
 ; (require 'shell-path "~/.emacs.d/shell-path.el")
 
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
-  :ensure t
   :config
   (exec-path-from-shell-initialize))
 
@@ -160,35 +174,39 @@
   (setq ido-enable-flex-matching t
         ido-use-virutal-buffers t))
 
-;; Enable and customize helm
-(use-package helm
+(use-package ivy
   :config
-  ;; Customize keybindings
-  (define-key helm-map (kbd "TAB") #'helm-execute-persistent-action)
-  (define-key helm-map (kbd "<tab>") #'helm-execute-persistent-action)
-  (define-key helm-map (kbd "C-z") #'helm-select-action)
-  (global-set-key (kbd "M-]") 'next-buffer)
-  (global-set-key (kbd "M-[") 'previous-buffer)
-  (global-set-key (kbd "M-x") 'helm-M-x)
-  (global-set-key (kbd "C-x C-m") 'helm-M-x)
-  (global-set-key (kbd "C-c C-m") 'helm-M-x)
-  (global-set-key (kbd "C-x b") 'helm-mini)
-  (global-set-key (kbd "C-s") 'helm-do-grep-ag)
-  (global-set-key (kbd "C-x C-f") 'helm-find-files))
-
-(use-package helm-ag
+  (setq ivy-use-virtual-buffers t
+        ivy-count-format "%d/%d "
+        enable-recursive-minibuffers t)
   :init
-  (setq helm-follow-mode-persistent t)
-  (setq helm-ag-base-command "ack --nocolor --nogroup")
-  :config
-  (global-set-key (kbd "M-f") 'helm-do-ag)
-  (global-set-key (kbd "M-s") 'helm-do-ag-this-file))
+  (ivy-mode 1))
+
+(use-package swiper)
+
+(use-package counsel)
+
+(use-package ranger
+  :init
+  (setq ranger-override-dired 'ranger
+        ranger-cleanup-eagerly t
+        ranger-modify-header t
+        ranger-header-func 'ranger-header-line
+        ranger-parent-header-func 'ranger-parent-header-line
+        ranger-preview-header-func 'ranger-preview-header-line
+        ranger-hide-cursor nil
+        ranger-footer-delay 0.2
+        ranger-preview-delay 0.2
+        ranger-parent-depth 2
+        ranger-preview-file t
+        ranger-width-preview 0.5
+        ranger-dont-show-binary t
+        ranger-excluded-extensions '("iso" "mkv" "mp3" "mp4")))
 
 ;; Enable which-key
 (use-package which-key
   :config
   (which-key-mode 1)
-  :ensure t
   :init
   (setq which-key-idle-delay 0.5)
   (setq which-key-prefix-prefix "+"))
@@ -203,40 +221,44 @@
     :prefix "SPC"
     :non-normal-prefix "M-SPC")
   (benevolent-dictator
+    ";" (general-simulate-key ";" :which-key ";")
     "c" (general-simulate-key "C-c" :which-key "C-c")
     "h" (general-simulate-key "C-h" :which-key "C-h")
     "x" (general-simulate-key "C-x" :which-key "C-x")
     "TAB" '(switch-to-prev-buffer :which-key "previous buffer")
-    "SPC" '(helm-M-x :which-key "M-x")
-    "/"   '(helm-ag :which-key "silver searcher")
-    ; Buffer management
+    "SPC" '(counsel-M-x :which-key "M-x")
+    "/"   '(counsel-ag :which-key "silver searcher")
+    ;; Buffer management
     "b"  '(:ignore t :which-key "buffer")
-    "bc" '(ido-kill-buffer :which-key "buffer close")
-    "bf" '(helm-do-ag-this-file :which-key "buffer find")
-    "bl" '(helm-mini :which-key "buffer list")
+    "bl" '(ivy-switch-buffer :which-key "buffer list")
     "bn" '(next-buffer :which-key "next buffer")
     "bp" '(previous-buffer :which-key "previous buffer")
+    "br" '(counsel-recentf :which-key "recent files")
     "bs" '(save-some-buffers :which-key "buffer save")
+    "bx" '(ido-kill-buffer :which-key "buffer delete")
     "bq" '(save-buffers-kill-terminal :which-key "buffer quit")
-    ; File management
+    ;; File management
     "f"  '(:ignore t :which-key "file")
-    "fs" '(helm-find-files :which-key "file search")
-    ; Git management
+    "f." '(counsel-find-file :which-key "file search")
+    "fr"  '(ranger :which-key "ranger")
+    "."  '(counsel-find-file :which-key "file search")
+    ;; Git management
     "g"  '(:ignore t :which-key "git")
     "gs" '(magit-status :which-key "git status")
     "gd" '(magit-dispatch-popup :which-key "git dispatch")
-    ; Interface management
+    ;; Interface management
     "i"  '(:ignore t :which-key "interface")
     "ie" '(eshell :which-key "open eshell")
-    ; Search management
+    "im" '(mini-eshell :which-key "open mini-eshell")
+    ;; Search management
     "s"  '(:ignore t :which-key "search")
-    "sg" '(helm-do-grep-ag :which-key "grep")
-    ; Tree management
+    "ss" '(swiper :which-key "swiper")
+    ;; Tree management
     "t"  '(:ignore t :which-key "tree")
     "tf" '(treemacs-find-file :which-key "treemacs find file")
     "tt" '(treemacs :which-key "treemacs")
     "tw" '(treemacs-select-window :which-key "treemacs window")
-    ; Window management
+    ;; Window management
     "w"  '(:ignore t :which-key "window")
     "wl" '(windmove-right :which-key "move right")
     "wh" '(windmove-left :which-key "move left")
@@ -246,7 +268,6 @@
     "w-" '(split-window-below :which-key "split below")
     "wo" '(delete-other-windows :which-key "delete other window")
     "wx" '(delete-window :which-key "delete window"))
-  :ensure t
   :init
   (setq which-key-idle-delay 0.5))
 
@@ -256,7 +277,6 @@
 
 ;; Enable evil
 (use-package evil
-  :ensure t
   :init
   (evil-mode t)
   :config
@@ -280,9 +300,18 @@
 
 ;; Enable evil surround
 (use-package evil-surround
-  :ensure t
   :config
   (global-evil-surround-mode 1))
+
+;; Enable evil embrace
+(use-package evil-embrace
+  :config
+  (evil-embrace-enable-evil-surround-integration))
+
+;; Enable evil easymotion
+(use-package evil-easymotion
+  :config
+  (evilem-default-keybindings ";"))
 
 ;; Enable powerline
 (use-package powerline)
@@ -300,23 +329,8 @@
   :config
   (load-theme 'airline-molokai))
 
-;; Enable flycheck and override defaults
-(use-package flycheck
-  :config
-  (setq flycheck-check-syntax-automatically '(save idle-change mode-enable)
-        flycheck-idle-change-delay 1.0)
-  (add-hook 'after-init-hook 'global-flycheck-mode)
-  (provide 'init-flycheck))
-
-(use-package flycheck-color-mode-line
-  :config
-  (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
-
-(use-package flycheck-pos-tip)
-
 ;; Enable projectile
 (use-package projectile
-  :ensure t
   :config
   (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
@@ -326,7 +340,6 @@
 (use-package org
   :config
   (visual-line-mode 1)
-  :ensure t
   :init
   (setq org-todo-keywords
         '((sequence "TODO(t)" "IN PROGRESS(i)" "|" "CANCELLED(c)" "DONE(d)")))
@@ -337,17 +350,14 @@
 (use-package org-bullets
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-  :ensure t
   :requires org)
 
 (use-package org-journal
-  :ensure t
   :requires org)
 
 (use-package org-sticky-header
   :config
   (add-hook 'org-mode-hook (lambda () (org-sticky-header-mode)))
-  :ensure t
   :requires org)
 
 (use-package org-projectile
@@ -356,12 +366,10 @@
   :config
   (setq org-projectile-projects-file "~/.org/projects/todos.org"
         org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
-  (push (org-projectile-project-todo-entry) org-capture-templates)
-  :ensure t)
+  (push (org-projectile-project-todo-entry) org-capture-templates))
 
 ;; Enable treemacs
 (use-package treemacs
-  :ensure t
   :defer t
   :config
   (treemacs-follow-mode t)
@@ -373,21 +381,17 @@
         ("s-f" . treemacs-find-file)))
 
 (use-package treemacs-evil
-  :after treemacs evil
-  :ensure t)
+  :after treemacs evil)
 
 (use-package treemacs-projectile
-  :after treemacs projectile
-  :ensure t)
+  :after treemacs projectile)
 
 (use-package treemacs-icons-dired
   :after treemacs dired
-  :ensure t
   :config (treemacs-icons-dired-mode))
 
 (use-package treemacs-magit
-  :after treemacs magit
-  :ensure t)
+  :after treemacs magit)
 
 ;; Enable YASnippet
 (use-package yasnippet
@@ -396,16 +400,30 @@
 
 ;; Enable LSP
 (use-package lsp-mode
-  :commands lsp)
+  :commands lsp
+  :hook
+  ((clojure-mode . lsp-mode)
+   (scala-mode . lsp-mode)
+   (go-mode . lsp-mode)
+   (lsp-mode . lsp-enable-which-key-integration)))
 
 (use-package lsp-ui
-  :commands lsp-ui-mode)
+  :commands lsp-ui-mode
+  :config
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+  :init
+  (setq lsp-ui-sideline-enable nil)
+  :requires
+  lsp-mode)
 
-(use-package helm-lsp
-  :commands helm-lsp-workspace-symbol)
+(use-package lsp-ivy
+  :commands lsp-ivy-workspace-symbol)
 
 (use-package lsp-treemacs
-  :commands lsp-treemacs-errors-list)
+  :commands lsp-treemacs-errors-list
+  :config
+  (lsp-metals-treeview-enable t)
+  (setq lsp-metals-treeview-show-when-views-received t))
 
 ;; Enable company backends
 (use-package company-anaconda)
@@ -502,6 +520,13 @@
   (add-hook 'clojurescript-mode-hook 'rainbow-delimiters-mode)
   (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode))
 
+;; Enable scala and sbt
+(use-package scala-mode
+  :mode "\\.s\\(cala\\|bt\\)$")
+
+(use-package sbt-mode
+  :commands sbt-start sbt-command)
+
 ;; Enable elixir
 (use-package elixir-mode
   :init
@@ -530,12 +555,9 @@
   :init
   (add-hook 'js2-mode-hook
             (lambda ()
-              (add-to-list (make-local-variable 'company-backends) 'company-tern)
-              (when (executable-find "eslint")
-                (flycheck-select-checker 'javascript-eslint)))))
+              (add-to-list (make-local-variable 'company-backends) 'company-tern))))
 
 (use-package prettier-js
-  :ensure t
   :init
   (add-hook 'j2-mode-hook 'prettier-js-mode)
   (add-hook 'web-mode-hook 'prettier-js-mode))
@@ -588,17 +610,8 @@
   (define-key haskell-mode-map (kbd "C-c .") 'haskell-mode-jump-to-def-or-tag)
   (define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal))
 
-;; Enable purescript
-(use-package purescript-mode
-  :pin emacs-pe
-  :init
-  (add-hook 'purescript-mode-hook #'haskell-indentation-mode))
-(use-package psci
-  :pin emacs-pe)
-
 ;; Enable elm
 (use-package elm-mode
-  :ensure t
   :init
   (add-hook 'elm-mode-hook #'elm-oracle-setup-completion)
   (add-hook 'elm-mode-hook
@@ -609,10 +622,6 @@
 
 ;; Enable groovy
 (use-package groovy-mode)
-
-;; Enable ensime
-(use-package ensime
-  :pin melpa-stable)
 
 ;; Enable perl 6
 (use-package perl6-mode)
@@ -625,6 +634,11 @@
   :config
   (global-set-key (kbd "C-x g") 'magit-status)
   (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup))
+
+;; Enable docker
+(use-package dockerfile-mode
+  :init
+  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 
 (provide 'init)
 
