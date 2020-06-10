@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "coc-css": ">=1.2.3",
-    "coc-elixir": ">=0.2.5",
+    "coc-elixir": ">=0.4.0",
     "coc-git": ">=1.7.13",
     "coc-html": ">=1.2.4",
     "coc-json": ">=1.2.6",

@@ -24,19 +24,22 @@ if exists('*minpac#init')
   call minpac#add('derekwyatt/vim-scala')
   call minpac#add('eagletmt/ghcmod-vim')
   call minpac#add('eagletmt/neco-ghc')
+  call minpac#add('easymotion/vim-easymotion')
   call minpac#add('elixir-editors/vim-elixir')
   call minpac#add('elmcast/elm-vim')
   call minpac#add('fatih/vim-go', {'do': ':GoUpdateBinaries'})
   call minpac#add('fsharp/vim-fsharp', {'do': '!make fsautocomplete'})
   call minpac#add('guns/vim-sexp')
+  call minpac#add('haya14busa/incsearch.vim')
+  call minpac#add('haya14busa/incsearch-easymotion.vim')
   call minpac#add('junegunn/fzf.vim')
   call minpac#add('kien/rainbow_parentheses.vim')
   call minpac#add('let-def/ocp-indent-vim')
   call minpac#add('mattn/emmet-vim')
   call minpac#add('mileszs/ack.vim')
   call minpac#add('neoclide/coc.nvim', {'branch': 'release'})
-  call minpac#add('Olical/conjure', {'tag': 'v2.1.2', 'do': '!bin/compile'})
-  call minpac#add('prettier/vim-prettier', {'do': 'npm install'})
+  call minpac#add('Olical/conjure', {'tag': 'v2.1.2'})
+  call minpac#add('prettier/vim-prettier', {'do': '!npm install'})
   call minpac#add('racer-rust/vim-racer')
   call minpac#add('reasonml-editor/vim-reason-plus')
   call minpac#add('rust-lang/rust.vim')
@@ -61,13 +64,13 @@ let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
 let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
 
 if exists("$TMUX")
-    let &t_SI .= "\<Esc>Ptmux;\<Esc>\<Esc>[3 q\<Esc>\\"
-    let &t_SR .= "\<Esc>Ptmux;\<Esc>\<Esc>[3 q\<Esc>\\"
-    let &t_EI .= "\<Esc>Ptmux;\<Esc>\<Esc>[4 q\<Esc>\\"
+    let &t_SI .= "\<Esc>Ptmux;\<Esc>\<Esc>[1 q\<Esc>\\"
+    let &t_SR .= "\<Esc>Ptmux;\<Esc>\<Esc>[1 q\<Esc>\\"
+    let &t_EI .= "\<Esc>Ptmux;\<Esc>\<Esc>[2 q\<Esc>\\"
 else
-    let &t_SI .= "\<Esc>[3 q"
-    let &t_SR .= "\<Esc>[3 q"
-    let &t_EI .= "\<Esc>[4 q"
+    let &t_SI .= "\<Esc>[1 q"
+    let &t_SR .= "\<Esc>[1 q"
+    let &t_EI .= "\<Esc>[2 q"
 endif
 
 if has('termguicolors')
@@ -201,6 +204,11 @@ map <silent> tw :GhcModTypeInsert<CR>
 map <silent> ts :GhcModSplitFunCase<CR>
 map <silent> tq :GhcModType<CR>
 map <silent> te :GhcModTypeClear<CR>
+map <leader> <plug>(easymotion-prefix)
+map / <plug>(incsearch-forward)
+map ? <plug>(incsearch-backward)
+map <leader>/ <plug>(incsearch-easymotion-/)
+map <leader>? <plug>(incsearch-easymotion-?)
 noremap <space> :
 nmap <leader>b :Buffers<CR>
 nmap <leader>f :Files<CR>
@@ -242,40 +250,3 @@ vnoremap <C-l> <Esc><C-w>l
 " Scala
 autocmd BufRead,BufNewFile *.sbt set FileType=scala
 
-" ## added by OPAM user-setup for vim / base ## 93ee63e278bdfc07d1139a748ed3fff2 ## you can edit, but keep this line
-let s:opam_share_dir = system("opam config var share")
-let s:opam_share_dir = substitute(s:opam_share_dir, '[\r\n]*$', '', '')
-
-let s:opam_configuration = {}
-
-function! OpamConfOcpIndent()
-  execute "set rtp^=" . s:opam_share_dir . "/ocp-indent/vim"
-endfunction
-let s:opam_configuration['ocp-indent'] = function('OpamConfOcpIndent')
-
-function! OpamConfOcpIndex()
-  execute "set rtp+=" . s:opam_share_dir . "/ocp-index/vim"
-endfunction
-let s:opam_configuration['ocp-index'] = function('OpamConfOcpIndex')
-
-function! OpamConfMerlin()
-  let l:dir = s:opam_share_dir . "/merlin/vim"
-  execute "set rtp+=" . l:dir
-endfunction
-let s:opam_configuration['merlin'] = function('OpamConfMerlin')
-
-let s:opam_packages = ["ocp-indent", "ocp-index", "merlin"]
-let s:opam_check_cmdline = ["opam list --installed --short --safe --color=never"] + s:opam_packages
-let s:opam_available_tools = split(system(join(s:opam_check_cmdline)))
-for tool in s:opam_packages
-  " Respect package order (merlin should be after ocp-index)
-  if count(s:opam_available_tools, tool) > 0
-    call s:opam_configuration[tool]()
-  endif
-endfor
-" ## end of OPAM user-setup addition for vim / base ## keep this line
-" ## added by OPAM user-setup for vim / ocp-indent ## f2668e36c4f1549661c95f4bb2b19a85 ## you can edit, but keep this line
-if count(s:opam_available_tools,"ocp-indent") == 0
-  source "/Users/sheikh_dan/.opam/4.09.0/share/ocp-indent/vim/indent/ocaml.vim"
-endif
-" ## end of OPAM user-setup addition for vim / ocp-indent ## keep this line

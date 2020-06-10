@@ -16,11 +16,10 @@
                     ("melpa-stable" . "https://stable.melpa.org/packages/"))
  package-archive-priorities '(("gnu" . 9)
                               ("org" . 9)
-                              ("melpa-stable" . 10)
-                              ("melpa" . 0)))
+                              ("melpa-stable" . 8)
+                              ("melpa" . 10)))
 
 (package-initialize)
-(package-refresh-contents)
 
 (when (not package-archive-contents)
   (package-refresh-contents)
@@ -69,10 +68,17 @@
 (setq-default buffer-file-coding-system 'utf-8-unix)
 (prefer-coding-system 'utf-8-unix)
 
+;; Enable icons
+(use-package all-the-icons)
+
 ;; Set theme
-(use-package gruvbox-theme
+(use-package doom-themes
   :config
-  (load-theme 'gruvbox-dark-soft t))
+  (doom-themes-org-config)
+  (load-theme 'doom-palenight t)
+  :init
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t))
 
 ;; Set default font
 (add-to-list 'default-frame-alist '(font . "Dank Mono-12"))
@@ -208,8 +214,16 @@
   :config
   (which-key-mode 1)
   :init
-  (setq which-key-idle-delay 0.5)
-  (setq which-key-prefix-prefix "+"))
+  (setq which-key-idle-delay 0.2)
+  (setq which-key-popup-type 'side-window)
+  (setq which-key-side-window-location 'bottom)
+  (setq which-key-side-window-max-width 0.33)
+  (setq which-key-add-column-padding 4)
+  (setq which-key-max-display-columns 6)
+  (setq which-key-separator " ⟶ ")
+  (setq which-key-prefix-prefix "+")
+  (setq which-key-show-remaining-keys t)
+  (setq which-key-allow-evil-operators t))
 
 ;; Enable general
 (use-package general
@@ -234,7 +248,8 @@
     "bn" '(next-buffer :which-key "next buffer")
     "bp" '(previous-buffer :which-key "previous buffer")
     "br" '(counsel-recentf :which-key "recent files")
-    "bs" '(save-some-buffers :which-key "buffer save")
+    "bS" '(save-some-buffers :which-key "buffer any save")
+    "bs" '(save-buffer :which-key "buffer any save")
     "bx" '(ido-kill-buffer :which-key "buffer delete")
     "bq" '(save-buffers-kill-terminal :which-key "buffer quit")
     ;; File management
@@ -250,14 +265,19 @@
     "i"  '(:ignore t :which-key "interface")
     "ie" '(eshell :which-key "open eshell")
     "im" '(mini-eshell :which-key "open mini-eshell")
+    ;; Org management
+    "o"  '(:ignore t :which-key "org")
+    "od" '(org-deadline :which-key "deadline")
+    "ot" '(org-time-stamp :which-key "timestamp")
+    ;; Project management
+    "p"  '(:ignore t :which-key "project")
+    "pp" '(projectile-switch-project :which-key "switch project")
     ;; Search management
     "s"  '(:ignore t :which-key "search")
     "ss" '(swiper :which-key "swiper")
     ;; Tree management
     "t"  '(:ignore t :which-key "tree")
-    "tf" '(treemacs-find-file :which-key "treemacs find file")
-    "tt" '(treemacs :which-key "treemacs")
-    "tw" '(treemacs-select-window :which-key "treemacs window")
+    "tt" '(neotree-toggle :which-key "neotree-toggle")
     ;; Window management
     "w"  '(:ignore t :which-key "window")
     "wl" '(windmove-right :which-key "move right")
@@ -267,9 +287,7 @@
     "w+" '(split-window-right :which-key "split right")
     "w-" '(split-window-below :which-key "split below")
     "wo" '(delete-other-windows :which-key "delete other window")
-    "wx" '(delete-window :which-key "delete window"))
-  :init
-  (setq which-key-idle-delay 0.5))
+    "wx" '(delete-window :which-key "delete window")))
 
 ;; Enable global buffer auto-revert
 (global-auto-revert-mode 1)
@@ -329,12 +347,32 @@
   :config
   (load-theme 'airline-molokai))
 
+;; Enable flycheck
+(use-package flycheck
+  :config
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+  (provide 'init-flycheck)
+  :init
+  (setq flycheck-check-syntax-automatically '(mode-enabled idle-buffer-switch idle-change save)
+        flycheck-idle-buffer-switch-delay 1.0
+        flycheck-idle-change-delay 3.0))
+
+(use-package flycheck-color-mode-line
+  :config
+  (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
+
+(use-package flycheck-pos-tip)
+
 ;; Enable projectile
 (use-package projectile
   :config
   (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-  (projectile-mode +1))
+  (projectile-mode +1)
+  :init
+  (setq projectile-project-search-path '("~/Workspace")
+        projectile-completion-system 'ivy
+        projectile-switch-project-action 'neotree-projectile-action))
 
 ;; Enable org mode
 (use-package org
@@ -368,30 +406,12 @@
         org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
   (push (org-projectile-project-todo-entry) org-capture-templates))
 
-;; Enable treemacs
-(use-package treemacs
-  :defer t
-  :config
-  (treemacs-follow-mode t)
-  (treemacs-filewatch-mode t)
-  (treemacs-fringe-indicator-mode t)
-  :bind
-  (:map global-map
-        ("s-t" . treemacs)
-        ("s-f" . treemacs-find-file)))
-
-(use-package treemacs-evil
-  :after treemacs evil)
-
-(use-package treemacs-projectile
-  :after treemacs projectile)
-
-(use-package treemacs-icons-dired
-  :after treemacs dired
-  :config (treemacs-icons-dired-mode))
-
-(use-package treemacs-magit
-  :after treemacs magit)
+;; Enable neotree
+(use-package neotree
+  :init
+  (setq neo-theme (if (display-graphic-p) 'icons 'arrow)
+        neo-smart-open t
+        neo-autorefresh nil))
 
 ;; Enable YASnippet
 (use-package yasnippet
@@ -401,11 +421,18 @@
 ;; Enable LSP
 (use-package lsp-mode
   :commands lsp
+  :config
+  (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
   :hook
-  ((clojure-mode . lsp-mode)
-   (scala-mode . lsp-mode)
-   (go-mode . lsp-mode)
-   (lsp-mode . lsp-enable-which-key-integration)))
+  ((clojure-mode . lsp)
+   (scala-mode . lsp)
+   (go-mode . lsp)
+   (terraform-mode . lsp)
+   (lsp-mode . (lambda ()
+                 (let ((lsp-keymap-prefix "C-c l"))
+                   (lsp-enable-which-key-integration)))))
+  :init
+  (setq lsp-terraform-server "terraform-ls"))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
@@ -419,15 +446,10 @@
 (use-package lsp-ivy
   :commands lsp-ivy-workspace-symbol)
 
-(use-package lsp-treemacs
-  :commands lsp-treemacs-errors-list
-  :config
-  (lsp-metals-treeview-enable t)
-  (setq lsp-metals-treeview-show-when-views-received t))
+(use-package dap-mode)
 
 ;; Enable company backends
 (use-package company-anaconda)
-(use-package company-tern)
 (use-package company-irony)
 (use-package company-go)
 (use-package company-ghc
@@ -451,11 +473,6 @@
 (add-hook 'cmake-mode-hook
           (lambda ()
             (add-to-list (make-local-variable 'company-backends) 'company-cmake)))
-
-(use-package company-lsp
-  :commands company-lsp
-  :config
-  (push 'company-lsp company-backends))
 
 ;; Enable python
 (use-package anaconda-mode)
@@ -499,8 +516,24 @@
               (add-to-list (make-local-variable 'company-backends) 'company-go))))
 
 ;; Configure clojure & clojurescript
+(use-package lispy
+  :init
+  (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1)))
+  (add-hook 'minibuffer-setup-hook 'conditionally-enable-lispy))
+
+(use-package lispyville
+  :config
+  (lispyville-set-key-theme '(operators c-w additional slurp/barf-cp))
+  :init
+  (add-hook 'emacs-lisp-mode-hook #'lispyville-mode)
+  (add-hook 'lispy-mode-hook #'lispyville-mode))
+
 (use-package paredit)
-(use-package rainbow-delimiters)
+
+(use-package rainbow-delimiters
+  :init
+  (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode))
+
 (use-package cider
   :init
   (setq cider-show-error-buffer nil)
@@ -509,16 +542,25 @@
   (cider-auto-test-mode 1)
   (add-hook 'cider-mode-hook 'cider-company-enable-fuzzy-completion)
   (add-hook 'cider-repl-mode-hook 'cider-company-enable-fuzzy-completion))
+
+(use-package inf-clojure
+  :init
+  (setq inf-clojure-prompt-read-only nil)
+  (add-hook 'inf-clojure-mode-hook #'eldoc-mode)
+  (add-hook 'inf-clojure-mode-hook (lambda ()
+                                     (setq completion-at-point-functions nil))))
+
 (use-package clojure-mode
   :init
-  (add-hook 'clojure-mode-hook 'cider-mode)
-  (add-hook 'clojurescript-mode-hook 'cider-mode)
-  (add-hook 'clojure-mode-hook 'paredit-mode)
-  (add-hook 'clojurescript-mode-hook 'paredit-mode)
-  (add-hook 'cider-repl-mode-hook 'paredit-mode)
-  (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
-  (add-hook 'clojurescript-mode-hook 'rainbow-delimiters-mode)
-  (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode))
+  (add-hook 'clojure-mode-hook #'inf-clojure-minor-mode)
+  (add-hook 'clojurescript-mode-hook #'inf-clojure-minor-mode)
+  ;; (add-hook 'clojure-mode-hook 'cider-mode)
+  ;; (add-hook 'clojurescript-mode-hook 'cider-mode)
+  ;; (add-hook 'cider-repl-mode-hook 'lispy-mode)
+  ;; (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'clojure-mode-hook #'eldoc-mode)
+  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'clojurescript-mode-hook #'rainbow-delimiters-mode))
 
 ;; Enable scala and sbt
 (use-package scala-mode
@@ -538,11 +580,7 @@
   (setq alchemist-key-command-prefix (kbd "C-c ,")))
 
 ;; Enable web development support
-(use-package web-mode
-  :init
-  (add-hook 'web-mode-hook
-            (lambda ()
-              (add-to-list (make-local-variable 'company-backends) 'company-cs))))
+(use-package web-mode)
 
 (use-package emmet-mode
   :config
@@ -551,11 +589,7 @@
 
 (use-package js2-mode
   :mode (("\\.js\\'" . js2-mode))
-  :interpreter ("node" . js2-mode)
-  :init
-  (add-hook 'js2-mode-hook
-            (lambda ()
-              (add-to-list (make-local-variable 'company-backends) 'company-tern))))
+  :interpreter ("node" . js2-mode))
 
 (use-package prettier-js
   :init
@@ -624,7 +658,7 @@
 (use-package groovy-mode)
 
 ;; Enable perl 6
-(use-package perl6-mode)
+(use-package raku-mode)
 
 ;; Enable statistics
 (use-package ess)
@@ -639,6 +673,15 @@
 (use-package dockerfile-mode
   :init
   (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+
+(use-package hcl-mode
+  :init
+  (setq hcl-indent-level 2))
+
+(use-package terraform-mode
+  :init
+  (setq terraform-indent-level 2)
+  :requires (hcl-mode))
 
 (provide 'init)
 

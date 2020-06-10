@@ -7,9 +7,9 @@ zstyle ':vcs_info:git*' formats '%b'
 setopt PROMPT_SUBST
 
 BRANCH_MARK='%{\ue0a0%}'
-ARROW_PROMPT=$'\u2192'
-LAMBDA_PROMPT=$'\u03bb'
-STATUS="%(?:%{$fg[green]%}$LAMBDA_PROMPT:%{$fg[red]%}$LAMBDA_PROMPT)"
+CHECKMARK=$'\u2714'
+CROSSMARK=$'\u2718'
+STATUS="%(?:%{$fg[green]%}$CHECKMARK:%{$fg[red]%}$CROSSMARK)"
 
 scm_branch() {
   if [ -n "${vcs_info_msg_0_}" ]; then

@@ -81,6 +81,9 @@ if [ -f $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
    . $HOME/.nix-profile/etc/profile.d/nix.sh
 fi
 
+# Source sdkman.
+[[ -s $HOME/.sdkman/bin/sdkman-init.sh ]] && source $HOME/.sdkman/bin/sdkman-init.sh
+
 # Activate ASDF.
 asdf_prefix=$(brew --prefix asdf) && [ -n $asdf_prefix ] && . $asdf_prefix/asdf.sh
 
@@ -94,9 +97,5 @@ if command -v tmux &> /dev/null; then
   SESSION_NAME=$(date +"%H%M%S")
   [[ -n $TERM ]] && [[ ! $TERM =~ dumb ]] && [[ ! $TERM =~ screen ]] && [[ -z $INSIDE_EMACS ]] && [[ -z $TMUX ]] && exec tmux new-session -s $SESSION_NAME
 fi
-
-# Source sdkman.
-[[ -s $HOME/.sdkman/bin/sdkman-init.sh ]] && source $HOME/.sdkman/bin/sdkman-init.sh
-
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

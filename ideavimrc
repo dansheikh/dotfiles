@@ -1,0 +1,8 @@
+" Custom Behaviour:
+let mapleader=","
+set easymotion
+
+" Mappings:
+noremap <space> :
+map <Leader> <Plug>(easymotion-prefix)
+map <Leader>g <Plug>(easymotion-jumptoanywhere)
