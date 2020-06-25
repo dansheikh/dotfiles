@@ -60,7 +60,7 @@
 (setq default-frame-alist '((width . 200) (height . 50)))
 
 ;; Set cursor type
-(setq-default cursor-type 'hbar)
+(setq-default cursor-type 'box)
 
 ;; Set coding preference
 (set-default-coding-systems 'utf-8-unix)
@@ -299,14 +299,14 @@
   (evil-mode t)
   :config
   (evil-set-initial-state 'term-mode 'emacs)
-  (setq evil-default-cursor 'hbar
-        evil-emacs-state-cursor 'hbar
-        evil-normal-state-cursor 'hbar
-        evil-motion-state-cursor 'hbar
-        evil-visual-state-cursor 'hbar
-        evil-insert-state-cursor 'hbar
-        evil-replace-state-cursor 'hbar
-        evil-operator-state-cursor 'hbar)
+  (setq evil-default-cursor 'box
+        evil-emacs-state-cursor 'box
+        evil-normal-state-cursor 'box
+        evil-motion-state-cursor 'box
+        evil-visual-state-cursor 'box
+        evil-insert-state-cursor 'box
+        evil-replace-state-cursor 'box
+        evil-operator-state-cursor 'box)
   (define-key evil-normal-state-map (kbd "C-d") 'evil-scroll-down)
   (define-key evil-visual-state-map (kbd "C-d") 'evil-scroll-down)
   (define-key evil-normal-state-map (kbd "C-u") 'evil-scroll-up)
@@ -589,14 +589,19 @@
 
 (use-package js2-mode
   :mode (("\\.js\\'" . js2-mode))
+  :init
+  (setq js-indent-level 2)
   :interpreter ("node" . js2-mode))
 
 (use-package prettier-js
   :init
+  (setq prettier-js-args '("--arrow-parens" "avoid"))
   (add-hook 'j2-mode-hook 'prettier-js-mode)
   (add-hook 'web-mode-hook 'prettier-js-mode))
 
-(use-package json-mode)
+(use-package json-mode
+  :init
+  (add-hook 'json-mode-hook 'prettier-js-mode))
 
 (use-package sass-mode
   :init

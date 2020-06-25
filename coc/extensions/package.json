@@ -2,14 +2,14 @@
   "dependencies": {
     "coc-css": ">=1.2.3",
     "coc-elixir": ">=0.4.0",
-    "coc-git": ">=1.7.13",
+    "coc-git": ">=1.7.15",
     "coc-html": ">=1.2.4",
     "coc-json": ">=1.2.6",
     "coc-metals": ">=0.8.3",
     "coc-python": ">=1.2.12",
     "coc-reason": ">=0.1.1",
     "coc-rls": ">=1.1.6",
-    "coc-tsserver": ">=1.4.15",
+    "coc-tsserver": ">=1.5.2",
     "coc-xml": ">=1.11.1",
     "coc-yaml": ">=1.0.4"
   }
