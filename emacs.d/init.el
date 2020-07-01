@@ -249,7 +249,7 @@
     "bp" '(previous-buffer :which-key "previous buffer")
     "br" '(counsel-recentf :which-key "recent files")
     "bS" '(save-some-buffers :which-key "buffer any save")
-    "bs" '(save-buffer :which-key "buffer any save")
+    "bs" '(save-buffer :which-key "buffer save")
     "bx" '(ido-kill-buffer :which-key "buffer delete")
     "bq" '(save-buffers-kill-terminal :which-key "buffer quit")
     ;; File management
@@ -450,19 +450,20 @@
 
 ;; Enable company backends
 (use-package company-anaconda)
-(use-package company-irony)
 (use-package company-go)
 (use-package company-ghc
   :init
   (setq company-ghc-show-info t))
+(use-package company-irony)
 
 ;; Enable company mode
 (use-package company
+  :hook (after-init . global-company-mode)
   :init
-  (setq company-idle-delay 0.1)
-  (setq company-minimum-prefix-length 1)
-  (setq company-backends '(company-capf company-dabbrev-code company-dabbrev company-yasnippet company-files company-keywords))
-  (add-hook 'after-init-hook 'global-company-mode))
+  (setq company-idle-delay 0.1
+        company-minimum-prefix-length 1
+        company-backends '(company-capf company-dabbrev-code company-dabbrev company-yasnippet company-files company-keywords)
+        company-tooltip-align-annotations t))
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
@@ -592,6 +593,21 @@
   :init
   (setq js-indent-level 2)
   :interpreter ("node" . js2-mode))
+
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (eldoc-mode +1))
+
+(use-package tide
+  :config
+  (setq tide-completion-detailed t
+        tide-always-show-documentation t
+        tide-server-max-response-length 524288))
+
+(use-package typescript-mode
+  :hook ((typescript-mode . rainbow-delimiters-mode)
+         (typescript-mode . setup-tide-mode)))
 
 (use-package prettier-js
   :init
