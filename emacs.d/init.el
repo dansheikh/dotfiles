@@ -75,10 +75,26 @@
 (use-package doom-themes
   :config
   (doom-themes-org-config)
-  (load-theme 'doom-palenight t)
+  (load-theme 'doom-nord-light t)
   :init
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t))
+
+;; Enable powerline
+(use-package powerline)
+(use-package airline-themes
+  :init
+  (setq powerline-utf-8-separator-left        #xe0b0
+        powerline-utf-8-separator-right       #xe0b2
+        airline-utf-glyph-separator-left      #xe0b0
+        airline-utf-glyph-separator-right     #xe0b2
+        airline-utf-glyph-subseparator-left   #xe0b1
+        airline-utf-glyph-subseparator-right  #xe0b3
+        airline-utf-glyph-branch              #xe0a0
+        airline-utf-glyph-readonly            #xe0a2
+        airline-utf-glyph-linenumber          #xe0a1)
+  :config
+  (load-theme 'airline-base16_snazzy))
 
 ;; Set default font
 (add-to-list 'default-frame-alist '(font . "Dank Mono-12"))
@@ -330,22 +346,6 @@
 (use-package evil-easymotion
   :config
   (evilem-default-keybindings ";"))
-
-;; Enable powerline
-(use-package powerline)
-(use-package airline-themes
-  :init
-  (setq powerline-utf-8-separator-left        #xe0b0
-        powerline-utf-8-separator-right       #xe0b2
-        airline-utf-glyph-separator-left      #xe0b0
-        airline-utf-glyph-separator-right     #xe0b2
-        airline-utf-glyph-subseparator-left   #xe0b1
-        airline-utf-glyph-subseparator-right  #xe0b3
-        airline-utf-glyph-branch              #xe0a0
-        airline-utf-glyph-readonly            #xe0a2
-        airline-utf-glyph-linenumber          #xe0a1)
-  :config
-  (load-theme 'airline-molokai))
 
 ;; Enable flycheck
 (use-package flycheck
@@ -622,6 +622,19 @@
 (use-package sass-mode
   :init
   (add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode)))
+
+;; Enable psc-ide
+(use-package psc-ide
+  :init
+  (setq psc-ide-use-npm-bin t))
+
+;; Enable purescript
+(use-package purescript-mode
+  :init
+  (add-hook 'purescript-mode-hook (lambda ()
+                                    (psc-ide-mode)
+                                    (turn-on-purescript-indentation)))
+  :requires psc-ide)
 
 ;; Enable F#
 (use-package fsharp-mode)
