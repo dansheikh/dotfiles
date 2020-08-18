@@ -190,6 +190,12 @@ autocmd Syntax * RainbowParenthesesLoadRound
 autocmd Syntax * RainbowParenthesesLoadSquare
 autocmd Syntax * RainbowParenthesesLoadBraces
 
+" OCaml
+if executable('opam')
+  let g:opam_share = substitute(system('opam config var share'), '\n$', '', '''')
+  execute "set rtp+=" . g:opam_share . "/merlin/vim"
+endif
+
 " Mappings
 inoremap <C-c> <Esc><C-w>c
 inoremap <C-h> <Esc><C-w>h
