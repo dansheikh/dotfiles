@@ -146,6 +146,10 @@ endif
 let g:python3_host_prog = '/usr/bin/python3'
 let g:python_host_prog = '/usr/bin/python2'
 
+" Fuzzy Finder
+let g:fzf_preview_window = 'right:50%'
+let g:fzf_layout = { 'window': '20split enew' }
+
 " Ale
 let g:ale_fix_on_save = 1
 let g:ale_fixers = {

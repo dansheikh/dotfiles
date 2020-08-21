@@ -34,6 +34,9 @@
 (setq config-file "~/.emacs.d/config.el")
 (load config-file 'noerror)
 
+;; Space width
+(setq preferred-tab-width 2)
+
 ;; Disable bell
 (setq ring-bell-function 'ignore)
 
@@ -591,7 +594,7 @@
 (use-package js2-mode
   :mode (("\\.js\\'" . js2-mode))
   :init
-  (setq js-indent-level 2)
+  (setq js-indent-level preferred-tab-width)
   :interpreter ("node" . js2-mode))
 
 (defun setup-tide-mode ()
@@ -601,13 +604,16 @@
 
 (use-package tide
   :config
-  (setq tide-completion-detailed t
+  (setq js-indent-level preferred-tab-width
+        tide-completion-detailed t
         tide-always-show-documentation t
         tide-server-max-response-length 524288))
 
 (use-package typescript-mode
   :hook ((typescript-mode . rainbow-delimiters-mode)
-         (typescript-mode . setup-tide-mode)))
+         (typescript-mode . setup-tide-mode))
+  :init
+  (setq typescript-indent-level preferred-tab-width))
 
 (use-package prettier-js
   :init

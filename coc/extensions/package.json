@@ -2,15 +2,15 @@
   "dependencies": {
     "coc-css": ">=1.2.4",
     "coc-elixir": ">=0.5.0",
-    "coc-git": ">=1.8.2",
+    "coc-git": ">=1.8.3",
     "coc-html": ">=1.2.4",
     "coc-json": ">=1.2.6",
-    "coc-metals": ">=0.9.1",
+    "coc-metals": ">=0.9.2",
     "coc-python": ">=1.2.12",
     "coc-reason": ">=0.1.2",
     "coc-rls": ">=1.1.6",
-    "coc-tsserver": ">=1.5.4",
+    "coc-tsserver": ">=1.5.5",
     "coc-xml": ">=1.12.0",
-    "coc-yaml": ">=1.0.4"
+    "coc-yaml": ">=1.0.5"
   }
 }
