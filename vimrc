@@ -148,7 +148,7 @@ let g:python_host_prog = '/usr/bin/python2'
 
 " Fuzzy Finder
 let g:fzf_preview_window = 'right:50%'
-let g:fzf_layout = { 'window': '20split enew' }
+let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.9 } }
 
 " Ale
 let g:ale_fix_on_save = 1
@@ -207,6 +207,13 @@ inoremap <C-j> <Esc><C-w>j
 inoremap <C-k> <Esc><C-w>k
 inoremap <C-l> <Esc><C-w>l
 inoremap <C-o> <Esc><C-w>o
+inoremap <silent><expr> <Tab> pumvisible() ? "<C-n>" : <SID>check_back_space() ? "\<Tab>" : coc#refresh()
+inoremap <expr><S-Tab> pumvisible() ? "\<C-p>" : "\<C-h>"
+if has("nvim")
+  inoremap <silent><expr> <C-Space> coc#refresh()
+else
+  inoremap <silent><expr> <C-@> coc#refresh()
+endif
 map <C-n> :NERDTreeToggle<CR>
 map <Esc>[1;5D <C-Left>
 map <Esc>[1;5C <C-Right>
@@ -230,6 +237,8 @@ nmap <M-k> gk
 nmap <M-4> g$
 nmap <M-6> g^
 nmap <M-0> g^
+nmap <silent> [g <plug>(coc-diagnostic-prev)
+nmap <silent> ]g <plug>(coc-diagnostic-next)
 nnoremap <C-c> <C-w>c
 nnoremap <C-h> <C-w><C-h>
 nnoremap <C-j> <C-w><C-j>
