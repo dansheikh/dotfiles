@@ -164,7 +164,8 @@
                 (or (buffer-file-name) load-file-name)))
 
 ;; Enable line numbers
-(global-linum-mode t)
+(global-display-line-numbers-mode t)
+(setq display-line-numbers t)
 
 ;; Set tab (space) width
 (setq-default tab-width 2
