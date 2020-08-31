@@ -270,8 +270,7 @@
     "br" '(counsel-recentf :which-key "recent files")
     "bS" '(save-some-buffers :which-key "buffer any save")
     "bs" '(save-buffer :which-key "buffer save")
-    "bx" '(ido-kill-buffer :which-key "buffer delete")
-    "bq" '(save-buffers-kill-terminal :which-key "buffer quit")
+    "bk" '(ido-kill-buffer :which-key "buffer kill")
     ;; File management
     "f"  '(:ignore t :which-key "file")
     "f." '(counsel-find-file :which-key "file search")
@@ -292,6 +291,10 @@
     ;; Project management
     "p"  '(:ignore t :which-key "project")
     "pp" '(projectile-switch-project :which-key "switch project")
+    ;; Quit
+    "q" '(:ignore t :which-key "quit")
+    "qq" '(save-buffers-kill-terminal :which-key "save & quit")
+    "qQ" '(kill-emacs :which-key "quit")
     ;; Search management
     "s"  '(:ignore t :which-key "search")
     "ss" '(swiper :which-key "swiper")
