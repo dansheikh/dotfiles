@@ -34,6 +34,9 @@
 (setq config-file "~/.emacs.d/config.el")
 (load config-file 'noerror)
 
+;; Default directory
+(setq default-directory "~/")
+
 ;; Space width
 (setq preferred-tab-width 2)
 
@@ -259,7 +262,7 @@
     "c" (general-simulate-key "C-c" :which-key "C-c")
     "h" (general-simulate-key "C-h" :which-key "C-h")
     "x" (general-simulate-key "C-x" :which-key "C-x")
-    "TAB" '(switch-to-prev-buffer :which-key "previous buffer")
+    "TAB" '(ivy-switch-buffer :which-key "switch buffer")
     "SPC" '(counsel-M-x :which-key "M-x")
     "/"   '(counsel-ag :which-key "silver searcher")
     ;; Buffer management
@@ -271,13 +274,19 @@
     "bS" '(save-some-buffers :which-key "buffer any save")
     "bs" '(save-buffer :which-key "buffer save")
     "bk" '(ido-kill-buffer :which-key "buffer kill")
+    ;; Describe
+    "d"  '(:ignore t :which-key "describe")
+    "df" '(counsel-describe-function :which-key "describe function")
+    "dv" '(counsel-describe-variable :which-key "describe variable")
     ;; File management
     "f"  '(:ignore t :which-key "file")
     "f." '(counsel-find-file :which-key "file search")
-    "fr"  '(ranger :which-key "ranger")
+    "ff" '(counsel-fzf :which-key "file fuzzy search")
+    "fr" '(ranger :which-key "ranger")
     "."  '(counsel-find-file :which-key "file search")
     ;; Git management
     "g"  '(:ignore t :which-key "git")
+    "gc" '(counsel-git :which-key "git counsel")
     "gs" '(magit-status :which-key "git status")
     "gd" '(magit-dispatch-popup :which-key "git dispatch")
     ;; Interface management
@@ -292,7 +301,7 @@
     "p"  '(:ignore t :which-key "project")
     "pp" '(projectile-switch-project :which-key "switch project")
     ;; Quit
-    "q" '(:ignore t :which-key "quit")
+    "q"  '(:ignore t :which-key "quit")
     "qq" '(save-buffers-kill-terminal :which-key "save & quit")
     "qQ" '(kill-emacs :which-key "quit")
     ;; Search management

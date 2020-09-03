@@ -3,6 +3,7 @@ export LC_ALL=en_US.UTF-8
 export HISTCONTROL=erasedups
 export LESS="-CQaixr4"
 export DOTFILES="$HOME/Dotfiles"
+export FZF_DEFAULT_COMMAND="fd --type f"
 export VIMCONFIG="$HOME/.vim"
 export VIMDATA="$HOME/.vim"
 export CURL_BIN=/usr/local/opt/curl/bin
