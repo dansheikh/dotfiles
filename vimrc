@@ -17,7 +17,6 @@ endif
 if exists('*minpac#init')
   call minpac#init()
   call minpac#add('k-takata/minpac', {'type': 'opt'})
-  call minpac#add('autozimu/LanguageClient-neovim', {'branch': 'next', 'do': '!bash install.sh'})
   call minpac#add('bhurlow/vim-parinfer')
   call minpac#add('chriskempson/base16-vim')
   call minpac#add('davidhalter/jedi-vim')
@@ -178,12 +177,6 @@ let g:python3_host_prog = '/usr/local/bin/python3'
 " Emmet
 let g:user_emmet_leader_key = '<TAB>'
 let g:user_emmet_settings = {'javascript.jsx': {'extends': 'jsx'}}
-
-" LanguageClient
-autocmd BufWritePre *.go :call LanguageClient#textDocument_formatting_sync()
-let g:LanguageClient_serverCommans = {
-    \ 'go': ['gopls']
-    \ }
 
 " Prettier
 let g:prettier#auto_format_config_present = 1
