@@ -168,11 +168,11 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'base16'
 
-" Deoplete
-let g:deoplete#auto_complete = 1
-let g:deoplete#enable_at_startup = 1
-let g:deoplete#enable_ignore_case = 0
-let g:python3_host_prog = '/usr/local/bin/python3'
+" Coc
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~ '\s'
+endfunction
 
 " Emmet
 let g:user_emmet_leader_key = '<TAB>'
@@ -261,4 +261,3 @@ vnoremap <C-l> <Esc><C-w>l
 
 " Scala
 autocmd BufRead,BufNewFile *.sbt set FileType=scala
-

@@ -1,3 +1,4 @@
+export CONDA_AUTO_ACTIVATE_BASE=false
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 export HISTCONTROL=erasedups

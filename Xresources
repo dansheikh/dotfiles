@@ -1,13 +1,13 @@
 ! URxvt
 ! URxvt*termName: screen-256color
-URxvt*geometry: 120x30
+URxvt*geometry: 240x60
 URxvt*scrollBar: false
 URxvt*scrollBar_right: false
 ! URxvt*transparent: true
 ! URxvt*shading: 35
 URxvt*depth: 32
-URxvt*background: rgba:0000/0000/0220/dddd
-URxvt*font: xft:Droid Sans Mono Slashed for Powerline:size=10:antialias=true:hinting=true:autohint:true
+URxvt*background: rgba:0000/0000/0000/ffff
+URxvt*font: xft:Dank Mono:size=12:antialias=true:hinting=true:autohint:true
 URxvt.perl-ext-common: default,tabbed
 ! XTerm
 ! XTerm*termName: screen-256color
@@ -24,7 +24,7 @@ XTerm*scrollTtyOutput: false
 ! Emacs
 emacs*geometry: 120x30
 emacs24*geometry: 120x30
-emacs.font: Droid Sans Mono Slashed for Powerline-10
+emacs.font: Dank Mono-10
 
 #define _color0        #000d18
 #define _color8        #000d18
