@@ -14,7 +14,9 @@ if empty(glob('~/.vim/pack/minpac/opt/minpac'))
   silent !git clone https://github.com/k-takata/minpac.git ~/.vim/pack/minpac/opt/minpac
 endif
 
-if exists('*minpac#init')
+function! PackInit() abort
+  packadd minpac
+
   call minpac#init()
   call minpac#add('k-takata/minpac', {'type': 'opt'})
   call minpac#add('bhurlow/vim-parinfer')
@@ -50,11 +52,11 @@ if exists('*minpac#init')
   call minpac#add('vim-airline/vim-airline')
   call minpac#add('vim-airline/vim-airline-themes')
   call minpac#add('w0rp/ale')
-endif
+endfunction
 
-command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
-command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
-command! PackClean packadd minpac | source $MYVIMRC | call minpac#clean()
+command! PackUpdate source $MYVIMRC | call PackInit() | call minpac#update('', {'do': 'call minpac#status()'})
+command! PackClean source $MYVIMRC | call PackInit() | call minpac#clean()
+command! PackStatus packadd minpac | call minpac#status()
 
 syntax on
 filetype plugin indent on
