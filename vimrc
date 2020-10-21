@@ -97,6 +97,7 @@ endif
 
 " Custom Behaviour:
 let mapleader=","                       " Set mapleader key to comma.
+let &listchars="tab:\u25B8 ,nbsp:\u00BB,eol:\u00AC"
 set t_Co=256                            " Set to 256 colors.
 set background=dark                     " Darken background.
 set showmode                            " Always display current mode.
@@ -124,7 +125,6 @@ set hlsearch                            " Highlight search terms.
 set incsearch                           " Show search matches as typed.
 set gdefault                            " Search/replace 'globally' (on a line) by default.
 set fileencoding=utf-8
-let &listchars="tab:\u25B8 ,nbsp:\u00BB,eol:\u00AC"
 set list                                " Disable invisible characters by default, enable on-demand.
 set mouse=a                             " Enable mouse if terminal emulator support is available.
 set nobackup                            " Disable auto-backup.
@@ -136,6 +136,8 @@ set splitbelow
 set splitright
 set noerrorbells visualbell t_vb=
 set completeopt=menuone,longest,preview,noinsert
+set updatetime=300
+set shortmess+=c
 
 if has('autocmd')
     autocmd GUIEnter * set visualbell t_vb=

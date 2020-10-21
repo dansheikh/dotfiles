@@ -6,16 +6,25 @@ zstyle ':vcs_info:git*' formats '%b'
 
 setopt PROMPT_SUBST
 
-BRANCH_MARK='%{\ue0a0%}'
-CHECKMARK=$'\u2714'
-CROSSMARK=$'\u2718'
-STATUS="%(?:%{$fg[green]%}$CHECKMARK:%{$fg[red]%}$CROSSMARK)"
+mark() {
+  job_status=$?
+  checkmark='\u2714'
+  crossmark='\u2718'
 
-scm_branch() {
-  if [ -n "${vcs_info_msg_0_}" ]; then
-    echo -n "${BRANCH_MARK} ${vcs_info_msg_0_}"
+  if [ $job_status -eq 0 ]; then
+    printf "%%{$fg[green]%%}${checkmark}%%f "
+  else
+    printf "%%{$fg[red]%%}${crossmark}%%f "
   fi
 }
 
-PROMPT='%n@%m:%{$fg[cyan]%}%~%{$reset_color%}%# ${STATUS} %{$reset_color%}'
+scm_branch() {
+  branch_mark='\ue0a0'
+
+  if [ -n "${vcs_info_msg_0_}" ]; then
+    printf "${branch_mark} ${vcs_info_msg_0_}"
+  fi
+}
+
+PROMPT='%n %# %{$fg[cyan]%}%~%f $(mark)'
 RPROMPT='$(scm_branch) [%*]'
