@@ -84,9 +84,9 @@ if has('gui_running')
   set guioptions-=T                       " Remove tool bar.
   set guioptions-=r                       " Remove right scroll bar.
   set macligatures
-  set guifont=Dank\ Mono:h12
+  set guifont=Source\ Code\ Pro\ for\ Powerline:h12
   set columns=200                         " Window width.
-  set lines=50                            " Window height.
+  set lines=66                            " Window height.
 endif
 
 " Color Settings:

@@ -15,6 +15,7 @@ alias please='sudo $(fc -ln -1)'
 alias rm='rm -v'
 
 alias tmux='tmux -2'
+alias nwe='emacs -nw'
 
 # Redirect stdout and stderr to /dev/null
 alias -g NIL="> /dev/null 2>&1"

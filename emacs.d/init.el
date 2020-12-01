@@ -63,7 +63,7 @@
   (setq multi-term-program "/bin/zsh"))
 
 ;; Set frame size
-(setq default-frame-alist '((width . 200) (height . 50)))
+(setq default-frame-alist '((width . 225) (height . 65)))
 
 ;; Set cursor type
 (setq-default cursor-type 'box)
@@ -81,7 +81,7 @@
 (use-package doom-themes
   :config
   (doom-themes-org-config)
-  (load-theme 'doom-nord-light t)
+  (load-theme 'doom-gruvbox t)
   :init
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t))
@@ -90,7 +90,8 @@
 (use-package powerline)
 (use-package airline-themes
   :init
-  (setq powerline-utf-8-separator-left        #xe0b0
+  (setq powerline-default-separator           'utf-8
+        powerline-utf-8-separator-left        #xe0b0
         powerline-utf-8-separator-right       #xe0b2
         airline-utf-glyph-separator-left      #xe0b0
         airline-utf-glyph-separator-right     #xe0b2
@@ -98,42 +99,44 @@
         airline-utf-glyph-subseparator-right  #xe0b3
         airline-utf-glyph-branch              #xe0a0
         airline-utf-glyph-readonly            #xe0a2
-        airline-utf-glyph-linenumber          #xe0a1)
+        airline-utf-glyph-linenumber          #xe0a1
+        airline-cursor-colors                 t
+        airline-display-directory             'airline-directory-shortened)
   :config
-  (load-theme 'airline-base16_snazzy))
+  (load-theme 'airline-gruvbox-dark t))
 
 ;; Set default font
-(add-to-list 'default-frame-alist '(font . "Dank Mono-12"))
-(set-frame-font "Dank Mono-12")
+(add-to-list 'default-frame-alist '(font . "Source Code Pro for Powerline-12"))
+(set-frame-font "Source Code Pro for Powerline-12")
 
 ;; Set character table
-(let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
-               (35 . ".\\(?:###\\|##\\|_(\\|[#(?[_{]\\)")
-               (36 . ".\\(?:>\\)")
-               (37 . ".\\(?:\\(?:%%\\)\\|%\\)")
-               (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
-               (42 . ".\\(?:\\(?:\\*\\*/\\)\\|\\(?:\\*[*/]\\)\\|[*/>]\\)")
-               (43 . ".\\(?:\\(?:\\+\\+\\)\\|[+>]\\)")
-               (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
-               (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=-]\\)")
-               (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
-               (48 . ".\\(?:x[a-zA-Z]\\)")
-               (58 . ".\\(?:::\\|[:=]\\)")
-               (59 . ".\\(?:;;\\|;\\)")
-               (60 . ".\\(?:\\(?:!--\\)\\|\\(?:~~\\|->\\|\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[*$+~/<=>|-]\\)")
-               (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
-               (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
-               (63 . ".\\(?:\\(\\?\\?\\)\\|[:=?]\\)")
-               (91 . ".\\(?:]\\)")
-               (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
-               (94 . ".\\(?:=\\)")
-               (119 . ".\\(?:ww\\)")
-               (123 . ".\\(?:-\\)")
-               (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
-               (126 . ".\\(?:~>\\|~~\\|[>=@~-]\\)"))))
-  (dolist (char-regexp alist)
-    (set-char-table-range composition-function-table (car char-regexp)
-                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
+;; (let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
+;;                (35 . ".\\(?:###\\|##\\|_(\\|[#(?[_{]\\)")
+;;                (36 . ".\\(?:>\\)")
+;;                (37 . ".\\(?:\\(?:%%\\)\\|%\\)")
+;;                (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+;;                (42 . ".\\(?:\\(?:\\*\\*/\\)\\|\\(?:\\*[*/]\\)\\|[*/>]\\)")
+;;                (43 . ".\\(?:\\(?:\\+\\+\\)\\|[+>]\\)")
+;;                (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+;;                (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=-]\\)")
+;;                (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+;;                (48 . ".\\(?:x[a-zA-Z]\\)")
+;;                (58 . ".\\(?:::\\|[:=]\\)")
+;;                (59 . ".\\(?:;;\\|;\\)")
+;;                (60 . ".\\(?:\\(?:!--\\)\\|\\(?:~~\\|->\\|\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[*$+~/<=>|-]\\)")
+;;                (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+;;                (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+;;                (63 . ".\\(?:\\(\\?\\?\\)\\|[:=?]\\)")
+;;                (91 . ".\\(?:]\\)")
+;;                (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+;;                (94 . ".\\(?:=\\)")
+;;                (119 . ".\\(?:ww\\)")
+;;                (123 . ".\\(?:-\\)")
+;;                (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+;;                (126 . ".\\(?:~>\\|~~\\|[>=@~-]\\)"))))
+;;   (dolist (char-regexp alist)
+;;     (set-char-table-range composition-function-table (car char-regexp)
+;;                           `([,(cdr char-regexp) 0 font-shape-gstring]))))
 
 ;; Disable startup screen
 (setq inhibit-startup-screen t)
@@ -211,9 +214,22 @@
   :init
   (ivy-mode 1))
 
-(use-package swiper)
+(use-package swiper
+  :after ivy
+  :bind
+  (("C-s" . swiper)))
 
-(use-package counsel)
+(use-package counsel
+  :config
+  (defun counsel-fzf-dir (arg)
+    (counsel-fzf ivy-text (read-directory-name
+                           (concat
+                            (car (split-string counsel-fzf-cmd)) " in directory: "))))
+  (ivy-add-actions
+   'counsel-fzf
+   '(("s" counsel-fzf-dir "search directory")))
+  :init
+  (setq counsel-fzf-cmd "fd --type f | fzf -f \"%s\""))
 
 (use-package ranger
   :init
@@ -257,6 +273,18 @@
     :states '(normal visual insert emacs)
     :prefix "SPC"
     :non-normal-prefix "M-SPC")
+  (defun shrink-horizontally ()
+    (interactive)
+    (shrink-window-horizontally 10))
+  (defun enlarge-horizontally ()
+    (interactive)
+    (enlarge-window-horizontally 10))
+  (defun shrink-vertically ()
+    (interactive)
+    (shrink-window 10))
+  (defun enlarge-vertically ()
+    (interactive)
+    (enlarge-window 10))
   (benevolent-dictator
     ";" (general-simulate-key ";" :which-key ";")
     "c" (general-simulate-key "C-c" :which-key "C-c")
@@ -264,7 +292,7 @@
     "x" (general-simulate-key "C-x" :which-key "C-x")
     "TAB" '(ivy-switch-buffer :which-key "switch buffer")
     "SPC" '(counsel-M-x :which-key "M-x")
-    "/"   '(counsel-ag :which-key "silver searcher")
+    "/"   '(counsel-rg :which-key "ripgrep")
     ;; Buffer management
     "b"  '(:ignore t :which-key "buffer")
     "bl" '(ivy-switch-buffer :which-key "buffer list")
@@ -319,7 +347,12 @@
     "w+" '(split-window-right :which-key "split right")
     "w-" '(split-window-below :which-key "split below")
     "wo" '(delete-other-windows :which-key "delete other window")
-    "wx" '(delete-window :which-key "delete window")))
+    "wx" '(delete-window :which-key "delete window")
+    "w=" '(balance-windows :which-key "balance")
+    "w<" '(shrink-horizontally :which-key "shrink horizontally")
+    "w>" '(enlarge-horizontally :which-key "enlarge horizontally")
+    "w_" '(shrink-vertically :which-key "shrink vertically")
+    "w^" '(enlarge-vertically :which-key "enlarge vertically")))
 
 ;; Enable global buffer auto-revert
 (global-auto-revert-mode 1)
@@ -340,8 +373,9 @@
         evil-replace-state-cursor 'box
         evil-operator-state-cursor 'box)
   (define-key evil-normal-state-map (kbd "C-d") 'evil-scroll-down)
-  (define-key evil-visual-state-map (kbd "C-d") 'evil-scroll-down)
   (define-key evil-normal-state-map (kbd "C-u") 'evil-scroll-up)
+  (define-key evil-normal-state-map (kbd "C-s") 'swiper)
+  (define-key evil-visual-state-map (kbd "C-d") 'evil-scroll-down)
   (define-key evil-visual-state-map (kbd "C-u") 'evil-scroll-up)
   (define-key evil-insert-state-map (kbd "C-u")
     (lambda ()
@@ -361,7 +395,7 @@
 ;; Enable evil easymotion
 (use-package evil-easymotion
   :config
-  (evilem-default-keybindings ";"))
+  (evilem-default-keybindings ","))
 
 ;; Enable flycheck
 (use-package flycheck
@@ -390,6 +424,19 @@
         projectile-completion-system 'ivy
         projectile-switch-project-action 'neotree-projectile-action))
 
+;; Enable markdown
+(use-package markdown-mode
+  :commands
+  (markdown-mode gfm-mode)
+  :mode
+  (("README\\.md\\'" . gfm-mode)
+   ("\\.md\\'" . markdown-mode)
+   ("\\.markdown\\'" . markdown-mode)))
+
+;; Enable markdown preview
+(use-package markdown-preview-mode
+  :requires markdown-mode)
+
 ;; Enable org mode
 (use-package org
   :config
@@ -415,8 +462,7 @@
   :requires org)
 
 (use-package org-projectile
-  :after org
-  :after projectile
+  :after (org projectile)
   :config
   (setq org-projectile-projects-file "~/.org/projects/todos.org"
         org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
@@ -439,16 +485,23 @@
   :commands lsp
   :config
   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
+  (dolist (m '(clojure-mode
+               clojurec-mode
+               clojurescript-mode
+               clojurex-mode))
+    (add-to-list 'lsp-language-id-configuration `(,m . "clojure")))
+  (setq lsp-clojure-custom-server-command '("bash" "-c" "~/.emacs.d/.cache/lsp/clojure/clojure-lsp")
+        lsp-enable-indentation nil)
   :hook
   ((clojure-mode . lsp)
+   (clojurec-mode . lsp)
+   (clojurescript-mode . lsp)
    (scala-mode . lsp)
    (go-mode . lsp)
    (terraform-mode . lsp)
    (lsp-mode . (lambda ()
                  (let ((lsp-keymap-prefix "C-c l"))
-                   (lsp-enable-which-key-integration)))))
-  :init
-  (setq lsp-terraform-server "terraform-ls"))
+                   (lsp-enable-which-key-integration))))))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
@@ -474,10 +527,12 @@
 
 ;; Enable company mode
 (use-package company
-  :hook (after-init . global-company-mode)
   :init
+  (add-hook 'after-init-hook #'global-company-mode)
+  (add-hook 'after-init-hook #'company-tng-mode)
   (setq company-idle-delay 0.1
         company-minimum-prefix-length 1
+        company-selection-wrap-around t
         company-backends '(company-capf company-dabbrev-code company-dabbrev company-yasnippet company-files company-keywords)
         company-tooltip-align-annotations t))
 
@@ -551,18 +606,20 @@
   :init
   (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode))
 
-(use-package cider
-  :init
-  (setq cider-show-error-buffer nil)
-  (setq cider-repl-display-help-banner nil)
-  (setq cider-repl-shortcut-dispatch-char ?\;)
-  (cider-auto-test-mode 1)
-  (add-hook 'cider-mode-hook 'cider-company-enable-fuzzy-completion)
-  (add-hook 'cider-repl-mode-hook 'cider-company-enable-fuzzy-completion))
+;; (use-package cider
+;;   :init
+;;   (setq cider-show-error-buffer nil)
+;;   (setq cider-repl-display-help-banner nil)
+;;   (setq cider-repl-shortcut-dispatch-char ?\;)
+;;   (cider-auto-test-mode 1)
+;;   (add-hook 'cider-mode-hook 'cider-company-enable-fuzzy-completion)
+;;   (add-hook 'cider-repl-mode-hook 'cider-company-enable-fuzzy-completion))
 
 (use-package inf-clojure
   :init
-  (setq inf-clojure-prompt-read-only nil)
+  (setq inf-clojure-prompt-read-only nil
+        inf-clojure-custom-repl-type "clj"
+        inf-clojure-custom-startup "clj -A:compliment")
   (add-hook 'inf-clojure-mode-hook #'eldoc-mode)
   (add-hook 'inf-clojure-mode-hook (lambda ()
                                      (setq completion-at-point-functions nil))))
@@ -592,6 +649,7 @@
   (add-hook 'elixir-mode-hook
             (lambda ()
               (add-hook 'before-save-hook 'elixir-format nil t))))
+
 (use-package alchemist
   :init
   (setq alchemist-key-command-prefix (kbd "C-c ,")))
