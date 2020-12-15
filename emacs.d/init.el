@@ -496,6 +496,7 @@
   ((clojure-mode . lsp)
    (clojurec-mode . lsp)
    (clojurescript-mode . lsp)
+   (python-mode . lsp)
    (scala-mode . lsp)
    (go-mode . lsp)
    (terraform-mode . lsp)
@@ -517,8 +518,11 @@
 
 (use-package dap-mode)
 
+(use-package lsp-python-ms
+  :init
+  (setq lsp-python-ms-auto-install-server t))
+
 ;; Enable company backends
-(use-package company-anaconda)
 (use-package company-go)
 (use-package company-ghc
   :init
@@ -547,16 +551,10 @@
             (add-to-list (make-local-variable 'company-backends) 'company-cmake)))
 
 ;; Enable python
-(use-package anaconda-mode)
 (use-package python
   :config
   (setq python-shell-interpreter (substring (shell-command-to-string "which ipython") 0 -1)
-        python-shell-interpreter-args "--simple-prompt -i")
-  (add-hook 'python-mode-hook 'anaconda-mode)
-  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
-  (add-hook 'python-mode-hook
-            (lambda ()
-              (add-to-list (make-local-variable 'company-backends) 'company-anaconda))))
+        python-shell-interpreter-args "--simple-prompt -i"))
 
 ;; Enable irony
 (use-package irony

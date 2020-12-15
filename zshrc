@@ -95,7 +95,10 @@ fi
 # Launch Tmux.
 if command -v tmux &> /dev/null; then
   SESSION_NAME=$(date +"%H%M%S")
-  [[ -n $TERM ]] && [[ ! $TERM =~ dumb ]] && [[ ! $TERM =~ screen ]] && [[ -z $INSIDE_EMACS ]] && [[ -z $TMUX ]] && exec tmux new-session -s $SESSION_NAME
+  VALID_TERM=$(! grep -Eq "dumb|screen.*" <<< "$TERM"; echo $?)
+  JAVA_PARENT=$(ps -p $PPID | grep -Eq "java"; echo $?)
+
+  [ -n $TERM ] && [ $VALID_TERM -eq 0 ] && [ -z $TMUX ] && [ -z $INSIDE_EMACS ] && [ $JAVA_PARENT -ne 0 ] && exec tmux new-session -s $SESSION_NAME
 fi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
