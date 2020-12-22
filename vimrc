@@ -19,6 +19,7 @@ function! PackInit() abort
 
   call minpac#init()
   call minpac#add('k-takata/minpac', {'type': 'opt'})
+  call minpac#add('arcticicestudio/nord-vim')
   call minpac#add('bhurlow/vim-parinfer')
   call minpac#add('chriskempson/base16-vim')
   call minpac#add('davidhalter/jedi-vim')
@@ -85,15 +86,12 @@ if has('gui_running')
   set guioptions-=r                       " Remove right scroll bar.
   set macligatures
   set guifont=Source\ Code\ Pro\ for\ Powerline:h12
-  set columns=200                         " Window width.
+  set columns=231                         " Window width.
   set lines=66                            " Window height.
 endif
 
 " Color Settings:
-if filereadable(expand("~/.vimrc_background"))
-  let base16colorspace=256
-  source ~/.vimrc_background
-endif
+colorscheme nord
 
 " Custom Behaviour:
 let mapleader=","                       " Set mapleader key to comma.
@@ -170,7 +168,7 @@ let g:airline#extensions#ale#enabled = 1
 " Airline
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
-let g:airline_theme = 'base16'
+let g:airline_theme = 'nord'
 
 " Coc
 function! s:check_back_space() abort
@@ -236,6 +234,14 @@ nmap <M-6> g^
 nmap <M-0> g^
 nmap <silent> [g <plug>(coc-diagnostic-prev)
 nmap <silent> ]g <plug>(coc-diagnostic-next)
+nnoremap + <C-w>+
+nnoremap - <C-w>-
+nnoremap > <C-w>>
+nnoremap < <C-w><
+nnoremap _ <C-w>
+nnoremap <bar> <C-w>|
+nnoremap <C-R> <C-W>R
+nnoremap <C-T> <C-W>T
 nnoremap <C-c> <C-w>c
 nnoremap <C-h> <C-w><C-h>
 nnoremap <C-j> <C-w><C-j>

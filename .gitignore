@@ -19,6 +19,8 @@ emacs.d/server/
 emacs.d/transient/
 emacs.d/tramp
 emacs.d/url/
+tmux/plugins/
+!tmux/plugins/tpm/
 vim/bundle/repos/
 vim/bundle/.cache/
 vim/bundle/cache_nvim

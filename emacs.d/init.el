@@ -55,12 +55,8 @@
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
   :config
+  (setq exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
-
-;; Configure multi-term
-(use-package multi-term
-  :init
-  (setq multi-term-program "/bin/zsh"))
 
 ;; Set frame size
 (setq default-frame-alist '((width . 225) (height . 65)))
@@ -78,16 +74,14 @@
 (use-package all-the-icons)
 
 ;; Set theme
-(use-package doom-themes
+(use-package nord-theme
   :config
-  (doom-themes-org-config)
-  (load-theme 'doom-gruvbox t)
-  :init
-  (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t))
+  (load-theme 'nord t))
 
 ;; Enable powerline
 (use-package powerline)
+
+;; Enable airline
 (use-package airline-themes
   :init
   (setq powerline-default-separator           'utf-8
@@ -103,7 +97,7 @@
         airline-cursor-colors                 t
         airline-display-directory             'airline-directory-shortened)
   :config
-  (load-theme 'airline-gruvbox-dark t))
+  (load-theme 'airline-base16_nord t))
 
 ;; Set default font
 (add-to-list 'default-frame-alist '(font . "Source Code Pro for Powerline-12"))
@@ -259,7 +253,7 @@
   (setq which-key-side-window-max-width 0.33)
   (setq which-key-add-column-padding 4)
   (setq which-key-max-display-columns 6)
-  (setq which-key-separator " ⟶ ")
+  (setq which-key-separator " » ")
   (setq which-key-prefix-prefix "+")
   (setq which-key-show-remaining-keys t)
   (setq which-key-allow-evil-operators t))
