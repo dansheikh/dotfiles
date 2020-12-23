@@ -170,12 +170,6 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'nord'
 
-" Coc
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~ '\s'
-endfunction
-
 " Emmet
 let g:user_emmet_leader_key = '<TAB>'
 let g:user_emmet_settings = {'javascript.jsx': {'extends': 'jsx'}}
@@ -202,13 +196,9 @@ inoremap <C-j> <Esc><C-w>j
 inoremap <C-k> <Esc><C-w>k
 inoremap <C-l> <Esc><C-w>l
 inoremap <C-o> <Esc><C-w>o
-inoremap <silent><expr> <Tab> pumvisible() ? "<C-n>" : <SID>check_back_space() ? "\<Tab>" : coc#refresh()
-inoremap <expr><S-Tab> pumvisible() ? "\<C-p>" : "\<C-h>"
-if has("nvim")
-  inoremap <silent><expr> <C-Space> coc#refresh()
-else
-  inoremap <silent><expr> <C-@> coc#refresh()
-endif
+inoremap <silent><expr> <C-Space> coc#refresh()
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 map <C-n> :NERDTreeToggle<CR>
 map <Esc>[1;5D <C-Left>
 map <Esc>[1;5C <C-Right>
