@@ -2,9 +2,9 @@
 alias cp='cp -v'
 alias hr='history | rg'
 alias la='ls -Glart'
-alias lh='ls -Glh'
-alias ll='ls -Gl'
-alias ls='ls -G'
+alias lh='ls -Glhrt'
+alias ll='ls -Glrt'
+alias ls='ls -Gl'
 alias mkdir='mkdir -pv'
 alias mv='mv -v'
 alias please='sudo $(fc -ln -1)'
@@ -13,8 +13,8 @@ alias rm='rm -v'
 # Application aliases
 alias nwe='emacs -nw'
 alias sbcl="rlwrap sbcl"
-alias tmux='tmux -2'
 alias tf='terraform'
+alias tmux='tmux -2'
 
 # Redirection aliases
 alias -g NIL="> /dev/null 2>&1"

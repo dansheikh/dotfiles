@@ -22,7 +22,6 @@ function! PackInit() abort
   call minpac#add('arcticicestudio/nord-vim')
   call minpac#add('bhurlow/vim-parinfer')
   call minpac#add('chriskempson/base16-vim')
-  call minpac#add('davidhalter/jedi-vim')
   call minpac#add('derekwyatt/vim-scala')
   call minpac#add('eagletmt/ghcmod-vim')
   call minpac#add('eagletmt/neco-ghc')
