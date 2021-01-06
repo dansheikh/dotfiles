@@ -239,8 +239,10 @@ nnoremap <C-l> <C-w><C-l>
 nnoremap <C-o> <C-w>o
 nnoremap <C-S-Tab> :bprevious<CR>
 nnoremap <C-Tab> :bnext<CR>
-nnoremap <M-h> :bprevious<CR>
-nnoremap <M-l> :bnext<CR>
+nnoremap <M-Left> :bprevious<CR>
+nnoremap <M-Right> :bnext<CR>
+nnoremap ˙ :bprevious<CR>
+nnoremap ¬ :bnext<CR>
 tnoremap <C-h> <C-\><C-n><C-w>h
 tnoremap <C-j> <C-\><C-n><C-w>j
 tnoremap <C-k> <C-\><C-n><C-w>k
