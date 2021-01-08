@@ -39,7 +39,7 @@ function! PackInit() abort
   call minpac#add('mattn/emmet-vim')
   call minpac#add('mileszs/ack.vim')
   call minpac#add('neoclide/coc.nvim', {'branch': 'release'})
-  call minpac#add('Olical/conjure', {'tag': 'v2.1.2'})
+  call minpac#add('Olical/conjure', {'type': 'opt', 'tag': 'v2.1.2'})
   call minpac#add('prettier/vim-prettier', {'do': '!npm install'})
   call minpac#add('racer-rust/vim-racer')
   call minpac#add('reasonml-editor/vim-reason-plus')
@@ -52,6 +52,10 @@ function! PackInit() abort
   call minpac#add('vim-airline/vim-airline')
   call minpac#add('vim-airline/vim-airline-themes')
   call minpac#add('w0rp/ale')
+
+  if has('nvim')
+    packadd conjure
+  endif
 endfunction
 
 command! PackUpdate source $MYVIMRC | call PackInit() | call minpac#update('', {'do': 'call minpac#status()'})

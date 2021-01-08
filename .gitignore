@@ -26,4 +26,6 @@ vim/bundle/.cache/
 vim/bundle/cache_nvim
 vim/bundle/state_nvim.vim
 vim/pack/minpac/start/
+vim/pack/minpac/opt/
+!vim/pack/minpac/opt/minpac/
 vim/plugins/
