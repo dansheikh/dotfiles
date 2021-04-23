@@ -494,6 +494,7 @@
    (scala-mode . lsp)
    (go-mode . lsp)
    (terraform-mode . lsp)
+   (vue-mode . lsp)
    (lsp-mode . (lambda ()
                  (let ((lsp-keymap-prefix "C-c l"))
                    (lsp-enable-which-key-integration))))))
@@ -518,9 +519,9 @@
 
 ;; Enable company backends
 (use-package company-go)
-(use-package company-ghc
+(use-package company-ghci
   :init
-  (setq company-ghc-show-info t))
+  (add-hook 'haskell-interactive-mode-hook 'company-mode))
 (use-package company-irony)
 
 ;; Enable company mode
@@ -691,6 +692,9 @@
 (use-package sass-mode
   :init
   (add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode)))
+
+(use-package vue-mode
+  :mode "\\.vue\\'")
 
 ;; Enable psc-ide
 (use-package psc-ide
