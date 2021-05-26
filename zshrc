@@ -73,16 +73,19 @@ if [ -f $HOME/.helpers ]; then
   . $HOME/.helpers
 fi
 
-# Activate Nix
+# Activate Brew.
+$(grep -Eq "^Linux.*$" <<< "$OS") && [ -s "$BREW_BIN" ] && eval "$($BREW_BIN shellenv)"
+
+# Activate Nix.
 if [ -f $HOME/.nix-profile/etc/profile.d/nix.sh ]; then
    . $HOME/.nix-profile/etc/profile.d/nix.sh
 fi
 
-# Source sdkman.
+# Activate SDKMAN.
 [[ -s $HOME/.sdkman/bin/sdkman-init.sh ]] && source $HOME/.sdkman/bin/sdkman-init.sh
 
 # Activate ASDF.
-asdf_prefix=$(brew --prefix asdf) && [ -n $asdf_prefix ] && . $asdf_prefix/asdf.sh
+[ -s "$BREW_BIN" ] && "$BREW_BIN" list asdf &> /dev/null && asdf_prefix=$(brew --prefix asdf) && [ -n $asdf_prefix ] && . $asdf_prefix/asdf.sh
 
 # Configure OPAM.
 if command -v opam &> /dev/null; then
@@ -99,18 +102,31 @@ fi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/usr/local/Caskroom/miniconda/base/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/usr/local/Caskroom/miniconda/base/etc/profile.d/conda.sh" ]; then
-        . "/usr/local/Caskroom/miniconda/base/etc/profile.d/conda.sh"
-    else
-        export PATH="/usr/local/Caskroom/miniconda/base/bin:$PATH"
+# Activate Miniconda.
+case "$OS" in
+  Linux*)
+    if [ -d "/opt/miniconda" ] && [ "$(find /opt/miniconda -maxdepth 1 -type f | wc -l)" -eq 0 ]; then
+      latest_linux_miniconda3="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
+      miniconda3_script_path="$HOME/Downloads/miniconda3-latest-linux-x86_64.sh"
+      curl -sSL "$latest_linux_miniconda3" -o "$miniconda3_script_path"
+      zsh "$miniconda3_script_path" -b -u -p "/opt/miniconda"
+      rm "$miniconda3_script_path"
     fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-
+    export PATH="/opt/miniconda/bin:$PATH"
+  ;;
+  Darwin*)
+    if [ "$($BREW_BIN list miniconda &> /dev/null)" ]; then
+      conda_setup_cmd="$($BREW_BIN --prefix conda)/base/bin/conda shell.zsh hook 2> /dev/null"
+      if [ $? -eq 0 ]; then
+        eval "$conda_setup_cmd"
+      else
+        if [ -f "$($BREW_BIN --prefix conda)/base/etc/profile.d/conda.sh" ]; then
+          . "$($BREW_BIN --prefix conda)/base/etc/profile.d/conda.sh"
+        else
+          export PATH="$($BREW_BIN --prefix conda)/base/bin:$PATH"
+        fi
+      fi
+      unset conda_setup_cmd
+    fi
+  ;;
+esac
