@@ -1,0 +1,100 @@
+{
+  /**
+   * Defaults
+   **/
+  "editor.copyWithSyntaxHighlighting": false,
+  "editor.detectIndentation": false,
+  "editor.emptySelectionClipboard": false,
+  "editor.fontLigatures": true,
+  "editor.formatOnSave": true,
+  "editor.insertSpaces": true,
+  "editor.multiCursorModifier": "ctrlCmd",
+  "editor.snippetSuggestions": "top",
+  "editor.suggest.snippetsPreventQuickSuggestions": true,
+  "editor.tabCompletion": "on",
+  "editor.tabSize": 2,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "window.newWindowDimensions": "inherit",
+  "window.restoreWindows": "none",
+  "workbench.activityBar.visible": false,
+  "workbench.editor.enablePreview": false,
+  "workbench.startupEditor": "none",
+  "telemetry.enableTelemetry": false,
+
+  /**
+   * Minimalism
+   **/
+  "breadcrumbs.enabled": false,
+  "editor.codeLens": false,
+  "editor.gotoLocation.multipleDeclarations": "goto",
+  "editor.gotoLocation.multipleDefinitions": "goto",
+  "editor.gotoLocation.multipleImplementations": "goto",
+  "editor.gotoLocation.multipleReferences": "goto",
+  "editor.gotoLocation.multipleTypeDefinitions": "goto",
+  "editor.hideCursorInOverviewRuler": true,
+  "editor.hover.enabled": false,
+  "editor.lightbulb.enabled": false,
+  "editor.lineNumbers": "off",
+  "editor.matchBrackets": "never",
+  "editor.minimap.enabled": false,
+  "editor.occurrencesHighlight": false,
+  "editor.renderControlCharacters": false,
+  "editor.renderIndentGuides": false,
+  "editor.renderLineHighlight": "none",
+  "editor.selectionHighlight": false,
+  "editor.overviewRulerBorder": false,
+  "problems.decorations.enabled": false,
+  "scm.diffDecorations": "none",
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.editor.showTabs": false,
+  "workbench.sideBar.location": "right",
+  "workbench.statusBar.visible": false,
+
+  /**
+   * Styling
+   **/
+  "editor.fontFamily": "'Source Code Pro for Powerline', Consolas, 'Courier New', monospace",
+  "editor.fontSize": 14,
+  "editor.suggestLineHeight": 28,
+  "editor.suggestFontSize": 14,
+  "editor.lineHeight": 28,
+  "workbench.colorTheme": "Nord",
+  "workbench.iconTheme": "material-icon-theme",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.lineHeight": 1.5,
+
+  /**
+   * Find
+   **/
+  "search.useIgnoreFiles": false,
+  "search.exclude": {
+    "**/*.code-search": true,
+    "**/bin": true,
+    "**/bower_components": true,
+    "**/dist": true,
+    "**/package-lock.json": true,
+    "**/node_modules": true
+  },
+
+  /**
+   * Window Settings
+   **/
+  "window.menuBarVisibility": "toggle",
+  "customizeUI.stylesheet": {
+    ".editor .title": "background: transparent !important;",
+    ".editor .title .label-container": "visibility: hidden;",
+    // Hide top-right buttons
+    ".editor .title .actions-container .action-item a": "visibility: hidden;",
+    // Show top-right "settings goto icon"
+    ".editor .title .actions-container .action-item a[title=\"Open Settings (UI)\"]": "visibility: initial;",
+    ".editor .title .actions-container .action-item a[title=\"Open Settings (JSON)\"]": "visibility: initial;",
+    // Make it the "right-most" icon.
+    ".editor .title .actions-container": "flex-direction: row-reverse;",
+    // Only show the scrollbar on hover.
+    ".editor .scrollbar .slider": "visibility: hidden",
+    ".editor .scrollbar:hover .slider": "visibility: initial"
+  }
+}

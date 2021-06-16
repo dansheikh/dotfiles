@@ -1,0 +1,14 @@
+Host *
+     ForwardAgent no
+     ForwardX11 no
+     ForwardX11Trusted yes
+     GatewayPorts yes
+     Port 22
+     Protocol 2
+     ServerAliveInterval 60
+     ServeraliveCountMax 30
+
+Host dansheikh.github.com
+     Hostname github.com
+     User git
+     IdentityFile ~/.ssh/id_rsa_dansheikh
