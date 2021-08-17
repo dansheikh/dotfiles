@@ -25,6 +25,7 @@ export HISTCONTROL=erasedups
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 export LESS="-CQaixr4"
+export PIPENV_VENV_IN_PROJECT=1
 "$BREW_BIN" list openssl &> /dev/null && export OPENSSL_BIN=$(${BREW_BIN} --prefix openssl)/bin
 export PUB_CACHE="$HOME/.pub-cache"
 export SDKMAN_DIR="$HOME/.sdkman"

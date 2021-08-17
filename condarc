@@ -1,0 +1,7 @@
+add_pip_as_python_dependency: true
+auto_update_conda: true
+channels:
+  - conda-forge
+  - defaults
+channel_priority: strict
+show_channel_urls: true

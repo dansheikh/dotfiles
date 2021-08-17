@@ -112,7 +112,18 @@ case "$OS" in
       zsh "$miniconda3_script_path" -b -u -p "/opt/miniconda"
       rm "$miniconda3_script_path"
     fi
-    export PATH="/opt/miniconda/bin:$PATH"
+    if [ -f "/opt/miniconda/bin/conda" ]; then
+      conda_setup_cmd="$('/opt/miniconda/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+      if [ $? -eq 0 ]; then
+        eval "$conda_setup_cmd"
+      else
+        if [ -f "/opt/miniconda/etc/profile.d/conda.sh" ]; then
+          . "/opt/miniconda/etc/profile.d/conda.sh"
+        else
+          export PATH="/opt/miniconda/bin:$PATH"
+        fi
+      fi
+    fi
   ;;
   Darwin*)
     if [ "$($BREW_BIN list miniconda &> /dev/null)" ]; then
@@ -130,3 +141,8 @@ case "$OS" in
     fi
   ;;
 esac
+
+# Activate PyEnv.
+if command -v pyenv &> /dev/null; then
+  eval "$(pyenv init --path)"
+fi

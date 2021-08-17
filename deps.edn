@@ -2,18 +2,34 @@
              "central" {:url "https://repo1.maven.org/maven2/"}
              "clojars" {:url "https://repo.clojars.org/"}}
  :paths ["src"]
- :aliases {:compliment {:extra-deps {compliment {:mvn/version "RELEASE"}}}
+ :aliases {:compliment {:extra-deps {compliment/compliment {:mvn/version "RELEASE"}}}
            :eastwood {:extra-deps {jonase/eastwood {:mvn/version "RELEASE"}}
                       :main-opts ["-m" "eastwood.lint" "{:source-paths [\"src\"] :test-paths [\"test\"]}"]}
-           :nrepl {:extra-deps {nrepl {:mvn/version "RELEASE"}}
-                   :main-opts ["-m" "nrepl.cmdline"]}
-           :outdated {:extra-deps {olical/depot {:mvn/version "RELEASE"}}
-                      :main-opts ["-m" "depot.outdated.main"]}
-           :socket {:jvm-opts ["-Dclojure.server.repl={:port 5000 :accept clojure.core.server/repl}"]}
+           :inspect/portal-cli {:extra-deps {djblue/portal {:mvn/version "RELEASE"}}}
+           :inspect/portal-node {:extra-deps {djblue/portal {:mvn/version "RELEASE"}
+                                              org.clojure/clojurescript {:mvn/version "RELEASE"}}
+                                 :main-opts ["-m" "cljs.main" "-re" "node"]}
+           :inspect/portal-web {:extra-deps {djblue/portal {:mvn/version "RELEASE"}
+                                             org.clojure/clojurescript {:mvn/version "RELEASE"}}
+                                :main-opts ["-m" "cljs.main"]}
+           :inspect/reveal-rebel {:extra-deps {vlaaad/reveal {:mvn/version "RELEASE"}
+                                               com.bhauman/rebel-readline {:mvn/version "RELEASE"}}
+                                  :main-opts ["-e" "(require,'rebel-readline.core),(require,'rebel-readline.clojure.line-reader),(require,'rebel-readline.clojure.service.local),(require,'rebel-readline.clojure.main),(require,'vlaaad.reveal)(rebel-readline.core/with-line-reader,(rebel-readline.clojure.line-reader/create,(rebel-readline.clojure.service.local/create)),(vlaaad.reveal/repl,:prompt,(fn,[]),:read,(rebel-readline.clojure.main/create-repl-read)))"]}
+           :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "RELEASE"}}
+                      :main-opts ["-m" "antq.core"]}
+           :new/app {:extra-deps {com.github.seancorfield/clj-new {:mvn/version "RELEASE"}}
+                     :exec-fn clj-new/create
+                     :exec-args {:template app}}
+           :new/lib {:extra-deps {com.github.seancorfield/clj-new {:mvn/version "RELEASE"}}
+                     :exec-fn clj-new/create
+                     :exec-args {:template lib}}
+           :repl/nrepl {:extra-deps {nrepl/nrepl {:mvn/version "RELEASE"}}
+                        :main-opts ["-m" "nrepl.cmdline"]}
+           :repl/socket {:jvm-opts ["-Dclojure.server.repl={:address,\"0.0.0.0\",:port,50505,:accept,clojure.core.server/repl}"]}
            :release {:override-deps {org.clojure/clojure {:mvn/version "RELEASE"}}}
-           :runner {:extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git" :sha "b6b3193fcc42659d7e46ecd1884a228993441182"}}
-                    :main-opts ["-m" "cognitect.test-runner"
-                                "-d" "test"
-                                "-d" "src/test/clojure"]}
            :test {:extra-paths ["test" "src/test/clojure" "src/test/clojurescript"]
-                  :extra-deps {org.clojure/test.check {:mvn/version "RELEASE"}}}}}
+                  :extra-deps {org.clojure/test.check {:mvn/version "RELEASE"}}}
+           :test/runner {:extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git" :sha "62ef1de18e076903374306060ac0e8a752e57c86"}}
+                         :main-opts ["-m" "cognitect.test-runner"
+                                     "-d" "test"
+                                     "-d" "src/test/clojure"]}}}
