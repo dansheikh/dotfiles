@@ -1,4 +1,5 @@
 .netrwhist
+.clj-kondo/
 .cpcache/
 emacs.d/.lsp*
 emacs.d/.last-package-update-day

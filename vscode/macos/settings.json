@@ -2,6 +2,7 @@
   /**
    * Defaults
    **/
+  "editor.bracketPairColorization.enabled": true,
   "editor.copyWithSyntaxHighlighting": false,
   "editor.detectIndentation": false,
   "editor.emptySelectionClipboard": false,
