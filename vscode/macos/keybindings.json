@@ -31,15 +31,6 @@
     "command": "workbench.action.terminal.toggleTerminal"
   },
   {
-    "key": "cmd+`",
-    "command": "workbench.action.terminal.focus"
-  },
-  {
-    "key": "cmd+`",
-    "command": "workbench.action.focusActiveEditorGroup",
-    "when": "terminalFocus"
-  },
-  {
     "key": "cmd+w h",
     "command": "workbench.action.navigateLeft"
   },

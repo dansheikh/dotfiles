@@ -1,6 +1,7 @@
 .netrwhist
 .clj-kondo/
 .cpcache/
+.lsp/
 emacs.d/.lsp*
 emacs.d/.last-package-update-day
 emacs.d/anaconda-mode/
