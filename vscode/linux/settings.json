@@ -2,6 +2,7 @@
   /**
    * Defaults
    **/
+  "diffEditor.ignoreTrimWhitespace": false,
   "editor.bracketPairColorization.enabled": true,
   "editor.copyWithSyntaxHighlighting": false,
   "editor.detectIndentation": false,
@@ -14,7 +15,7 @@
   "editor.suggest.snippetsPreventQuickSuggestions": true,
   "editor.tabCompletion": "on",
   "editor.tabSize": 2,
-  "diffEditor.ignoreTrimWhitespace": false,
+  "files.eol": "\n",
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
@@ -23,7 +24,7 @@
   "workbench.activityBar.visible": false,
   "workbench.editor.enablePreview": false,
   "workbench.startupEditor": "none",
-  "telemetry.enableTelemetry": false,
+  "telemetry.telemetryLevel": "off",
 
   /**
    * Minimalism
@@ -62,10 +63,10 @@
   "editor.suggestLineHeight": 28,
   "editor.suggestFontSize": 14,
   "editor.lineHeight": 28,
-  "workbench.colorTheme": "Nord",
-  "workbench.iconTheme": "material-icon-theme",
   "terminal.integrated.fontSize": 14,
   "terminal.integrated.lineHeight": 1.5,
+  "workbench.colorTheme": "Nord",
+  "workbench.iconTheme": "material-icon-theme",
 
   /**
    * Find
