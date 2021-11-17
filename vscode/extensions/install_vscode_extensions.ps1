@@ -5,6 +5,7 @@ code --install-extension Dart-Code.dart-code
 code --install-extension Dart-Code.flutter
 code --install-extension DavidAnson.vscode-markdownlint
 code --install-extension dbaeumer.vscode-eslint
+code --install-extension donjayamanne.githistory
 code --install-extension eamodio.gitlens
 code --install-extension eg2.vscode-npm-script
 code --install-extension esbenp.prettier-vscode
@@ -27,6 +28,8 @@ code --install-extension ms-kubernetes-tools.vscode-kubernetes-tools
 code --install-extension ms-python.python
 code --install-extension ms-python.vscode-pylance
 code --install-extension ms-toolsai.jupyter
+code --install-extension ms-toolsai.jupyter-keymap
+code --install-extension ms-toolsai.jupyter-renderers
 code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-vscode-remote.remote-ssh
 code --install-extension ms-vscode-remote.remote-ssh-edit
@@ -35,7 +38,6 @@ code --install-extension ms-vscode-remote.vscode-remote-extensionpack
 code --install-extension ms-vscode.cpptools
 code --install-extension ms-vscode.powershell
 code --install-extension ms-vscode.test-adapter-converter
-code --install-extension msjsdiag.debugger-for-chrome
 code --install-extension nwolverson.ide-purescript
 code --install-extension nwolverson.language-purescript
 code --install-extension octref.vetur
