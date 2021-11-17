@@ -1,8 +1,6 @@
 code --install-extension ahmadawais.shades-of-purple
-code --install-extension auiworks.amvim
 code --install-extension betterthantomorrow.calva
-code --install-extension castwide.solargraph
-code --install-extension connorshea.vscode-ruby-test-adapter
+code --install-extension bradlc.vscode-tailwindcss
 code --install-extension Dart-Code.dart-code
 code --install-extension Dart-Code.flutter
 code --install-extension DavidAnson.vscode-markdownlint
@@ -20,9 +18,7 @@ code --install-extension Ionide.Ionide-FAKE
 code --install-extension Ionide.Ionide-fsharp
 code --install-extension Ionide.Ionide-Paket
 code --install-extension Ionide.mechanic
-code --install-extension JakeBecker.elixir-ls
 code --install-extension jeroen-meijer.pubspec-assist
-code --install-extension kaiwood.endwise
 code --install-extension mauricioszabo.clover
 code --install-extension mrmlnc.vscode-duplicate
 code --install-extension ms-azuretools.vscode-docker
@@ -45,7 +41,6 @@ code --install-extension nwolverson.language-purescript
 code --install-extension octref.vetur
 code --install-extension PKief.material-icon-theme
 code --install-extension PKief.material-product-icons
-code --install-extension rebornix.ruby
 code --install-extension rebornix.toggle
 code --install-extension redhat.vscode-yaml
 code --install-extension RobbOwen.synthwave-vscode
@@ -56,4 +51,3 @@ code --install-extension svelte.svelte-vscode
 code --install-extension tinkertrain.theme-panda
 code --install-extension usernamehw.errorlens
 code --install-extension VisualStudioExptTeam.vscodeintellicode
-code --install-extension wingrunr21.vscode-ruby
