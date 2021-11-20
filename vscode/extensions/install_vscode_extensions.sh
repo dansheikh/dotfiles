@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+code --install-extension adrianwilczynski.alpine-js-intellisense
 code --install-extension ahmadawais.shades-of-purple
 code --install-extension betterthantomorrow.calva
 code --install-extension bradlc.vscode-tailwindcss
