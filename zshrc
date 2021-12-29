@@ -85,7 +85,7 @@ fi
 [[ -s $HOME/.sdkman/bin/sdkman-init.sh ]] && source $HOME/.sdkman/bin/sdkman-init.sh
 
 # Activate ASDF.
-[ -s "$BREW_BIN" ] && "$BREW_BIN" list asdf &> /dev/null && asdf_prefix=$(brew --prefix asdf) && [ -n $asdf_prefix ] && . $asdf_prefix/asdf.sh
+[ -s "$BREW_BIN" ] && "$BREW_BIN" list asdf &> /dev/null && asdf_prefix=$(brew --prefix asdf) && [ -n $asdf_prefix ] && . "$asdf_prefix/libexec/asdf.sh"
 
 # Configure OPAM.
 if command -v opam &> /dev/null; then

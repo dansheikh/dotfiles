@@ -1,0 +1,30 @@
+function git_branch {
+  branch=$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+  if [ -n "${branch// }" ]; then
+    printf " \xf0\x9f\x93\xa6 $branch"
+  fi
+}
+
+function user_level {
+ if [ "$EUID" -eq 0 ]; then
+    printf " \xe2\x9c\xa8"
+ else
+    printf " \xf0\x9f\x9a\x80"
+ fi
+}
+
+function exec_stat {
+  local job_status=$?
+  success='\e[38;5;48m\u276F\e[m\e[38;5;46m\u276F\e[m\e[38;5;40m\u276F\e[m'
+  failure='\e[38;5;220m\u276F\e[m\e[38;5;214m\u276F\e[m\e[38;5;196m\u276F\e[m'
+  
+  if [ $job_status -eq 0 ]; then
+    printf "${success}"
+  else
+    printf "${failure}"
+  fi
+
+  return $job_status
+}
+
+PS1=$'\e[0;34m[\\t]\e[m \u@\h:\e[0;34m\w\e[m$(git_branch)$(user_level)\n$(exec_stat) '

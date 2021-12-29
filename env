@@ -1,0 +1,23 @@
+# Exports.
+ANDROID_SDK_ROOT=/usr/local/share/android-sdk
+CARGO_HOME="$HOME/.cargo"
+CONDA_AUTO_ACTIVATE_BASE=false
+CURL_BIN=$(${BREW_BIN} list curl &> /dev/null && "(${BREW_BIN} --prefix curl)/bin")
+DOTFILES="$HOME/Dotfiles"
+FLUTTER_HOME=$(${BREW_BIN} list flutter &> /dev/null && printf "$(${BREW_BIN} --prefix flutter)")
+FZF_DEFAULT_COMMAND="fd --type f"
+GOPATH="$HOME/go"
+GOROOT=$(${BREW_BIN} list go &> /dev/null && printf "$(${BREW_BIN} --prefix go)/libexec")
+HISTCONTROL=erasedups
+LANG=en_US.UTF-8
+LC_ALL=en_US.UTF-8
+LESS="-CQaixr4"
+PIPENV_VENV_IN_PROJECT=1
+OPENSSL_BIN=$(${BREW_BIN} list openssl &> /dev/null && printf "$(${BREW_BIN} --prefix openssl)/bin")
+PUB_CACHE="$HOME/.pub-cache"
+SDKMAN_DIR="$HOME/.sdkman"
+VIMCONFIG="$HOME/.vim"
+VIMDATA="$HOME/.vim"
+
+# Paths.
+PATH="$HOME/.local/bin:$PUB_CACHE/bin:$HOME/local/bin:$HOME/bin:$OPENSSL_BIN:$CURL_BIN:/usr/local/bin:/usr/local/sbin:$VIMCONFIG/pack/bundle/start/fzf/bin:$GOROOT/bin:$GOPATH/bin:$ANDROID_SDK_ROOT/build-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$FLUTTER_HOME/bin:$CARGO_HOME/bin:$PATH"

@@ -16,6 +16,3 @@ alias sbcl="rlwrap sbcl"
 alias tf='terraform'
 alias tmux='tmux -2'
 alias vi='vim'
-
-# Redirection aliases
-alias -g NIL="> /dev/null 2>&1"

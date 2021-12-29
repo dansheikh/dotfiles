@@ -1,5 +1,12 @@
+;;; Code:
+(defun dms/org-babel-tangle-config ()
+  "Automatically tangle emacs.org on save."
+  (when (string-equal (buffer-file-name) (expand-file-name "~/dotfiles/emacs.org"))
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
+
 (defun mini-eshell ()
-    "Launch eshell in a mini-window."
+  "Launch eshell in a mini-window."
   (interactive)
   (let ((w (split-window-below -10)))
     (select-window w)
@@ -17,5 +24,4 @@
     (lispy-mode 1)))
 
 (provide 'config)
-
 ;;; config.el ends here
