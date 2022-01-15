@@ -18,10 +18,6 @@ code --install-extension hashicorp.terraform
 code --install-extension hbenl.vscode-test-explorer
 code --install-extension iocave.customize-ui
 code --install-extension iocave.monkey-patch
-code --install-extension Ionide.Ionide-FAKE
-code --install-extension Ionide.Ionide-fsharp
-code --install-extension Ionide.Ionide-Paket
-code --install-extension Ionide.mechanic
 code --install-extension jeroen-meijer.pubspec-assist
 code --install-extension mauricioszabo.clover
 code --install-extension mrmlnc.vscode-duplicate
@@ -41,9 +37,7 @@ code --install-extension ms-vscode-remote.vscode-remote-extensionpack
 code --install-extension ms-vscode.cpptools
 code --install-extension ms-vscode.powershell
 code --install-extension ms-vscode.test-adapter-converter
-code --install-extension nwolverson.ide-purescript
-code --install-extension nwolverson.language-purescript
-code --install-extension octref.vetur
+code --install-extension msjsdiag.vscode-react-native
 code --install-extension PKief.material-icon-theme
 code --install-extension PKief.material-product-icons
 code --install-extension rebornix.toggle
@@ -52,7 +46,7 @@ code --install-extension RobbOwen.synthwave-vscode
 code --install-extension rust-lang.rust
 code --install-extension scala-lang.scala
 code --install-extension scalameta.metals
-code --install-extension svelte.svelte-vscode
 code --install-extension tinkertrain.theme-panda
 code --install-extension usernamehw.errorlens
 code --install-extension VisualStudioExptTeam.vscodeintellicode
+code --install-extension wix.vscode-import-cost

@@ -16,3 +16,4 @@ alias sbcl="rlwrap sbcl"
 alias tf='terraform'
 alias tmux='tmux -2'
 alias vi='vim'
+alias ktl='kubectl'

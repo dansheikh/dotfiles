@@ -8,37 +8,54 @@
 
 ;;; Code:
 
-(require 'package)
-(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("melpa" . "https://melpa.org/packages/")
-                         ("melpa-stable" . "https://stable.melpa.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/"))
-      package-archive-priorities '(("gnu" . 9)
-                                   ("melpa" . 10)
-                                   ("melpa-stable" . 8)
-                                   ("org" . 9)))
+;; (require 'package)
+;; (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+;;                          ("melpa" . "https://melpa.org/packages/")
+;;                          ("melpa-stable" . "https://stable.melpa.org/packages/")
+;;                          ("org" . "https://orgmode.org/elpa/"))
+;;       package-archive-priorities '(("gnu" . 9)
+;;                                    ("melpa" . 10)
+;;                                    ("melpa-stable" . 8)
+;;                                    ("org" . 9)))
 
-(package-initialize)
+;; (package-initialize)
 
-(unless package-archive-contents
-  (package-refresh-contents))
+;; (unless package-archive-contents
+;;   (package-refresh-contents))
 
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
+;; (unless (package-installed-p 'use-package)
+;;   (package-install 'use-package))
 
-(require 'use-package)
-(setq use-package-always-ensure t)
+;; (require 'use-package)
+;; (setq use-package-always-ensure t)
 
-(use-package auto-package-update
-  :config
-  (auto-package-update-maybe)
-  :custom
-  (auto-package-update-interval 7)
-  (auto-package-update-at-time "08:00")
-  (auto-package-update-prompt-before-update t)
-  (auto-package-update-show-preview t)
-  (auto-package-update-delete-old-versions t)
-  (auto-package-update-hide-results t))
+;; (use-package auto-package-update
+;;   :config
+;;   (auto-package-update-maybe)
+;;   :custom
+;;   (auto-package-update-interval 7)
+;;   (auto-package-update-at-time "08:00")
+;;   (auto-package-update-prompt-before-update t)
+;;   (auto-package-update-show-preview t)
+;;   (auto-package-update-delete-old-versions t)
+;;   (auto-package-update-hide-results t))
+
+;; Bootstrap straight package manager
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
 
 (require 'config "~/dotfiles/emacs.d/config.el")
 
@@ -127,7 +144,7 @@
   :config
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t)
-  (load-theme 'doom-palenight t))
+  (load-theme 'doom-dracula t))
 
 (use-package doom-modeline
   :custom
@@ -187,7 +204,9 @@
   (ivy-mode 1))
 
 (use-package ivy-rich
-  :init
+  :after (ivy counsel)
+  :config
+  (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line)
   (ivy-rich-mode 1))
 
 (use-package ivy-prescient
@@ -360,7 +379,7 @@
     "ot" '(org-time-stamp :which-key "timestamp")
     ;; Project functionality
     "p"  '(:ignore t :which-key "project")
-    "pp" '(projectile-switch-project :which-key "switch project")
+    "pf" '(project--files-in-directory :which-key "find file in directory")
     ;; Quit functionality
     "q"  '(:ignore t :which-key "quit")
     "qq" '(save-buffers-kill-terminal :which-key "save & quit")
@@ -624,17 +643,20 @@
   :init
   (setq lsp-python-ms-auto-install-server t))
 
+;; Enable project
+(use-package project)
+
 ;; Enable projectile
-(use-package projectile
-  :config
-  (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-  (projectile-mode +1)
-  :init
-  (when (file-directory-p "~/projects")
-    (setq projectile-project-search-path '("~/projects")))
-  (setq projectile-completion-system 'ivy
-        projectile-switch-project-action 'neotree-projectile-action))
+;; (use-package projectile
+;;   :config
+;;   (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+;;   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+;;   (projectile-mode +1)
+;;   :init
+;;   (when (file-directory-p "~/projects")
+;;     (setq projectile-project-search-path '("~/projects")))
+;;   (setq projectile-completion-system 'ivy
+;;         projectile-switch-project-action 'neotree-projectile-action))
 
 (use-package ranger
   :init
@@ -748,12 +770,12 @@
 (use-package org-journal
   :requires org)
 
-(use-package org-projectile
-  :after (org projectile)
-  :config
-  (setq org-projectile-projects-file "~/.org/projects/todos.org"
-        org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
-  (push (org-projectile-project-todo-entry) org-capture-templates))
+;; (use-package org-projectile
+;;   :after (org projectile)
+;;   :config
+;;   (setq org-projectile-projects-file "~/.org/projects/todos.org"
+;;         org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+;;   (push (org-projectile-project-todo-entry) org-capture-templates))
 
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))

@@ -39,7 +39,8 @@ if [ -f "$HOME/.env" ]; then
    set -a
    . "$HOME/.env"
    set +a
-    # export $(grep -v '^#' $HOME/.env | xargs -L 1)
+
+   PATH=$(awk -v RS=: -v ORS=: '!paths[$0]++' <<< "$PATH" | tr -s ':' | sed 's/:$//')
 fi
 
 # Activate bash completions.
