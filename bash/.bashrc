@@ -2,21 +2,15 @@ HISTFILE=$HOME/.bash_history
 HISTSIZE=1000
 SAVEHIST=1000
 
-if [ -f $HOME/.bash_theme ]; then
-    . $HOME/.bash_theme
-fi
+[ -f $HOME/.bash_theme ] && source $HOME/.bash_theme
 
-if [ ! -d $HOME/.config ]; then
-    mkdir -p $HOME/.config
-fi
+[ ! -d $HOME/.config ] && mkdir -p $HOME/.config
 
-if [ -f $HOME/.aliases ]; then
-    . $HOME/.aliases
-fi
+[ -f $HOME/.aliases ] && source $HOME/.aliases
 
-if [ -f $HOME/.helpers ]; then
-    . $HOME/.helpers
-fi
+[ -f $HOME/.helpers ] && source $HOME/.helpers
+
+[ -f $HOME/.fzf.bash ] && source $HOME/.fzf.bash
 
 # OS setup.
 OS="$(/bin/uname -s)"

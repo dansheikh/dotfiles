@@ -1,3 +1,4 @@
+;; [[file:../emacs.org::*Notes][Notes:1]]
 ;;; init.el --- Emacs configuration file
 
 ;; Author: Dan Sheikh
@@ -7,7 +8,9 @@
 ;; Custom Emacs configuration.
 
 ;;; Code:
+;; Notes:1 ends here
 
+;; [[file:../emacs.org::*Package Management][Package Management:1]]
 ;; (require 'package)
 ;; (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
 ;;                          ("melpa" . "https://melpa.org/packages/")
@@ -56,9 +59,13 @@
 
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
+;; Package Management:1 ends here
 
-(require 'config "~/dotfiles/emacs.d/config.el")
+;; [[file:../emacs.org::*Requirements][Requirements:1]]
+(require 'config "~/dotfiles/emacs/.emacs.d/config.el")
+;; Requirements:1 ends here
 
+;; [[file:../emacs.org::*Buffer & File Management][Buffer & File Management:1]]
 ;; Disable backup and auto-save
 (setq make-backup-files nil)
 (setq auto-save-default nil)
@@ -74,11 +81,15 @@
 ;; Set root directory
 (setq root-dir (file-name-directory
                 (or (buffer-file-name) load-file-name)))
+;; Buffer & File Management:1 ends here
 
+;; [[file:../emacs.org::*Window Management][Window Management:1]]
 ;; Enable windmove with default bindings
 (when (fboundp 'windmove-default-keybindings)
   (windmove-default-keybindings 'meta))
+;; Window Management:1 ends here
 
+;; [[file:../emacs.org::*UI][UI:1]]
 ;; Disable startup screen
 (setq inhibit-startup-screen t)
 
@@ -118,13 +129,17 @@
               indent-tabs-mode nil)
 
 (show-paren-mode 1)
+;; UI:1 ends here
 
+;; [[file:../emacs.org::*Keybindings][Keybindings:1]]
 ;; Cause escape to quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 ;; Auto-indent
 ;; (define-key global-map (kbd "RET") 'newline-and-indent)
+;; Keybindings:1 ends here
 
+;; [[file:../emacs.org::*Styles][Styles:1]]
 ;; Set style
 (setq indent-tabs-mode nil)
 
@@ -134,7 +149,9 @@
 
 (setq c-basic-offset 2)
 (setq sh-basic-offset 2)
+;; Styles:1 ends here
 
+;; [[file:../emacs.org::*Core][Core:1]]
 ;; Enable icons
 (use-package all-the-icons
   :if (display-graphic-p))
@@ -186,14 +203,18 @@
                                  ("&&" . ?∧)
                                  ("||" . ?∨)
                                  ("not" . ?¬))))
+;; Core:1 ends here
 
+;; [[file:../emacs.org::*Interactivity][Interactivity:1]]
 ;; Enable ido mode
 (use-package ido
   :config
   (ido-mode t)
   (setq ido-enable-flex-matching t
         ido-use-virutal-buffers t))
+;; Interactivity:1 ends here
 
+;; [[file:../emacs.org::*Completion][Completion:1]]
 (use-package ivy
   :diminish
   :config
@@ -263,9 +284,13 @@
   (company-show-numbers t)
   :hook
   (prog-mode . company-mode))
+;; Completion:1 ends here
 
+;; [[file:../emacs.org::*Debugging][Debugging:1]]
 (use-package dap-mode)
+;; Debugging:1 ends here
 
+;; [[file:../emacs.org::*Help][Help:1]]
 (use-package helpful
   :bind
   ([remap describe-function] . counsel-describe-function)
@@ -275,7 +300,9 @@
   :custom
   (counsel-describe-function-function #'helpful-callable)
   (counsel-describe-variable-function #'helpful-variable))
+;; Help:1 ends here
 
+;; [[file:../emacs.org::*Key Definitions][Key Definitions:1]]
 ;; Enable Hydra
 (use-package hydra)
 
@@ -458,11 +485,15 @@
 (use-package evil-easymotion
   :config
   (evilem-default-keybindings ","))
+;; Key Definitions:1 ends here
 
+;; [[file:../emacs.org::*CSS][CSS:1]]
 (use-package sass-mode
   :init
   (add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode)))
+;; CSS:1 ends here
 
+;; [[file:../emacs.org::*HTML][HTML:1]]
 ;; Enable web development support
 (use-package web-mode)
 
@@ -470,10 +501,14 @@
   :config
   (add-hook 'sgml-mode-hook 'emmet-mode)
   (add-hook 'css-mode-hook 'emmet-mode))
+;; HTML:1 ends here
 
+;; [[file:../emacs.org::*Go][Go:1]]
 ;; Enable go
 (use-package go-mode)
+;; Go:1 ends here
 
+;; [[file:../emacs.org::*Lisp][Lisp:1]]
 (use-package lispy
   :hook
   (clojure-mode . (lambda () (lispy-mode 1)))
@@ -527,7 +562,9 @@
   :hook
   (inf-clojure-mode . eldoc-mode)
   (inf-clojure-mode . (lambda () (setq completion-at-point-functions nil))))
+;; Lisp:1 ends here
 
+;; [[file:../emacs.org::*JavaScript & TypeScript][JavaScript & TypeScript:1]]
 (use-package js2-mode
   :mode (("\\.js\\'" . js2-mode))
   :init
@@ -561,7 +598,9 @@
 (use-package json-mode
   :init
   (add-hook 'json-mode-hook 'prettier-js-mode))
+;; JavaScript & TypeScript:1 ends here
 
+;; [[file:../emacs.org::*Markdown][Markdown:1]]
 ;; Enable markdown
 (use-package markdown-mode
   :commands
@@ -574,7 +613,9 @@
 ;; Enable markdown preview
 (use-package markdown-preview-mode
   :requires markdown-mode)
+;; Markdown:1 ends here
 
+;; [[file:../emacs.org::*Python][Python:1]]
 ;; Enable python
 (use-package python-mode
   :config
@@ -591,19 +632,25 @@
   (python-mode . (lambda ()
                    (require 'lsp-pyright)
                    (lsp-deferred))))
+;; Python:1 ends here
 
+;; [[file:../emacs.org::*Rust][Rust:1]]
 ;; Enable rust
 (use-package rust-mode
   :init
   (setq rust-format-on-save t))
+;; Rust:1 ends here
 
+;; [[file:../emacs.org::*Scala][Scala:1]]
 ;; Enable scala and sbt
 (use-package scala-mode
   :mode "\\.s\\(cala\\|bt\\)$")
 
 (use-package sbt-mode
   :commands sbt-start sbt-command)
+;; Scala:1 ends here
 
+;; [[file:../emacs.org::*Language Server Protocol][Language Server Protocol:1]]
 ;; Enable LSP
 (use-package lsp-mode
   :commands lsp
@@ -642,7 +689,9 @@
 (use-package lsp-python-ms
   :init
   (setq lsp-python-ms-auto-install-server t))
+;; Language Server Protocol:1 ends here
 
+;; [[file:../emacs.org::*Project Management][Project Management:1]]
 ;; Enable project
 (use-package project)
 
@@ -657,7 +706,9 @@
 ;;     (setq projectile-project-search-path '("~/projects")))
 ;;   (setq projectile-completion-system 'ivy
 ;;         projectile-switch-project-action 'neotree-projectile-action))
+;; Project Management:1 ends here
 
+;; [[file:../emacs.org::*Search][Search:1]]
 (use-package ranger
   :init
   (setq ranger-override-dired 'ranger
@@ -674,7 +725,9 @@
         ranger-width-preview 0.5
         ranger-dont-show-binary t
         ranger-excluded-extensions '("iso" "mkv" "mp3" "mp4")))
+;; Search:1 ends here
 
+;; [[file:../emacs.org::*Shells][Shells:1]]
 (use-package eshell
   :after
   evil
@@ -701,12 +754,16 @@
 (use-package eshell-git-prompt
   :config
   (eshell-git-prompt-use-theme 'powerline))
+;; Shells:1 ends here
 
+;; [[file:../emacs.org::*Snippets][Snippets:1]]
 ;; Enable YASnippet
 (use-package yasnippet
   :init
   (yas-global-mode t))
+;; Snippets:1 ends here
 
+;; [[file:../emacs.org::*Syntax][Syntax:1]]
 ;; Enable flycheck
 (use-package flycheck
   :config
@@ -722,20 +779,26 @@
   (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
 
 (use-package flycheck-pos-tip)
+;; Syntax:1 ends here
 
+;; [[file:../emacs.org::*Trees][Trees:1]]
 ;; Enable neotree
 (use-package neotree
   :init
   (setq neo-theme (if (display-graphic-p) 'icons 'arrow)
         neo-smart-open t
         neo-autorefresh nil))
+;; Trees:1 ends here
 
+;; [[file:../emacs.org::*Version Control][Version Control:1]]
 ;; Enable magit
 (use-package magit
   :config
   (global-set-key (kbd "C-x g") 'magit-status)
   (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup))
+;; Version Control:1 ends here
 
+;; [[file:../emacs.org::*Core][Core:1]]
 ;; Enable org mode
 (use-package org
   :config
@@ -755,7 +818,9 @@
   (setq org-ellipsis " \u25BE")
   (setq org-agenda-files
         (append (file-expand-wildcards "~/org/agendas/*.org"))))
+;; Core:1 ends here
 
+;; [[file:../emacs.org::*UI][UI:1]]
 (use-package org-bullets
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
@@ -766,24 +831,33 @@
   :config
   (add-hook 'org-mode-hook (lambda () (org-sticky-header-mode)))
   :requires org)
+;; UI:1 ends here
 
+;; [[file:../emacs.org::*Journal][Journal:1]]
 (use-package org-journal
   :requires org)
+;; Journal:1 ends here
 
+;; [[file:../emacs.org::*Project Management][Project Management:1]]
 ;; (use-package org-projectile
 ;;   :after (org projectile)
 ;;   :config
 ;;   (setq org-projectile-projects-file "~/.org/projects/todos.org"
 ;;         org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
 ;;   (push (org-projectile-project-todo-entry) org-capture-templates))
+;; Project Management:1 ends here
 
+;; [[file:../emacs.org::*Structure Templates][Structure Templates:1]]
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
 (add-to-list 'org-structure-template-alist '("json" . "src json"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
 (add-to-list 'org-structure-template-alist '("yml" . "src yaml"))
+;; Structure Templates:1 ends here
 
+;; [[file:../emacs.org::*Provisions & Footnotes][Provisions & Footnotes:1]]
 (provide 'init)
 
 ;;; init.el ends here
+;; Provisions & Footnotes:1 ends here

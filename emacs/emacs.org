@@ -1,5 +1,5 @@
 #+title: Emacs Configuration
-#+property: header-args :emacs-lisp :tangle ./emacs.d/init.el
+#+property: header-args :emacs-lisp :tangle .emacs.d/init.el :comments link
 
 * Core
 
@@ -73,7 +73,7 @@
 ** Requirements
 
 #+begin_src emacs-lisp
-  (require 'config "~/dotfiles/emacs.d/config.el")
+  (require 'config "~/dotfiles/emacs/.emacs.d/config.el")
 #+end_src
 
 ** Buffer & File Management
