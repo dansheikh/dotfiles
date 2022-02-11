@@ -1,0 +1,5 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=StumpWM
+Exec=sh -c "exec sbcl --load ~/.init-stumpwm.lisp"
+Type=XSession

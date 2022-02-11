@@ -562,7 +562,8 @@
     (clojurec-mode . (lambda () (lispy-mode 1)))
     (clojurescript-mode . (lambda () (lispy-mode 1)))
     (emacs-lisp-mode . (lambda () (lispy-mode 1)))
-    (minibuffer-setup . conditionally-enable-lispy))
+    (minibuffer-setup . conditionally-enable-lispy)
+    (sly-mode . (lambda () (lispy-mode 1))))
 
   (use-package lispyville
     :config
@@ -575,6 +576,10 @@
   (use-package rainbow-delimiters
     :hook
     (prog-mode . rainbow-delimiters-mode))
+
+  (use-package sly
+    :custom
+    (inferior-lisp-program "sbcl"))
 
   ;; (use-package cider
   ;;   :init
