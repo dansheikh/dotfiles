@@ -23,6 +23,7 @@ emacs/.emacs.d/straight/
 emacs/.emacs.d/transient/
 emacs/.emacs.d/tramp
 emacs/.emacs.d/url/
+neovim/.config/nvim/plugin/
 tmux/.tmux/plugins/*
 !tmux/.tmux/plugins/tpm
 vim/.vim/bundle/start/*

@@ -231,7 +231,7 @@ nnoremap + <C-w>+
 nnoremap - <C-w>-
 nnoremap > <C-w>>
 nnoremap < <C-w><
-nnoremap _ <C-w>
+nnoremap _ <C-w>_
 nnoremap <bar> <C-w>|
 nnoremap <C-R> <C-W>R
 nnoremap <C-T> <C-W>T
