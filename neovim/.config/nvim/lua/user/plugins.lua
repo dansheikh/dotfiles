@@ -27,6 +27,12 @@ packer.init({
 packer.startup(function(use)
   use('wbthomason/packer.nvim')
 
+  use('editorconfig/editorconfig-vim')
+
+  use('tpope/vim-fugitive')
+
+  use('tpope/vim-surround')
+
   use('kyazdani42/nvim-web-devicons')
 
   use({
@@ -50,11 +56,18 @@ packer.startup(function(use)
   })
 
   use({
+        'L3MON4D3/LuaSnip'
+  })
+
+  use({
         'hrsh7th/nvim-cmp',
         requires = {{'hrsh7th/cmp-buffer'},
                     {'hrsh7th/cmp-nvim-lsp'},
                     {'hrsh7th/cmp-nvim-lua'},
-                    {'hrsh7th/cmp-path'}},
+                    {'hrsh7th/cmp-path'},
+                    {'onsails/lspkind.nvim'},
+                    {'saadparwaiz1/cmp_luasnip'},
+                    {'ray-x/cmp-treesitter'}},
         config = get_config('cmp')
   })
 
