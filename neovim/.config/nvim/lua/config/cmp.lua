@@ -32,11 +32,11 @@ cmp.setup({
     end
   },
   sources = cmp.config.sources({
-    { name = 'buffer' },
-    { name = 'luasnip' },
     { name = 'nvim_lsp' },
+    { name = 'treesitter' },
+    { name = 'luasnip' },
     { name = 'nvim_lua' },
-    { name = 'path' },
-    { name = 'treesitter' }
+    { name = 'buffer' },
+    { name = 'path' }
   })
 })

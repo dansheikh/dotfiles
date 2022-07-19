@@ -24,8 +24,8 @@ utility.map('n', '<M-k>', ':bnext<cr>')
 
 utility.map('n', '+', '<C-w>+')
 utility.map('n', '-', '<C-w>-')
-utility.map('n', '>', '<C-w>>')
-utility.map('n', '<', '<C-w><')
+utility.map('n', ']', '<C-w>>')
+utility.map('n', '[', '<C-w><')
 utility.map('n', '_', '<C-w>_')
 utility.map('n', '<bar>', '<C-w>|')
 
