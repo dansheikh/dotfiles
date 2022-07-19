@@ -75,6 +75,7 @@ packer.startup(function(use)
         'nvim-treesitter/nvim-treesitter',
         requires = {{'p00f/nvim-ts-rainbow'},
                     {'RRethy/nvim-treesitter-endwise'}},
+        run = ':TSUpdate',
         config = get_config('treesitter')
   })
 

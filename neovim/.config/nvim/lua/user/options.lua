@@ -1,5 +1,6 @@
 local opt = vim.opt
 
+opt.autoindent = true
 opt.backup = false
 opt.clipboard = 'unnamedplus'
 opt.confirm = true
@@ -18,6 +19,7 @@ opt.showmode = false
 opt.sidescrolloff = 5
 opt.signcolumn = 'yes:2'
 opt.smartcase = true
+opt.smartindent = true
 opt.spell = true
 opt.splitbelow = true
 opt.splitright = true
