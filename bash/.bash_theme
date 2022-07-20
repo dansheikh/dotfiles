@@ -7,9 +7,9 @@ function git_branch {
 
 function user_level {
  if [ "$EUID" -eq 0 ]; then
-    printf " \xe2\x9c\xa8"
+    printf "\xe2\x9c\xa8"
  else
-    printf " \xf0\x9f\x9a\x80"
+    printf "\xf0\x9f\x9a\x80"
  fi
 }
 
@@ -27,4 +27,4 @@ function exec_stat {
   return $job_status
 }
 
-PS1=$'\e[0;34m[\\t]\e[m \u@\h:\e[0;34m\w\e[m$(git_branch)$(user_level)\n$(exec_stat) '
+PS1=$'\[\e[0;38;5;48m\]┌──[\\t]\[\e[0m\] $(exec_stat) \[\e[0;38;5;49m\]\\u@\\h\[\e[0m\]:\[\e[0;38;5;50m\]\\w\[\e[0m\]$(git_branch)\\n\[\e[0;38;5;48m\]└──\[\e[0m\]$(user_level) '
