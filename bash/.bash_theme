@@ -1,7 +1,7 @@
 function git_branch {
   branch=$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
   if [ -n "${branch// }" ]; then
-    printf " \xf0\x9f\x93\xa6 $branch"
+    printf " \xf0\x9f\x93\xa6 \e[3m${branch}\e[0m"
   fi
 }
 
@@ -27,4 +27,4 @@ function exec_stat {
   return $job_status
 }
 
-PS1=$'\[\e[0;38;5;48m\]┌──[\\t]\[\e[0m\] $(exec_stat) \[\e[0;38;5;49m\]\\u@\\h\[\e[0m\]:\[\e[0;38;5;50m\]\\w\[\e[0m\]$(git_branch)\\n\[\e[0;38;5;48m\]└──\[\e[0m\]$(user_level) '
+PS1=$'\[\e[0;38;5;48m\]┌──[\\t]\[\e[0m\] $(exec_stat) \[\e[0;38;5;49m\]\\u\[\e[0m\]@\[\e[0;38;5;49m\]\\h\[\e[0m\]:\[\e[0;38;5;50m\]\\w\[\e[0m\]$(git_branch)\\n\[\e[0;38;5;48m\]└──\[\e[0m\]$(user_level) '

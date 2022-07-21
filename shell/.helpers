@@ -7,7 +7,7 @@ function docker-clean-con {
   else
     echo -e "$targets" | xargs docker rm --force
   fi
-}      
+}
 
 function docker-clean-img {
   local dangling=$(docker images -f dangling=true -q | awk 'NR > 1 {print $3}')
