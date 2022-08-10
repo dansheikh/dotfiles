@@ -10,15 +10,15 @@
         };
     };
 
-    outputs = inputs: {
+    outputs = { nixpkgs, home-manager, ... }: {
         homeConfigurations = {
-            dan.sheikh = inputs.home-manager.lib.homeManagerConfiguration {
-                inherit pkgs;
+            dan.sheikh = home-manager.lib.homeManagerConfiguration {
                 system = "aarch64-darwin";
+                pkgs = nixpkgs.legacyPackages.${system}
                 username = "dan.sheikh";
                 homeDirectory = "Users/dan.sheikh";
                 modules = [
-                    ./modules/darwin/home.nix
+                    ./modules/home.nix
                 ]
             };
         };
