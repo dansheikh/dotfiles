@@ -25,6 +25,7 @@
         ripgrep
         rustup
         starship
+        stow
         tmux
         tree
         vscode
