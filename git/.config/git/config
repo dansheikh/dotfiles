@@ -2,7 +2,7 @@
 	name = Dan Sheikh
 	email = dan.sheikh@outlook.com
 [core]
-	editor = vim
+	editor = nvim
 [alias]
 	chart = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 	history = log --pretty=format:'%C(bold blue)%an%C(reset) %C(green)%ad%C(reset) [%C(red)%h%C(reset)]: %s%d' --graph --all --date=short
