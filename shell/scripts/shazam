@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 IFS='' read -d '' icon <<- HERE
                       ......:::::::::::::----
                      .=====================-
@@ -39,9 +38,36 @@ printf "%s\n" "$icon"
 
 read -p 'Shazam?! [y|n] ' confirmation
 
+function install_nix {
+    printf "%s\n" "Stowing targets..."
+    
+    os=$(uname -s)
+    
+    case "$os" in
+        Darwin*)
+            sh <(curl -L https://nixos.org/nix/install)
+        ;;
+        Linux*)
+            sh <(curl -L https://nixos.org/nix/install) --daemon
+        ;;
+}
+
+function link_targets {
+    targets=(git neovim nix shell)
+
+    printf "%s\n" "Stowing targets..."
+
+    for target in ${targets[@]}
+    do
+        stow --verbose --target=~ --stow $target
+    done
+}
+
 case $confirmation in
     [Yy]*)
     # TODO: Execute setup.
+    install_nix
+    link_targets
     ;;
     [Nn]*)
     printf 'Goodbye!...\n'
