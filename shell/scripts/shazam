@@ -38,8 +38,23 @@ printf "%s\n" "$icon"
 
 read -p 'Shazam?! [y|n] ' confirmation
 
+function link_targets {
+    cd "${"$(dirname "$(readlink -f "$0")")"%shell}"
+
+    targets=(fish git neovim nix shell)
+
+    printf "%b %s\n" "\xe2\x9a\xa1" "Stowing targets."
+
+    for target in ${targets[@]}
+    do
+        stow --verbose --target="$HOME" --stow "$target"
+    done
+
+    printf "%b %s\n" "\xe2\x9c\x85" "Targets stowed."
+}
+
 function install_nix {
-    printf "%s\n" "Stowing targets..."
+    printf "%b %s\n" "\xe2\x9a\xa1" "Installing Nix package manager."
     
     os=$(uname -s)
     
@@ -50,24 +65,15 @@ function install_nix {
         Linux*)
             sh <(curl -L https://nixos.org/nix/install) --daemon
         ;;
-}
 
-function link_targets {
-    targets=(git neovim nix shell)
-
-    printf "%s\n" "Stowing targets..."
-
-    for target in ${targets[@]}
-    do
-        stow --verbose --target=~ --stow $target
-    done
+    printf "%b %s\n" "\xe2\x9c\x85" "Nix package manager installed."
 }
 
 case $confirmation in
     [Yy]*)
     # TODO: Execute setup.
-    install_nix
     link_targets
+    install_nix
     ;;
     [Nn]*)
     printf 'Goodbye!...\n'

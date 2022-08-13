@@ -19,6 +19,7 @@
         lsd
         neofetch
         neovim
+        nerdfonts
         openssl
         pandoc
         qutebrowser
