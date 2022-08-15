@@ -55,7 +55,7 @@ function log {
 function link_targets {
     cd "${"$(dirname "$(readlink -f "$0")")"%shell}"
 
-    targets=(git neovim nix shell)
+    targets=(git neovim nix tmux)
 
     log "progress" "Stowing targets."
 
