@@ -3,7 +3,6 @@
 {
     home.packages = with pkgs; [
         awscli
-        bat
         curlie
         docker
         du-dust
@@ -36,6 +35,13 @@
     programs.home-manager.enable = true;
     programs.direnv.enable = true;
     programs.direnv.nix-direnv.enable = true;
+    program.bat = {
+        enable = true;
+        config = {
+            pager = "less -FR";
+            theme = "dracula-sublime";
+        };
+    };
     programs.fish = {
         enable = true;
         interactiveShellInit = "
@@ -57,10 +63,12 @@
             gist = "git status";
         };
         shellAliases = {
-            cp = "cp -iv"
-            mkdir = "mkdir -pv"
-            mv = "mv -iv"
-            rm = "rm -iv"
+            biff = "git diff --name-only --relative --diff-filter=d | xargs bat --diff";
+            cp = "cp -iv";
+            fb = "fd --exec-batch";
+            mkdir = "mkdir -pv";
+            mv = "mv -iv";
+            rm = "rm -iv";
         };
     };
 }

@@ -38,23 +38,37 @@ printf "%s\n" "$icon"
 
 read -p 'Shazam?! [y|n] ' confirmation
 
+function log {
+    local status=$1
+    local msg=$2
+
+    case "$status" in
+        [C|c]ompletion)
+            printf "%b %s\n" "\xe2\x9c\x85" "$msg"
+        ;;
+        *)
+            printf "%b %s\n" "\xe2\x9a\xa1" "$msg"
+        ;;        
+    esac
+}
+
 function link_targets {
     cd "${"$(dirname "$(readlink -f "$0")")"%shell}"
 
     targets=(git neovim nix shell)
 
-    printf "%b %s\n" "\xe2\x9a\xa1" "Stowing targets."
+    log "progress" "Stowing targets."
 
     for target in ${targets[@]}
     do
         stow --verbose --target="$HOME" --stow "$target"
     done
 
-    printf "%b %s\n" "\xe2\x9c\x85" "Targets stowed."
+    log "completion" "Targets stowed."
 }
 
 function install_nix {
-    printf "%b %s\n" "\xe2\x9a\xa1" "Installing Nix package manager."
+    log "progress" "Installing Nix package manager."
     
     os=$(uname -s)
     
@@ -65,15 +79,33 @@ function install_nix {
         Linux*)
             sh <(curl -L https://nixos.org/nix/install) --daemon
         ;;
+    esac
 
-    printf "%b %s\n" "\xe2\x9c\x85" "Nix package manager installed."
+    log "completion" "Nix package manager installed."
+}
+
+function update_shells {
+    log "progress" "Updating '/etc/shells'."
+
+    printf "$HOME/.nix-profile/bin/fish" | sudo tee -a /etc/shells
+
+    log "completion" "Updated '/etc/shells'."
+}
+
+function change_shell {
+    log "progress" "Changing default shell."
+
+    chsh -s "$HOME/.nix-profile/bin/fish"
+
+    log "completion" "Changed default shell."
 }
 
 case $confirmation in
     [Yy]*)
-    # TODO: Execute setup.
     link_targets
     install_nix
+    update_shells
+    change_shell
     ;;
     [Nn]*)
     printf 'Goodbye!...\n'
