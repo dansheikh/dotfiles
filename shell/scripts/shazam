@@ -41,7 +41,7 @@ read -p 'Shazam?! [y|n] ' confirmation
 function link_targets {
     cd "${"$(dirname "$(readlink -f "$0")")"%shell}"
 
-    targets=(fish git neovim nix shell)
+    targets=(git neovim nix shell)
 
     printf "%b %s\n" "\xe2\x9a\xa1" "Stowing targets."
 
