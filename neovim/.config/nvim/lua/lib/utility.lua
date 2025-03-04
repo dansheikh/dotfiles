@@ -5,7 +5,7 @@ local function map(mode, lhs, rhs, opts)
     config = vim.tbl_extend('force', config, opts)
   end
 
-  vim.api.nvim_set_keymap(mode, lhs, rhs, config)
+  vim.keymap.set(mode, lhs, rhs, config)
 end
 
 local function get_config(name)

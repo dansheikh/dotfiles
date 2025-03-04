@@ -19,10 +19,19 @@
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
+  "git.allowForcePush": true,
+  "gitlens.plusFeatures.enabled": false,
   "window.newWindowDimensions": "inherit",
   "window.restoreWindows": "none",
-  "workbench.activityBar.visible": false,
+  "workbench.colorTheme": "Catppuccin Mocha",
   "workbench.editor.enablePreview": false,
+  "workbench.iconTheme": "catppuccin-mocha",
+  "workbench.preferredDarkColorTheme": "Catppuccin Mocha",
+  "workbench.preferredHighContrastColorTheme": "Catppuccin Mocha",
+  "workbench.preferredHighContrastLightColorTheme": "Catppuccin Mocha",
+  "workbench.preferredLightColorTheme": "Catppuccin Mocha",
+  "workbench.productIconTheme": "material-product-icons",
+  "workbench.settings.editor": "json",
   "workbench.startupEditor": "none",
   "telemetry.telemetryLevel": "off",
 
@@ -36,37 +45,40 @@
   "editor.gotoLocation.multipleImplementations": "goto",
   "editor.gotoLocation.multipleReferences": "goto",
   "editor.gotoLocation.multipleTypeDefinitions": "goto",
+  "editor.guides.indentation": false,
   "editor.hideCursorInOverviewRuler": true,
   "editor.hover.enabled": false,
-  "editor.lightbulb.enabled": false,
-  "editor.lineNumbers": "off",
+  "editor.lightbulb.enabled": "off",
+  "editor.lineNumbers": "relative",
   "editor.matchBrackets": "never",
-  "editor.minimap.enabled": false,
-  "editor.occurrencesHighlight": false,
+  "editor.minimap.enabled": true,
+  "editor.occurrencesHighlight": "off",
   "editor.renderControlCharacters": false,
-  "editor.renderIndentGuides": false,
   "editor.renderLineHighlight": "none",
   "editor.selectionHighlight": false,
   "editor.overviewRulerBorder": false,
   "problems.decorations.enabled": false,
   "scm.diffDecorations": "none",
   "workbench.editor.enablePreviewFromQuickOpen": false,
-  "workbench.editor.showTabs": false,
+  "workbench.editor.showTabs": "single",
   "workbench.sideBar.location": "right",
-  "workbench.statusBar.visible": false,
+  "workbench.statusBar.visible": true,
 
   /**
    * Styling
    **/
-  "editor.fontFamily": "'Source Code Pro for Powerline', Consolas, 'Courier New', monospace",
-  "editor.fontSize": 14,
+  "editor.cursorBlinking": "expand",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.cursorStyle": "block",
+  "editor.fontFamily": "'VictorMono Nerd Font', 'Iosevka Nerd Font', 'JetBrainsMono Nerd Font', Consolas, 'Courier New', monospace",
+  "editor.fontSize": 16,
+  "editor.scrollbar.horizontal": "hidden",
+  "editor.scrollbar.vertical": "hidden",
   "editor.suggestLineHeight": 28,
   "editor.suggestFontSize": 14,
   "editor.lineHeight": 28,
   "terminal.integrated.fontSize": 14,
   "terminal.integrated.lineHeight": 1.5,
-  "workbench.colorTheme": "Nord",
-  "workbench.iconTheme": "material-icon-theme",
 
   /**
    * Find
@@ -85,19 +97,51 @@
    * Window Settings
    **/
   "window.titleBarStyle": "native",
-  "customizeUI.titleBar": "inline",
-  "customizeUI.stylesheet": {
-    ".editor .title": "background: transparent !important;",
-    ".editor .title .label-container": "visibility: hidden;",
-    // Hide top-right buttons
-    ".editor .title .actions-container .action-item a": "visibility: hidden;",
-    // Show top-right "settings goto icon"
-    ".editor .title .actions-container .action-item a[title=\"Open Settings (UI)\"]": "visibility: initial;",
-    ".editor .title .actions-container .action-item a[title=\"Open Settings (JSON)\"]": "visibility: initial;",
-    // Make it the "right-most" icon.
-    ".editor .title .actions-container": "flex-direction: row-reverse;",
-    // Only show the scrollbar on hover.
-    ".editor .scrollbar .slider": "visibility: hidden",
-    ".editor .scrollbar:hover .slider": "visibility: initial"
+
+  /**
+   * Language Settings
+   **/
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "emmet.includeLanguages": {
+    "phoenix-heex": "html"
+  },
+
+  /**
+   * Telemetry & Updates
+   **/
+  "go.toolsManagement.autoUpdate": false,
+  "redhat.telemetry.enabled": false,
+  "update.mode": "none",
+
+  /**
+   * Vim Settings
+   **/
+  "vim.camelCaseMotion.enable": true,
+  "vim.cursorStylePerMode.insert": "line",
+  "vim.cursorStylePerMode.normal": "block",
+  "vim.cursorStylePerMode.replace": "block",
+  "vim.cursorStylePerMode.visual": "block",
+  "vim.cursorStylePerMode.visualblock": "block",
+  "vim.cursorStylePerMode.visualline": "block",
+  "vim.easymotion": true,
+  "vim.hlsearch": true,
+  "vim.highlightedyank.enable": true,
+  "vim.incsearch": true,
+  "vim.leader": "<space>",
+  "vim.useCtrlKeys": true,
+  "vim.useSystemClipboard": true,
+  "powershell.powerShellAdditionalExePaths": {
+    "Nix": "/Users/dan.sheikh/.nix-profile/bin/pwsh"
   }
 }

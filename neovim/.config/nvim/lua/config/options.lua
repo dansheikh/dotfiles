@@ -1,0 +1,44 @@
+local global = vim.g
+local opt = vim.opt
+
+global.loaded_netrw = 1
+global.loaded_netrwPlugin = 1
+global.floaterm_width = 0.95
+global.floaterm_height = 0.95
+
+opt.autoindent = true
+opt.backup = false
+opt.clipboard = 'unnamedplus'
+opt.confirm = true
+opt.expandtab = true
+opt.fillchars = 'eob: '
+opt.guicursor =
+'n-v-c:block-nCursor-blinkwait300-blinkon300-blinkoff300,i-ci-ve:ver20-iCursor-blinkwait300-blinkon150-blinkoff150,r-cr-ve:ver20-Cursor-blinkwait300-blinkon150-blinkoff150'
+opt.ignorecase = true
+opt.listchars = 'tab:▸ ,trail:·'
+opt.list = true
+opt.mouse = 'a'
+opt.number = true
+opt.pumheight = 10
+opt.redrawtime = 10000
+opt.relativenumber = true
+opt.scrolloff = 5
+opt.shiftround = true
+opt.shiftwidth = 2
+opt.showmode = false
+opt.sidescrolloff = 5
+opt.signcolumn = 'yes:2'
+opt.smartcase = true
+opt.smartindent = true
+opt.softtabstop = 2
+opt.spell = true
+opt.splitbelow = true
+opt.splitright = true
+opt.swapfile = false
+opt.tabstop = 4
+opt.termguicolors = true
+opt.title = true
+opt.undofile = true
+opt.updatetime = 250
+opt.wildmode = 'longest:full,full'
+opt.wrap = false

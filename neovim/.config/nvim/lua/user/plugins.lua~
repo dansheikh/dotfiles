@@ -1,0 +1,135 @@
+local get_config = require('lib.utility').get_config
+local execute = vim.api.nvim_command
+local fn = vim.fn
+local install_path = fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
+
+if fn.empty(fn.glob(install_path)) > 0 then
+  packer_bootstrap = fn.system({ 'git', 'clone', '--depth', '1', 'http://github.com/wbthomason/packer.nvim', install_path })
+  print('Installing plugin manager: Packer...')
+  execute('packadd packer.nvim')
+end
+
+local packer = require('packer')
+
+packer.init({
+  ensure_dependencies = true,
+  display = {
+    open_fn = function()
+      return require('packer.util').float({ border = 'rounded' })
+    end
+  },
+  max_jobs = 10,
+  profile = {
+    enable = true,
+    threshold = 0
+  }
+})
+
+packer.startup(function(use)
+  use('wbthomason/packer.nvim')
+
+  use({
+    'akinsho/bufferline.nvim',
+    config = get_config('bufferline')
+  })
+
+  use({
+    'catppuccin/nvim',
+    as = 'catppuccin',
+    config = get_config('catppuccin')
+  })
+
+  use('christoomey/vim-tmux-navigator')
+
+  use({
+    'EdenEast/nightfox.nvim',
+    config = get_config('nightfox')
+  })
+
+  use('editorconfig/editorconfig-vim')
+
+  use({
+    'folke/which-key.nvim',
+    config = get_config('which')
+  })
+
+  use({
+    'folke/trouble.nvim',
+    requires = 'nvim-tree/nvim-web-devicons'
+  })
+
+  use({
+    'goolord/alpha-nvim',
+    config = get_config('alpha')
+  })
+
+  use({
+    'hrsh7th/nvim-cmp',
+    requires = { { 'hrsh7th/cmp-buffer' },
+      { 'hrsh7th/cmp-nvim-lsp' },
+      { 'hrsh7th/cmp-nvim-lua' },
+      { 'hrsh7th/cmp-path' },
+      { 'jose-elias-alvarez/null-ls.nvim',
+        config = get_config('null-ls') },
+      { 'onsails/lspkind.nvim' },
+      { 'saadparwaiz1/cmp_luasnip' },
+      { 'ray-x/cmp-treesitter' } },
+    config = get_config('cmp')
+  })
+
+  use({
+    'L3MON4D3/LuaSnip',
+    requires = { { 'rafamadriz/friendly-snippets' } },
+    config = get_config('luasnip')
+  })
+
+  use({
+    'neovim/nvim-lspconfig',
+    config = get_config('lspconfig')
+  })
+
+  use({
+    'nvim-lualine/lualine.nvim',
+    config = get_config('lualine')
+  })
+
+  use({
+    'nvim-telescope/telescope.nvim',
+    requires = { { 'nvim-lua/plenary.nvim' },
+      { 'nvim-lua/popup.nvim' },
+      { 'nvim-telescope/telescope-file-browser.nvim' },
+      { 'nvim-telescope/telescope-fzy-native.nvim' } },
+    config = get_config('telescope')
+  })
+
+  use({
+    'nvim-tree/nvim-tree.lua',
+    requires = 'nvim-tree/nvim-web-devicons',
+    config = get_config('tree')
+  })
+
+  use({
+    'nvim-treesitter/nvim-treesitter',
+    requires = { { 'p00f/nvim-ts-rainbow' },
+      { 'RRethy/nvim-treesitter-endwise' } },
+    run = ':TSUpdate',
+    config = get_config('treesitter')
+  })
+
+  use({
+    'phaazon/hop.nvim',
+    config = get_config('hop')
+  })
+
+  use('tpope/vim-eunuch')
+
+  use('tpope/vim-fugitive')
+
+  use('tpope/vim-surround')
+
+  use('voldikss/vim-floaterm')
+
+  if packer_bootstrap then
+    packer.sync()
+  end
+end)

@@ -1,0 +1,29 @@
+os:
+  edit: "floaterm"
+customCommands:
+  - key: "<c-p>"
+    description: "Push a specific branch to origin"
+    context: "global"
+    loadingText: "Pushing..."
+    prompts:
+      - type: "menu"
+        title: "How to push?"
+        options:
+          - value: "push"
+          - value: "push --force-with-lease"
+          - value: "push --force"
+      - type: "menuFromCommand"
+        title: "Which branch to push?"
+        command: bash -c "git branch --list"
+        filter: "\\*?\\s*(?P<branch>.*)"
+        valueFormat: "{{ .branch }}"
+        labelFormat: "{{ .branch | bold | green }}"
+    command: "git {{index .PromptResponses 0}} origin {{index .PromptResponses 1}}"
+git:
+  commit:
+    autoWrapCommitMessage: false
+  paging:
+    pager: delta --dark --paging=never
+keybinding:
+  universal:
+    return: "<esc>"

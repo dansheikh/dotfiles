@@ -16,11 +16,16 @@
   },
   {
     "key": "ctrl+k ctrl+x",
-    "command": "workbench.extensions.action.showInstalledExtensions"
+    "command": "workbench.view.extensions"
   },
   {
     "key": "ctrl+k ctrl+b",
     "command": "workbench.action.toggleSidebarVisibility"
+  },
+  {
+    "key": "ctrl+x ctrl+t",
+    "command": "workbench.action.createTerminalEditor",
+    "when": "terminalProcessSupported"
   },
   {
     "key": "ctrl+e",
@@ -238,20 +243,6 @@
     "key": "ctrl+m ctrl+backspace",
     "command": "editor.emmet.action.removeTag",
     "when": "editorTextFocus"
-  },
-
-  /**
-   * amVim Finder Fix
-   **/
-  {
-    "key": "enter",
-    "command": "editor.action.nextMatchFindAction",
-    "when": "findWidgetVisible"
-  },
-  {
-    "key": "shift+enter",
-    "command": "editor.action.previousMatchFindAction",
-    "when": "findWidgetVisible"
   },
 
   /**

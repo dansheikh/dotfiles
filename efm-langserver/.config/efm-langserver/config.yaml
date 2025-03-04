@@ -1,0 +1,80 @@
+version: 2
+root-markers:
+  - .
+  - .git
+lint-debounce: 1s
+log-file: /tmp/efm/efm.log
+log-level: 1
+
+tools:
+  golangci-lint: &golangci-lint
+    lint-command: "golangci-lint run --out-format=line-number --print-issued-lines=false ${INPUT}"
+    lint-formats:
+      - "%f:%l:%c: %m"
+    lint-ignore-exit-code: true
+    lint-source: "golangci-lint"
+    lint-stdin: true
+  json-jq: &json-jq
+    lint-command: "jq ."
+    lint-sourcce: "jq"
+  nixpkgs-fmt: &nixpkgs-fmt
+    format-command: "nixpkgs-fmt"
+    format-stdin: true
+  prettier: &prettier
+    format-command: "prettier --stdin-filepath ${INPUT} ${--range-start:charStart} ${--range-end:charEnd} ${--tab-width:tabWidth} ${--use-tabs:!insertSpaces}"
+    format-stdin: true
+  prettierd: &prettierd
+    format-command: "prettierd --stdin-filepath ${INPUT} ${--range-start=charStart} ${--range-end=charEnd} ${--tab-width=tabSize} ${--use-tabs=!insertSpaces}"
+    format-stdin: true
+  python-black: &python-black
+    format-command: "black --quiet --stdin-filename ${INPUT} -"
+    format-stdin: true
+  python-mypy: &python-mypy
+    lint-command: "mypy --show-column-numbers ${INPUT}"
+    lint-formats:
+      - "%f:%l:%c: %tote: %m"
+      - "%f:%l:%c: %tarning: %m"
+      - "%f:%l:%c: %trror: %m"
+      - "%-G%.%#"
+    lint-source: "mypy"
+    lint-stdin: false
+  python-ruff: &python-ruff
+    format-command: "ruff format --stdin-filename ${INPUT} -"
+    format-stdin: true
+    lint-command: "ruff check --quiet --output-format concise -"
+    lint-formats:
+      - "%f:%l:%c: %m"
+      - "%-G%.%#"
+    lint-ignore-exit-code: true
+    lint-source: "ruff"
+    lint-stdin: true
+  sqlfluff: &sqlfluff
+    lint-command: "sqlfluff lint --dialect ansi -"
+    lint-formats:
+      - "%-P== %#[%f] %#%*[A-Z]"
+      - "%AL: %#%l %#| %#P: %# %c %#| %*[A-Z0-9] | %#%m"
+      - "%C %#| %#[%m]"
+      - "%ZAll %#Finished%.%#%-Q"
+    lint-source: "sqlfluff"
+    lint-stdin: true
+
+languages:
+  go:
+    - <<: *golangci-lint
+  javascript:
+    - <<: *prettierd
+  json:
+    - <<: *json-jq
+    - <<: *prettierd
+  nix:
+    - <<: *nixpkgs-fmt
+  python: &python
+    - <<: *python-mypy
+    - <<: *python-ruff
+  python-ts: *python
+  sql:
+    - <<: *sqlfluff
+  typescript:
+    - <<: *prettierd
+  yaml:
+    - <<: *prettierd
