@@ -1,5 +1,20 @@
 os:
-  edit: "floaterm"
+  editCommand: "nvim"
+  editInTerminal: true
+
+gui:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+
+git:
+  commit:
+    autoWrapCommitMessage: false
+
+keybinding:
+  universal:
+    return: "<esc>"
+
 customCommands:
   - key: "<c-p>"
     description: "Push a specific branch to origin"
@@ -9,21 +24,16 @@ customCommands:
       - type: "menu"
         title: "How to push?"
         options:
-          - value: "push"
-          - value: "push --force-with-lease"
-          - value: "push --force"
+          - name: "Normal Push"
+            value: "push"
+          - name: "Force with Lease"
+            value: "push --force-with-lease"
+          - name: "Force"
+            value: "push --force"
       - type: "menuFromCommand"
         title: "Which branch to push?"
-        command: bash -c "git branch --list"
-        filter: "\\*?\\s*(?P<branch>.*)"
+        command: "git branch --format='%(refname:short)'"
+        filter: "(?P<branch>.*)"
         valueFormat: "{{ .branch }}"
-        labelFormat: "{{ .branch | bold | green }}"
+        labelFormat: "{{ .branch | green }}"
     command: "git {{index .PromptResponses 0}} origin {{index .PromptResponses 1}}"
-git:
-  commit:
-    autoWrapCommitMessage: false
-  pagers:
-    - pager: delta --dark --paging=never
-keybinding:
-  universal:
-    return: "<esc>"

@@ -6,11 +6,18 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 
-  outputs = inputs @ { nixpkgs, nixpkgs-unstable, ... }:
+  outputs =
+    inputs@{ nixpkgs, nixpkgs-unstable, ... }:
     let
       system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };
-      pkgs-unstable = import nixpkgs-unstable { inherit system; config.allowUnfree = true; };
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+      pkgs-unstable = import nixpkgs-unstable {
+        inherit system;
+        config.allowUnfree = true;
+      };
     in
     {
       nixosConfigurations = {

@@ -47,21 +47,20 @@
   "editor.gotoLocation.multipleTypeDefinitions": "goto",
   "editor.guides.indentation": false,
   "editor.hideCursorInOverviewRuler": true,
-  "editor.hover.enabled": false,
-  "editor.lightbulb.enabled": false,
+  "editor.hover.enabled": "off",
+  "editor.lightbulb.enabled": "off",
   "editor.lineNumbers": "relative",
   "editor.matchBrackets": "never",
   "editor.minimap.enabled": true,
-  "editor.occurrencesHighlight": false,
+  "editor.occurrencesHighlight": "off",
   "editor.renderControlCharacters": false,
-  "editor.renderIndentGuides": false,
   "editor.renderLineHighlight": "none",
   "editor.selectionHighlight": false,
   "editor.overviewRulerBorder": false,
   "problems.decorations.enabled": false,
   "scm.diffDecorations": "none",
   "workbench.editor.enablePreviewFromQuickOpen": false,
-  "workbench.editor.showTabs": false,
+  "workbench.editor.showTabs": "single",
   "workbench.sideBar.location": "right",
   "workbench.statusBar.visible": true,
 
@@ -91,7 +90,7 @@
     "**/bower_components": true,
     "**/dist": true,
     "**/package-lock.json": true,
-    "**/node_modules": true
+    "**/node_modules": true,
   },
 
   /**
@@ -103,16 +102,16 @@
    * Language Settings
    **/
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "emmet.includeLanguages": {
-    "phoenix-heex": "html"
+    "phoenix-heex": "html",
   },
   "python.formatting.provider": "black",
   "python.formatting.blackPath": "~/.nix-profile/bin/black",
@@ -140,5 +139,5 @@
   "vim.incsearch": true,
   "vim.leader": "<space>",
   "vim.useCtrlKeys": true,
-  "vim.useSystemClipboard": true
+  "vim.useSystemClipboard": true,
 }

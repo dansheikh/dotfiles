@@ -8,3 +8,5 @@
 	history = log --pretty=format:'%C(bold blue)%an%C(reset) %C(green)%ad%C(reset) [%C(red)%h%C(reset)]: %s%d' --graph --all --date=short
 [init]
 	defaultBranch = main
+[pull]
+	rebase = true
