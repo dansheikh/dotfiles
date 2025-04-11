@@ -1,9 +1,3 @@
-[submodule "vim/.vim/pack/minpac/opt/minpac"]
-	path = vim/.vim/pack/minpac/opt/minpac
-	url = https://github.com/k-takata/minpac.git
-[submodule "stumpwm/.stumpwm.d/modules"]
-	path = stumpwm/.stumpwm.d/modules
-	url = https://github.com/stumpwm/stumpwm-contrib.git
 [submodule "tmux/.config/tmux/plugins/tpm"]
-	path = tmux/.config/tmux/plugins/tpm
-	url = https://github.com/tmux-plugins/tpm.git
+ 	path = config/tmux/plugins/tpm
+ 	url = https://github.com/tmux-plugins/tpm.git

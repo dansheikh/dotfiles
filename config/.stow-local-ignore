@@ -1,0 +1,9 @@
+\.git
+\.gitignore
+.+~
+\#.*\#
+.+\.org
+.+\.service
+^/LICENSE.*
+^/README.*
+code/extensions

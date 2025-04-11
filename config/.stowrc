@@ -1,0 +1,3 @@
+--dir=~/dotfiles/config
+--target=~/.config
+--ignore=.stowrc

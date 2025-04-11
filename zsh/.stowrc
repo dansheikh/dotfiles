@@ -1,0 +1,5 @@
+--dir=~/dotfiles/zsh
+--dotfiles
+--target=~
+--ignore=.stowrc
+--ignore=.+~
