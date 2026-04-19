@@ -2,14 +2,18 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, pkgs-unstable, ... }:
+{
+  config,
+  pkgs,
+  pkgs-unstable,
+  ...
+}:
 
 {
-  imports =
-    [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -48,8 +52,8 @@
   services.xserver.enable = true;
 
   # Enable the Gnome Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
   services.gnome.gnome-keyring.enable = true;
   programs.dconf.enable = true;
 
@@ -73,7 +77,7 @@
   services.printing.enable = true;
 
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -97,7 +101,10 @@
   users.users.danish = {
     isNormalUser = true;
     description = "Dan Sheikh";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+    ];
     # packages = with pkgs; [ ];
   };
 
@@ -119,7 +126,10 @@
   services.hypridle.enable = true;
   xdg.portal = {
     enable = true;
-    extraPortals = with pkgs; [ xdg-desktop-portal-gtk xdg-desktop-portal-hyprland ];
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-hyprland
+    ];
   };
 
   # Allow unfree packages
@@ -135,22 +145,48 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     antidote
-    (catppuccin-gtk.override
-      {
-        accents = [ "blue" "flamingo" "green" "lavender" "maroon" "mauve" "peach" "pink" "red" "rosewater" "sapphire" "sky" "teal" "yellow" ];
-        size = "standard";
-        tweaks = [ "black" "rimless" ];
-        variant = "mocha";
-      })
+    (catppuccin-gtk.override {
+      accents = [
+        "blue"
+        "flamingo"
+        "green"
+        "lavender"
+        "maroon"
+        "mauve"
+        "peach"
+        "pink"
+        "red"
+        "rosewater"
+        "sapphire"
+        "sky"
+        "teal"
+        "yellow"
+      ];
+      size = "standard";
+      tweaks = [
+        "black"
+        "rimless"
+      ];
+      variant = "mocha";
+    })
+    babashka
     chafa
+    cliphist
     direnv
+    emacs
+    file-roller
+    gcc
     ghostty
     gnome-themes-extra
     gnome-tweaks
+    go
+    javaPackages.compiler.temurin-bin.jdk-21
     micro
     nil
     nixpkgs-fmt
     pkgs-unstable.bat
+    pkgs-unstable.clojure
+    pkgs-unstable.clojure-lsp
     pkgs-unstable.delta
     pkgs-unstable.efm-langserver
     pkgs-unstable.eza
@@ -169,18 +205,23 @@
     pkgs-unstable.nwg-look
     pkgs-unstable.hyprpaper
     pkgs-unstable.hyprshot
+    pkgs-unstable.rar
     pkgs-unstable.ripgrep
     pkgs-unstable.tree
+    pkgs-unstable.unrar
+    pkgs-unstable.unzip
     pkgs-unstable.waybar
     pkgs-unstable.neovim
     pkgs-unstable.vscode
+    pkgs-unstable.zip
     powerline-fonts
     starship
     stow
     swaynotificationcenter
     tmux
-    unzip
+    wl-clipboard
     wofi
+    zprint
   ];
 
   fonts.packages = with pkgs-unstable; [
@@ -214,8 +255,10 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "25.05"; # Did you read the comment?
+  system.stateVersion = "25.11"; # Did you read the comment?
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 }
-

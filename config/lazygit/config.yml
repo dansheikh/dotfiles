@@ -22,8 +22,8 @@ customCommands:
 git:
   commit:
     autoWrapCommitMessage: false
-  paging:
-    pager: delta --dark --paging=never
+  pagers:
+    - pager: delta --dark --paging=never
 keybinding:
   universal:
     return: "<esc>"

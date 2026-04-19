@@ -2,7 +2,8 @@ lastupdatecheck: 0
 recentrepos:
     - /home/danish/dotfiles
 startuppopupversion: 5
-lastversion: 0.48.0
+didshowhunkstaginghint: false
+lastversion: 0.60.0
 customcommandshistory:
     - git push --force-with-lease origin feature/evp-cdmo
     - git push -f origin feature/evp-cdmo
@@ -10,10 +11,3 @@ customcommandshistory:
     - git push -u origin main
     - git push origin :refs/tags/v0.1.0-alpha
 hidecommandlog: false
-ignorewhitespaceindiffview: false
-diffcontextsize: 3
-renamesimilaritythreshold: 50
-localbranchsortorder: recency
-remotebranchsortorder: alphabetical
-gitlogorder: topo-order
-gitlogshowgraph: always
