@@ -23,6 +23,10 @@
     "command": "workbench.action.toggleSidebarVisibility"
   },
   {
+    "key": "ctrl+k ctrl+p",
+    "command": "workbench.actions.view.problems"
+  },
+  {
     "key": "ctrl+x ctrl+t",
     "command": "workbench.action.createTerminalEditor",
     "when": "terminalProcessSupported"
@@ -207,6 +211,35 @@
   },
 
   /**
+   * Terminal Integration & Navigation
+   **/
+  {
+    "key": "ctrl+`",
+    "command": "workbench.action.terminal.focusNext",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+shift+`",
+    "command": "workbench.action.terminal.focusPrevious",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+shift+enter",
+    "command": "workbench.action.terminal.runSelectedText",
+    "when": "editorTextFocus && editorHasSelection"
+  },
+  {
+    "key": "ctrl+enter",
+    "command": "workbench.action.terminal.runSelectedText",
+    "when": "editorTextFocus && !editorHasSelection"
+  },
+  {
+    "key": "ctrl+k",
+    "command": "workbench.action.terminal.clear",
+    "when": "terminalFocus"
+  },
+
+  /**
    * Emmet
    **/
   {
@@ -246,7 +279,7 @@
   },
 
   /**
-   * IntelliSense
+   * IntelliSense & Symbols
    **/
   {
     "key": "ctrl+r",
@@ -264,6 +297,38 @@
   {
     "key": "ctrl+k ctrl+i",
     "command": "namespaceResolver.import"
+  },
+
+  /**
+   * LSP Features
+   **/
+  {
+    "key": "ctrl+k ctrl+h",
+    "command": "editor.action.showHover",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+k ctrl+s",
+    "command": "editor.action.triggerParameterHints",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+.",
+    "command": "editor.action.quickFix",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+f",
+    "command": "editor.action.formatDocument",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+
+  /**
+   * Git Integration
+   **/
+  {
+    "key": "ctrl+k ctrl+g",
+    "command": "git-graph.view"
   },
 
   /**
@@ -289,6 +354,80 @@
   {
     "key": "alt+ctrl+i",
     "command": "workbench.action.toggleDevTools"
+  },
+
+  /**
+   * Notebook Keybindings
+   **/
+  {
+    "key": "ctrl+enter",
+    "command": "notebook.cell.execute",
+    "when": "notebookCellListFocused && !inputFocus"
+  },
+  {
+    "key": "shift+enter",
+    "command": "notebook.cell.executeAndSelectBelow",
+    "when": "notebookCellListFocused"
+  },
+  {
+    "key": "alt+enter",
+    "command": "notebook.cell.executeAndInsertBelow",
+    "when": "notebookCellListFocused"
+  },
+  {
+    "key": "ctrl+k ctrl+c",
+    "command": "notebook.cell.changeToCode",
+    "when": "notebookCellListFocused"
+  },
+  {
+    "key": "ctrl+k ctrl+m",
+    "command": "notebook.cell.changeToMarkdown",
+    "when": "notebookCellListFocused"
+  },
+  {
+    "key": "j",
+    "command": "notebook.focusNextEditor",
+    "when": "notebookCellListFocused && !inputFocus && vim.mode == 'Normal'"
+  },
+  {
+    "key": "k",
+    "command": "notebook.focusPreviousEditor",
+    "when": "notebookCellListFocused && !inputFocus && vim.mode == 'Normal'"
+  },
+  {
+    "key": "d d",
+    "command": "notebook.cell.delete",
+    "when": "notebookCellListFocused && !inputFocus && vim.mode == 'Normal'"
+  },
+  {
+    "key": "o",
+    "command": "notebook.cell.insertCodeCellBelow",
+    "when": "notebookCellListFocused && !inputFocus && vim.mode == 'Normal'"
+  },
+  {
+    "key": "shift+o",
+    "command": "notebook.cell.insertCodeCellAbove",
+    "when": "notebookCellListFocused && !inputFocus && vim.mode == 'Normal'"
+  },
+  {
+    "key": "y y",
+    "command": "notebook.cell.copy",
+    "when": "notebookCellListFocused && !inputFocus && vim.mode == 'Normal'"
+  },
+  {
+    "key": "p",
+    "command": "notebook.cell.paste",
+    "when": "notebookCellListFocused && !inputFocus && vim.mode == 'Normal'"
+  },
+  {
+    "key": "ctrl+k ctrl+r",
+    "command": "jupyter.restartkernel",
+    "when": "notebookCellListFocused || notebookEditorFocused"
+  },
+  {
+    "key": "ctrl+k ctrl+j",
+    "command": "jupyter.viewOutput",
+    "when": "notebookCellListFocused || notebookEditorFocused"
   },
 
   /**

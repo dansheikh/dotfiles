@@ -6,4 +6,7 @@
 .+\.service
 ^/LICENSE.*
 ^/README.*
-code/extensions
+code
+hypr
+waybar
+wofi

@@ -54,7 +54,7 @@
 
 (defun danish-mode-line--evil-state-face (state)
   "Set evil face given STATE."
-  (assq state danish-mode-line--evil-state-faces))
+  (alist-get state danish-mode-line--evil-state-faces))
 
 (defvar-local danish-mode-line--modal-state
     '(:eval
@@ -135,18 +135,19 @@
          'display-time-string)))
   "Custom mode line time display.")
 
-(dolist (construct '(danish-mode-line--modal-state
-                     danish-mode-line--buffer-name
+(dolist (construct '(danish-mode-line--buffer-name
+										 danish-mode-line--display-time
+										 danish-mode-line--eglot
                      danish-mode-line--flymake
-                     danish-mode-line--eglot
                      danish-mode-line--major-mode
-                     danish-mode-line--display-time))
+                     danish-mode-line--modal-state))
   (put construct 'risky-local-variable t))
 
-(setq display-time-format "%A, %d %B %Y %H:%M (%Z)")
+(setq display-time-format-full-long "%A, %d %B %Y %H:%M (%Z)")
+(setq display-time-format-full-short "%a, %d %b %Y %H:%M (%Z)")
 (setq display-time-interval 60)
 (setq display-time-string-forms '((propertize
-                                   (format-time-string display-time-format now)
+                                   (format-time-string display-time-format-full-short now)
                                    'face 'bold
                                    'help-echo (format-time-string "%A, %d %B %Y" now))
                                   " "))
@@ -159,31 +160,17 @@
 (setq mode-line-right-align-edge 'right-margin)
 (display-time-mode 1)
 
-(set-face-attribute 'mode-line nil
-                    :background "#5C6380"
-                    :foreground "#FFFFFF"
-                    :box '(:line-width 8 :color "#5C6380")
-                    :height 160
-                    :overline nil
-                    :underline nil)
-(set-face-attribute 'mode-line-inactive nil
-                    :background "#494E65"
-                    :foreground "#FFFFFF"
-                    :box '(:line-width 8 :color "#494E65")
-                    :height 160
-                    :overline nil
-                    :underline nil)
-
 (setq-default mode-line-format
               '("%e"
                 danish-mode-line--modal-state
                 danish-mode-line--buffer-name
+                (vc-mode vc-mode)
+								" "
+                danish-mode-line--major-mode
                 danish-mode-line--flymake
                 " "
                 danish-mode-line--eglot
-                (vc-mode vc-mode)
                 " "
-                danish-mode-line--major-mode
                 danish-mode-line--display-time))
 
 (provide 'danish-mode-line)

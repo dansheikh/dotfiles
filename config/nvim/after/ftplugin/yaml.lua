@@ -1,5 +1,11 @@
+-- YAML filetype settings
 local opt = vim.opt_local
+
+-- YAML indentation (2 spaces)
 opt.shiftwidth = 2
 opt.softtabstop = 2
+opt.tabstop = 2
+opt.expandtab = true
 
-dofile(os.getenv('XDG_CONFIG_HOME') .. '/nvim/lua/lib/efm_config.lua')
+-- Comments
+opt.commentstring = '# %s'

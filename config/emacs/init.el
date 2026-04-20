@@ -1,1027 +1,1554 @@
-;; [[file:../../emacs.org::*Notes][Notes:1]]
-;;; init.el --- Emacs configuration file
+;; [[file:emacs.org::*Garbage Collection Optimization][Garbage Collection Optimization:1]]
+;;; init.el --- Emacs configuration file -*- lexical-binding: t; -*-
 
-;; Author: Dan Sheikh
+;; Copyright (C) 2024-2025 Dan Sheikh
+
+;; Author: Dan Sheikh <dan.sheikh@yahoo.com>
 
 ;;; Commentary:
 
-;; Custom Emacs configuration.
+;; Personal Emacs configuration with modern tooling:
+;; - Elpaca for package management
+;; - Evil for modal editing (Vim emulation)
+;; - General.el for keybinding management
+;; - Vertico/Corfu for completion
+;; - Eglot for LSP support
+;; - Tree-sitter for syntax highlighting
+;; - Apheleia for automatic formatting
+;;
+;; This file is generated from emacs.org via org-babel-tangle.
 
 ;;; Code:
-;; Notes:1 ends here
 
-;; [[file:../../emacs.org::*Package Management][Package Management:1]]
-(require 'package)
-(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("melpa" . "https://melpa.org/packages/")
-                         ("melpa-stable" . "https://stable.melpa.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/"))
-      package-archive-priorities '(("gnu" . 9)
-                                   ("melpa" . 10)
-                                   ("melpa-stable" . 8)
-                                   ("org" . 9)))
+;; Increase the amount of data Emacs reads from processes.
+;; Critical for LSP performance - significantly improves responsiveness.
+;; Reference: https://emacs-lsp.github.io/lsp-mode/page/performance/
+(setq read-process-output-max (* 1024 1024))  ; 1MB
 
-(package-initialize)
+;; Garbage collect when Emacs is idle for 5 seconds.
+;; This prevents GC pauses during active editing.
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/elisp/Garbage-Collection.html
+(run-with-idle-timer 5 t #'garbage-collect)
 
-(unless (package-installed-p 'quelpa)
-  (with-temp-buffer
-    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-    (eval-buffer)
-    (quelpa-self-upgrade)))
+;; Increase GC threshold during minibuffer use to prevent pauses
+;; during completion and command entry.
+(defun +gc-cons-threshold-increase ()
+  "Increase GC threshold during minibuffer activity."
+  (setq gc-cons-threshold most-positive-fixnum))
 
-(quelpa
- '(quelpa-use-package
-   :fetcher git
-   :url "https://github.com/quelpa/quelpa-use-package.git"))
+(defun +gc-cons-threshold-restore ()
+  "Restore GC threshold after minibuffer activity."
+  (setq gc-cons-threshold (* 16 1024 1024)))
 
-(require 'quelpa-use-package)
-(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-(setq use-package-ensure-function 'quelpa)
+(add-hook 'minibuffer-setup-hook #'+gc-cons-threshold-increase)
+(add-hook 'minibuffer-exit-hook #'+gc-cons-threshold-restore)
+;; Garbage Collection Optimization:1 ends here
+
+;; [[file:emacs.org::*Package Management][Package Management:1]]
+;; Elpaca package manager bootstrap
+;; Reference: https://github.com/progfolio/elpaca
+(defvar elpaca-installer-version 0.12)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1 :inherit ignore
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca-activate)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (<= emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
+(elpaca-wait)
+
+;; Prevent elpaca from trying to manage built-in packages that Emacs loads
+;; automatically as dependencies (e.g. eldoc is pulled in by flymake, eglot,
+;; etc. before elpaca has a chance to activate it, triggering a "loaded before
+;; Elpaca activation" warning).
+(add-to-list 'elpaca-ignored-dependencies 'eldoc)
+
+;; Enable use-package integration with elpaca
+(elpaca elpaca-use-package
+  (elpaca-use-package-mode))
+(elpaca-wait)
+
+;; Ensure packages by default (no need to specify :ensure t everywhere).
+;; Use :ensure nil as the escape hatch for built-ins and sub-packages
+;; (e.g. corfu-popupinfo, which lives inside the corfu package directory).
+;; A second elpaca-wait follows to flush the activation queue before any
+;; use-package declarations are evaluated, preventing the "elpaca loaded
+;; before Elpaca activation" warning.
 (setq use-package-always-ensure t)
-(setq quelpa-upgrade-interval 7)
-(add-hook #'after-init-hook #'quelpa-upgrade-all-maybe)
-
-;; (unless package-archive-contents
-;;   (package-refresh-contents))
-
-;; (unless (package-installed-p 'use-package)
-;;   (package-install 'use-package))
-
-;; (require 'use-package)
-;; (setq use-package-always-ensure t)
-
-;; (use-package auto-package-update
-;;   :config
-;;   (auto-package-update-maybe)
-;;   :custom
-;;   (auto-package-update-interval 7)
-;;   (auto-package-update-at-time "08:00")
-;;   (auto-package-update-prompt-before-update t)
-;;   (auto-package-update-show-preview t)
-;;   (auto-package-update-delete-old-versions t)
-;;   (auto-package-update-hide-results t))
+(elpaca-wait)
 ;; Package Management:1 ends here
 
-;; [[file:../../emacs.org::*Prefixes][Prefixes:1]]
-(defvar local-leader-key "C-.")
-(defvar next-prefix "M-]")
-(defvar prev-prefix "M-[")
-;; Prefixes:1 ends here
+;; [[file:emacs.org::*Helper Functions][Helper Functions:1]]
+(defun +load-config-file (file)
+  "Load FILE from the config directory with error handling.
+FILE should be relative to ~/.config/emacs/lisp/config/."
+  (let ((filepath (expand-file-name file "~/.config/emacs/lisp/config/")))
+    (if (file-exists-p filepath)
+        (condition-case err
+            (load filepath nil 'nomessage)
+          (error (warn "Failed to load %s: %s" file (error-message-string err))))
+      (warn "Configuration file not found: %s" filepath))))
 
-;; [[file:../../emacs.org::*Requirements][Requirements:1]]
-(require 'config "~/.config/emacs/config.el")
+(defun +require-safe (feature &optional filename noerror)
+  "Require FEATURE and degrade gracefully when it is unavailable."
+  (condition-case err
+      (require feature filename noerror)
+    (error
+     (warn "Failed to require %s: %s" feature (error-message-string err))
+     nil)))
 
+(defun +duplicate-line-or-region ()
+  "Duplicate the current line or region."
+  (interactive)
+  (if (region-active-p)
+      (let ((start (region-beginning))
+            (end (region-end)))
+        (goto-char end)
+        (insert (buffer-substring start end)))
+    (let ((line (thing-at-point 'line t)))
+      (end-of-line)
+      (newline)
+      (insert line)
+      (forward-line -1))))
+
+(defun +copy-sexp ()
+  "Copy the following sexp."
+  (interactive)
+  (save-excursion
+    (let ((beg (point)))
+      (forward-sexp)
+      (kill-ring-save beg (point)))))
+
+(defun +maximize-window-safe ()
+  "Maximize the current window, falling back to `delete-other-windows'."
+  (interactive)
+  (if (fboundp 'maximize-window)
+      (call-interactively #'maximize-window)
+    (delete-other-windows)))
+
+(defun +mini-eshell-safe ()
+  "Invoke `mini-eshell' when available, otherwise start `eshell'.
+`mini-eshell' is defined in config.el and opens a small horizontal
+split at the bottom of the frame."
+  (interactive)
+  (if (fboundp 'mini-eshell)
+      (call-interactively #'mini-eshell)
+    (call-interactively #'eshell)))
+;; Helper Functions:1 ends here
+
+;; [[file:emacs.org::*Load Path & External Configuration][Load Path & External Configuration:1]]
+;; Load main config file (contains environment-specific settings)
+(+load-config-file "config.el")
+
+;; Add local package directories to load-path recursively
 (let* ((path (expand-file-name "lisp" user-emacs-directory))
-       (local-pkgs (mapcar (lambda (file-path) (directory-file-name (file-name-directory file-path))) (directory-files-recursively path "\\.el$"))))
+       (local-pkgs (when (file-accessible-directory-p path)
+                     (mapcar (lambda (file-path)
+                               (directory-file-name (file-name-directory file-path)))
+                             (directory-files-recursively path "\\.el$")))))
   (if (file-accessible-directory-p path)
       (mapc (apply-partially 'add-to-list 'load-path) local-pkgs)
     (make-directory path :parents)))
-;; Requirements:1 ends here
+;; Load Path & External Configuration:1 ends here
 
-;; [[file:../../emacs.org::*Customizations][Customizations:1]]
-(setq custom-file (locate-user-emacs-file "custom.el"))
+;; [[file:emacs.org::*Custom File][Custom File:1]]
+;; Keep custom settings in a separate file.
+;; Note: if a package writes new customizations mid-session and custom-file
+;; did not exist at startup, those settings are held in memory only until
+;; the next restart — they will not be auto-loaded retroactively.
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/emacs/Saving-Customizations.html
+(setq custom-file (locate-user-emacs-file "lisp/config/custom.el"))
 (when (file-exists-p custom-file)
-  (load custom-file 'noerror 'nomessage))
-;; Customizations:1 ends here
+  (load custom-file nil 'nomessage))
+;; Custom File:1 ends here
 
-;; [[file:../../emacs.org::*Shell Environment][Shell Environment:1]]
-(when (or (daemonp) (memq window-system '(mac ns x)))
-  (danish--set-exec-path-by-shell))
-;; Shell Environment:1 ends here
+;; [[file:emacs.org::*Basic UI & Editor Settings][Basic UI & Editor Settings:1]]
+;; Basic UI settings
+(setq-default
+ inhibit-startup-screen t                    ; No startup screen
+ inhibit-startup-message t                   ; No startup message
+ initial-scratch-message nil                 ; Empty scratch buffer
+ visible-bell nil                            ; No visual bell
+ ring-bell-function 'ignore                  ; No audible bell
+ use-short-answers t                         ; Use y/n instead of yes/no
+ confirm-kill-emacs 'y-or-n-p                ; Confirm before exiting
+ frame-title-format '("Emacs – %b")          ; Buffer name in title
+ truncate-lines nil                          ; Wrap long lines
+ word-wrap t                                 ; Wrap at word boundaries
+ global-auto-revert-non-file-buffers t       ; Revert non-file buffers
+ auto-revert-verbose nil)                    ; Don't show revert messages
 
-;; [[file:../../emacs.org::*Buffer & File Management][Buffer & File Management:1]]
-;; Disable auto-save, backup and lock files
-(setq auto-save-default nil)
-(setq make-backup-files nil)
-(setq create-lockfiles nil)
+;; Scroll settings
+(setq scroll-conservatively 101              ; Scroll one line at a time
+      scroll-margin 3                        ; Keep 3 lines visible at edges
+      scroll-preserve-screen-position t)     ; Keep cursor position
 
-;; Enable (explicit) auto-save
-(auto-save-visited-mode 1)
-(setq auto-save-visited-interval 10)
-
-;; Auto-reload buffers on disk file changes
-(global-auto-revert-mode t)
-(setq auto-revert-check-vc-info t)
-
-;; Set root directory
-(setq root-dir (file-name-directory
-                (or (buffer-file-name) load-file-name)))
-;; Buffer & File Management:1 ends here
-
-;; [[file:../../emacs.org::*History Management][History Management:1]]
-(setq history-length 25)
-(recentf-mode 1)
-(savehist-mode 1)
-;; History Management:1 ends here
-
-;; [[file:../../emacs.org::*Window Management][Window Management:1]]
-;; Enable windmove with default bindings
-(when (fboundp 'windmove-default-keybindings)
-  (windmove-default-keybindings 'meta))
-
-(use-package ace-window
-  :bind
-  (("M-o" . 'ace-window))
-  :custom
-  (ace-window-display-mode 1))
-;; Window Management:1 ends here
-
-;; [[file:../../emacs.org::*Keybindings][Keybindings:1]]
-;; Cause escape to quit prompts
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-;; Tab indentation/completion
-(setq tab-always-indent 'complete)
-
-;; Auto-indent
-;; (define-key global-map (kbd "RET") 'newline-and-indent)
-;; Keybindings:1 ends here
-
-;; [[file:../../emacs.org::*Styles][Styles:1]]
-;; Set style
-(setq indent-tabs-mode nil)
-
-(setq c-default-style '((java-mode . "java")
-                        (awk-mode . "awk")
-                        (other . "bsd")))
-
-(setq c-basic-offset 2)
-(setq sh-basic-offset 2)
-;; Styles:1 ends here
-
-;; [[file:../../emacs.org::*Core][Core:1]]
-;; Disable startup screen
-(setq inhibit-startup-screen t)
-
-;; Set width space
-(setq preferred-tab-width 2)
-
-;; Disable bell
-(setq ring-bell-function 'ignore)
-
-;; Set cursor type
-(setq-default cursor-type 'box)
-(setq-default blink-cursor-blinks 0)
-
-;; Vertical window split default
-(setq split-height-threshold nil)
-(setq split-width-threshold 0)
-
-;; Enable line numbers
-(global-display-line-numbers-mode t)
+;; Line numbers
+(global-display-line-numbers-mode 1)
 (setq display-line-numbers-type 'relative)
-(dolist (modes '(term-mode-hook
-                 shell-mode-hook
-                 eshell-mode-hook))
-  (add-hook modes (lambda () (display-line-numbers-mode 0))))
+(dolist (mode '(term-mode-hook
+                shell-mode-hook
+                eshell-mode-hook
+                vterm-mode-hook
+                eat-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-;; Set tab (space) width
-(setq-default tab-width 2
-              indent-tabs-mode nil)
+;; Enable useful modes
+(electric-pair-mode 1)                       ; Auto-close brackets
+(global-auto-revert-mode 1)                  ; Reload files changed on disk
+(save-place-mode 1)                          ; Remember cursor position
+(savehist-mode 1)                            ; Save minibuffer history
+(recentf-mode 1)                             ; Track recent files
+(global-hl-line-mode 1)                      ; Highlight current line
+(delete-selection-mode 1)                    ; Replace selection when typing
 
-(electric-pair-mode 1)
+(defun +maybe-ignore-auto-revert ()
+  "Inhibit auto-revert for Emacs init files."
+  (when (member (file-truename (or buffer-file-name ""))
+                (mapcar #'file-truename
+                        `(,(expand-file-name "init.el" user-emacs-directory)
+                          ,(expand-file-name "early-init.el" user-emacs-directory))))
+    (setq-local global-auto-revert-ignore-buffer t)))
 
-(show-paren-mode 1)
+(add-hook 'find-file-hook #'+maybe-ignore-auto-revert)
 
-;; Enable icons
-(use-package all-the-icons
-  :if (display-graphic-p))
+;; Indentation
+(setq-default indent-tabs-mode nil           ; Use spaces
+              tab-width 2                    ; 2 spaces per tab
+              fill-column 80)                ; 80 character line width
 
-;; Set theme
-(use-package ef-themes
-  :config (load-theme 'ef-elea-dark :no-confirm)
-  :custom
-  (ef-themes-headings '((0 variable-pitch light 1.9)
-                        (1 variable-pitch light 1.8)
-                        (2 variable-pitch regular 1.7)
-                        (3 variable-pitch regular 1.6)
-                        (4 variable-pitch regular 1.5)
-                        (5 variable-pitch 1.4)
-                        (6 variable-pitch 1.3)
-                        (7 variable-pitch 1.2)
-                        (t variable-pitch 1.1)))
-  (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle '(ef-elea-dark ef-owl))
-  (ef-themes-variable-pitch-ui nil)
-  :quelpa (ef-themes :fetcher git
-                     :url "https://github.com/protesilaos/ef-themes.git"))
+;; Backup and auto-save settings
+;; Ensure backup and auto-save directories exist
+(let ((backup-dir (expand-file-name "backups" user-emacs-directory))
+      (autosave-dir (expand-file-name "auto-saves" user-emacs-directory)))
+  (unless (file-exists-p backup-dir)
+    (make-directory backup-dir t))
+  (unless (file-exists-p autosave-dir)
+    (make-directory autosave-dir t))
 
-  ;; (use-package modus-themes
-  ;;   :config (load-theme 'modus-vivendi t)
-  ;;   :custom
-  ;;   (modus-themes-bold-constructs t)
-  ;;   (modus-themes-completion '(opinionated))
-  ;;   (modus-themes-italic-constructs t)
-  ;;   (modus-themes-mode-line '(accented borderless padded))
-  ;;   (modus-themes-org-blocks 'tinted-background)
-  ;;   (modus-themes-paren-match '(bold intense))
-  ;;   (modus-themes-prompts '(bold intense))
-  ;;   (modus-themes-region '(bg-only))
-  ;;   (modus-themes-scale-headings t))
+  (setq backup-directory-alist
+        `(("." . ,backup-dir))
+        auto-save-file-name-transforms
+        `((".*" ,autosave-dir t))
+        backup-by-copying t                    ; Don't clobber symlinks
+        delete-old-versions t                  ; Delete old backups
+        kept-new-versions 6                    ; Keep 6 newest versions
+        kept-old-versions 2                    ; Keep 2 oldest versions
+        version-control t))                    ; Use version numbers
 
-  ;; Prettify symbols
-  (defun configure-prettify-symbols-alist ()
-    "Set prettify symbols alist."
-    (interactive)
-    (setq prettify-symbols-alist '(("map" . ?↦)
-                                   ("&&" . ?∧)
-                                   ("||" . ?∨)
-                                   ("not" . ?¬)))
-    (prettify-symbols-mode 1))
+;; UTF-8 everywhere
+(set-charset-priority 'unicode)
+(prefer-coding-system 'utf-8-unix)
+(set-default-coding-systems 'utf-8-unix)
+(set-terminal-coding-system 'utf-8-unix)
+(set-keyboard-coding-system 'utf-8-unix)
+(set-selection-coding-system 'utf-8-unix)
+(setq locale-coding-system 'utf-8-unix)
+(setq default-process-coding-system '(utf-8-unix . utf-8-unix))
+;; Basic UI & Editor Settings:1 ends here
 
-(use-package prog-mode
-  :ensure nil
-  :hook
-  (prog-mode . (lambda ()
-                 (configure-prettify-symbols-alist)
-                 (flymake-mode))))
-
-(require 'danish-mode-line "~/.config/emacs/lisp/packages/mode-line/danish-mode-line.el")
-;; Core:1 ends here
-
-;; [[file:../../emacs.org::*Completion][Completion:1]]
-(use-package avy
-  :bind
-  (("M-j" . 'avy-goto-char-timer)))
-
-(use-package corfu
-  :bind
-  (:map corfu-map
-   ("M-SPC" . corfu-insert-separator)
-   ("TAB" . corfu-next)
-   ([tab] . corfu-next)
-   ("S-TAB" . corfu-previous)
-   ([backtab] . corfu-previous)
-   ("C-g" . corfu-quit)
-   ([return] . corfu-insert))
-  :custom
-  (corfu-auto t)
-  (corfu-auto-delay 0)
-  (corfu-auto-prefix 1)
-  (corfu-cycle t)
-  (corfu-preselect 'prompt)
-  (corfu-preview-current 'insert)
-  (corfu-separator ?\s)
-  (corfu-quit-at-boundary 'separator)
-  (corfu-quit-no-match 'separator)
-  :init
-  (global-corfu-mode)
-  (corfu-history-mode 1)
-  (corfu-popupinfo-mode)
-  (add-to-list 'savehist-additional-variables 'corfu-history))
-
-(use-package cape
-  :after (:all corfu eglot)
-  :bind
-  (("C-c p p" . completion-at-point)
-   ("C-c p d" . cape-dabbrev)
-   ("C-c p e" . cape-elisp-block)
-   ("C-c p f" . cape-file))
-  :hook
-  ((prog-mode special-mode text-mode) . (lambda () (setq-local completion-at-point-functions
-                                                               (list (cape-capf-super
-                                                                      #'cape-dabbrev
-                                                                      #'cape-file
-                                                                      #'cape-keyword
-                                                                      #'cape-elisp-block
-                                                                      #'cape-dict))))))
-
-(use-package orderless
-  :custom
-  (completion-styles '(orderless partial-completion basic))
-  (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles partial-completion))
-                                   (eglot (styles orderless)))))
-
-(use-package consult
-  :bind
-  (("C-c h" . 'consult-history)
-   ("C-x b" . 'consult-buffer)
-   ("M-g e" . 'consult-compile-error)
-   ("M-g f" . 'consult-flymake)
-   ("M-g g" . 'consult-goto-line)
-   ("M-g M-g" . 'consult-goto-line)
-   ("M-g o" . 'consult-outline)
-   ("M-g i" . 'consult-imenu)
-   ("M-g I" . 'consult-imenu-multi)
-   ("M-s d" . 'consult-fd)
-   ("M-s D" . 'consult-locate)
-   ("M-s g" . 'consult-grep)
-   ("M-s G" . 'consult-git-grep)
-   ("M-s r" . 'consult-ripgrep)
-   ("M-s l" . 'consult-line)
-   ("M-s L" . 'consult-line-multi)
-   :map isearch-mode-map
-   ("M-s l" . 'consult-line))
-  :custom
-  (completion-in-region-function #'consult-completion-in-region)
+;; [[file:emacs.org::*Evil Mode][Evil Mode:1]]
+;; Undo-tree - Better undo system for Evil
+;; Reference: https://www.emacswiki.org/emacs/UndoTree
+(use-package undo-tree
   :demand t
-  :hook
-  (completion-list-mode . consult-preview-at-point-mode))
-
-(use-package embark
-  :bind
-  ("C-." . embark-act)
-  ("C-;" . embark-dwim)
-  ("C-h B" . embark-bindings)
-  :init
-  (setq prefix-help-command #'embark-prefix-help-command))
-
-(use-package embark-consult
-  :after (:all consult embark)
-  :demand t
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
-
-(use-package marginalia
-  :after (:all vertico)
-  :bind
-  (("M-A" . marginalia-cycle)
-   :map minibuffer-local-map
-   ("M-A" . marginalia-cycle))
-  :init
-  (marginalia-mode))
-
-(use-package vertico
   :custom
-  (vertico-cycle t)
-  :hook
-  (rfn-eshadow-update-overlay . vertico-directory-tidy)
-  :init
-  (vertico-mode))
-;; Completion:1 ends here
-
-;; [[file:../../emacs.org::*Debugging][Debugging:1]]
-;; (use-package dap-mode)
-;; Debugging:1 ends here
-
-;; [[file:../../emacs.org::*Environment Management][Environment Management:1]]
-(use-package envrc
-  :hook (after-init . envrc-global-mode))
-;; Environment Management:1 ends here
-
-;; [[file:../../emacs.org::*Help][Help:1]]
-(use-package helpful
-  :bind
-  ([remap describe-command] . helpful-command)
-  ([remap describe-key] . helpful-key))
-;; Help:1 ends here
-
-;; [[file:../../emacs.org::*Interactivity][Interactivity:1]]
-(use-package ido
+  (undo-tree-auto-save-history nil)          ; Don't save undo history
+  (undo-tree-history-directory-alist
+   `(("." . ,(expand-file-name "undo-tree" user-emacs-directory))))
   :config
-  (setq ido-enable-flex-matching t
-        ido-use-virutal-buffers t)
-  (ido-mode t)
-  :ensure nil)
-;; Interactivity:1 ends here
+  (global-undo-tree-mode))
 
-;; [[file:../../emacs.org::*Key Definitions][Key Definitions:1]]
-(use-package hydra
-  :config
-  (defhydra hydra-buffer (:timeout 5)
-    "switch buffer"
-    ("n" next-buffer "next buffer")
-    ("p" previous-buffer "previous buffer")
-    ("e" nil "exit" :exit t))
-  (defhydra hydra-text-scale (:timeout 5)
-    "scale text"
-    ("j" text-scale-decrease "out")
-    ("k" text-scale-increase "in")
-    ("e" nil "exit" :exit t)))
-
-(use-package which-key
-  :config
-  (which-key-setup-side-window-bottom)
-  (which-key-mode 1)
-  :custom
-  (which-key-add-column-padding 4)
-  (which-key-allow-evil-operators t)
-  (which-key-idle-delay 0.2)
-  (which-key-max-display-columns 6)
-  (which-key-popup-type 'side-window)
-  (which-key-prefix-prefix "+")
-  (which-key-separator " » ")
-  (which-key-show-remaining-keys t)
-  (which-key-side-window-max-height 0.33)
-  :demand t)
-
-(use-package general
-  :after (:all which-key)
-  :config
-  (general-override-mode 1)
-  (general-evil-setup t)
-  (general-def
-    :keymaps 'global
-    [escape] 'keyboard-escape-quit)
-  (general-def
-    :keymaps 'global
-    :states '(normal visual)
-    "C-d" 'evil-scroll-down
-    "C-u" 'evil-scroll-up)
-  (general-def
-    :keymaps 'global
-    :states '(insert)
-    "C-u" '(lambda ()
-             (interactive)
-             (evil-delete (point-at-bol) (point))))
-  (general-create-definer benevolent-dictator
-    :states '(emacs insert normal visual)
-    :prefix "SPC"
-    :global-prefix "M-SPC")
-  (defun shrink-horizontally ()
-    (interactive)
-    (shrink-window-horizontally 10))
-  (defun enlarge-horizontally ()
-    (interactive)
-    (enlarge-window-horizontally 10))
-  (defun shrink-vertically ()
-    (interactive)
-    (shrink-window 10))
-  (defun enlarge-vertically ()
-    (interactive)
-    (enlarge-window 10))
-  (benevolent-dictator
-    ";" (general-simulate-key ";" :which-key ";")
-    "c" (general-simulate-key "C-c" :which-key "C-c")
-    "h" (general-simulate-key "C-h" :which-key "C-h")
-    "x" (general-simulate-key "C-x" :which-key "C-x")    
-    "TAB" '(consult-buffer :which-key "switch buffer")
-    "SPC" '(execute-extended-command :which-key "M-x")
-    "/"   '(consult-ripgrep :which-key "ripgrep")
-    ;; Buffer functionality
-    "b"  '(:ignore t :which-key "buffer")
-    "bh" '(hydra-buffer/body :which-key "hydra buffer")
-    "bk" '(ido-kill-buffer :which-key "buffer kill")
-    "bl" '(consult-buffer :which-key "buffer list")
-    "bn" '(next-buffer :which-key "next buffer")
-    "bp" '(previous-buffer :which-key "previous buffer")
-    "bS" '(save-some-buffers :which-key "buffer any save")
-    "bs" '(save-buffer :which-key "buffer save")
-    ;; Describe functionality
-    "d"  '(:ignore t :which-key "describe")
-    "df" '(describe-function :which-key "describe function")
-    "dv" '(describe-variable :which-key "describe variable")
-    ;; File functionality
-    "f"  '(:ignore t :which-key "file")
-    "fd" '(dired :which-key "dired")
-    "fl" '(consult-locate :which-key "locate")
-    "ff" '(consult-fd :which-key "find")
-    "fs" '(consult-ripgrep :which-key "fuzzy search")
-    ;; Git functionality
-    "g"  '(:ignore t :which-key "git")
-    "gc" '(consult-git-grep :which-key "git consult")
-    "gd" '(magit-dispatch-popup :which-key "git dispatch")
-    "gs" '(magit-status :which-key "git status")
-    ;; Interface functionality
-    "i"  '(:ignore t :which-key "interface")
-    "ie" '(eshell :which-key "open eshell")
-    "im" '(mini-eshell :which-key "open mini-eshell")
-    ;; Lint functionality
-    "l"  '(:ignore t :which-key "lint")
-    "lf" '(consult-flymake :which-key "flymake consult")
-    "ln" '(flymake-goto-next-error :which-key "next flymake error")
-    "lp" '(flymake-goto-prev-error :which-key "previous flymake error")
-    ;; Navigation functionality
-    "n"  '(:ignore t :which-key "navigation")
-    "nc" '(avy-goto-char :which-key "go-to char")
-    "nl" '(avy-goto-line :which-key "go-to line")
-    "ns" '(avy-goto-word-0 :which-key "go-to word")
-    "nt" '(avy-goto-char-timer :which-key "timed go-to char")
-    "nw" '(avy-goto-word-1 :which-key "go-to search word")
-    ;; Org
-    "o"  '(:ignore t :which-key "org")
-    "od" '(org-deadline :which-key "deadline")
-    "ot" '(org-time-stamp :which-key "timestamp")
-    ;; Project functionality
-    "p"  '(:ignore t :which-key "project")
-    "pf" '(project--files-in-directory :which-key "find file in directory")
-    ;; Quit functionality
-    "q"  '(:ignore t :which-key "quit")
-    "qq" '(save-buffers-kill-terminal :which-key "save & quit")
-    "qQ" '(kill-emacs :which-key "quit")
-    ;; Search functionality
-    "s"  '(:ignore t :which-key "search")
-    "sl" '(consult-line :which-key "consult line")
-    ;; Window functionality
-    "w"  '(:ignore t :which-key "window")
-    "wh" '(windmove-left :which-key "move left")
-    "wj" '(windmove-down :which-key "move down")
-    "wk" '(windmove-up :which-key "move up")
-    "wl" '(windmove-right :which-key "move right")
-    "wo" '(delete-other-windows :which-key "delete other window")
-    "wx" '(delete-window :which-key "delete window")
-    "w+" '(split-window-right :which-key "split right")
-    "w-" '(split-window-below :which-key "split below")
-    "w=" '(balance-windows :which-key "balance")
-    "w<" '(shrink-horizontally :which-key "shrink horizontally")
-    "w>" '(enlarge-horizontally :which-key "enlarge horizontally")
-    "w_" '(shrink-vertically :which-key "shrink vertically")
-    "w^" '(enlarge-vertically :which-key "enlarge vertically")
-    ;; Zoom functionality
-    "z" '(:ignore t :which-key "hydra")
-    "zz" '(hydra-text-scale/body :which-key "zoom in/out"))
-  :demand t)
-
+;; Evil - Extensible vi layer
+;; Reference: https://github.com/emacs-evil/evil
 (use-package evil
-  :after (:all ef-themes general)
-  :custom
-  (evil-emacs-state-cursor '(box "medium purple"))
-  (evil-insert-state-cursor '((bar . 2) "dodger blue"))
-  (evil-motion-state-cursor '(box "light sea green"))
-  (evil-normal-state-cursor '(box "medium sea green"))
-  (evil-operator-state-cursor '(box "medium spring green"))
-  (evil-replace-state-cursor '(hollow "magenta"))
-  (evil-visual-state-cursor) '(hollow "gold")
-  (evil-set-undo-system 'undo-redo)
-  (evil-default-state 'normal)
-  (evil-search-module 'evil-search)
-  (evil-split-window-below nil)
-  (evil-vsplit-window-right t)
-  (evil-want-keybinding nil)
-  (evil-want-integration t)
-  (evil-want-fine-undo t)
+  :demand t
   :init
-  (evil-mode 1))
-
-(use-package evil-collection
-  :after (:all evil)
+  (setq evil-want-integration t             ; Enable evil-collection
+        evil-want-keybinding nil            ; Let evil-collection handle
+        evil-want-C-u-scroll t              ; C-u scrolls up
+        evil-want-C-i-jump nil              ; Don't use C-i for jump
+        evil-undo-system 'undo-tree         ; Use undo-tree
+        evil-respect-visual-line-mode t     ; j/k move visual lines
+        evil-split-window-below t           ; Split below
+        evil-vsplit-window-right t)         ; Split right
   :config
-  (evil-collection-init)
-  (evil-set-initial-state 'eat-mode 'emacs))
+  (evil-mode 1)
+  ;; Use visual line motions even outside visual-line-mode
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+  ;; Set initial states for various modes
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal)
+  ;; elpaca-mode uses prompts that expect Emacs key bindings (y/n/q etc.),
+  ;; so keep it in emacs state rather than normal state.
+  (evil-set-initial-state 'elpaca-mode 'emacs))
 
+;; Evil-collection - Evil keybindings for many modes
+;; Reference: https://github.com/emacs-evil/evil-collection
+(use-package evil-collection
+  :after evil
+  :demand t
+  :config
+  (evil-collection-init))
+
+;; Evil-commentary - Comment/uncomment with gc
+;; Reference: https://github.com/linktohack/evil-commentary
+(use-package evil-commentary
+  :after evil
+  :demand t
+  :config
+  (evil-commentary-mode))
+
+;; Evil-surround - Easily delete, change and add surroundings in pairs
+;; Reference: https://github.com/emacs-evil/evil-surround
 (use-package evil-surround
-  :after (:all evil)
+  :after evil
+  :demand t
   :config
   (global-evil-surround-mode 1))
 
-(use-package evil-embrace
-  :after (:all evil evil-surround)
-  :config
-  (evil-embrace-enable-evil-surround-integration))
+;; Ace-window - Quick window switching with visual indicators
+;; Reference: https://github.com/abo-abo/ace-window
+(use-package ace-window
+  :commands (ace-window ace-swap-window ace-delete-window ace-select-window)
+  :custom
+  (aw-scope 'frame)                              ; Only current frame
+  (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))      ; Home row keys for selection
+  (aw-background t)                              ; Dim background windows
+  (aw-dispatch-always t))                        ; Always show dispatch menu
 
-(use-package evil-easymotion
-  :after (:all evil)
-  :config
-  (evilem-default-keybindings ","))
-;; Key Definitions:1 ends here
+;; Avy - Jump to visible text using a short decision tree
+;; Reference: https://github.com/abo-abo/avy
+(use-package avy
+  :commands (avy-goto-char-timer avy-goto-word-1 avy-goto-line)
+  :custom
+  (avy-timeout-seconds 0.3)
+  (avy-single-candidate-jump t))
+;; Evil Mode:1 ends here
 
-;; [[file:../../emacs.org::*Apheleia][Apheleia:1]]
+;; [[file:emacs.org::*General.el][General.el:1]]
+;; General - Convenient key definitions
+;; Reference: https://github.com/noctuid/general.el
+(use-package general
+  :demand t
+  :config
+  ;; Load keybindings from external configuration file after General.el is ready
+  ;; File contains all General.el leader key definitions and custom keybindings
+  (+load-config-file "keybindings.el"))
+
+;; Which-key - Show available keybindings
+;; Reference: https://github.com/justbur/emacs-which-key
+(use-package which-key
+  :demand t
+  :custom
+  (which-key-idle-delay 0.2)
+  (which-key-sort-order 'which-key-key-order-alpha)
+  (which-key-sort-uppercase-first nil)
+  (which-key-add-column-padding 1)
+  (which-key-max-display-columns nil)
+  (which-key-min-display-lines 6)
+  (which-key-side-window-slot -10)
+  :config
+  (which-key-mode)
+  (which-key-setup-side-window-bottom))
+;; General.el:1 ends here
+
+;; [[file:emacs.org::*Themes & Appearance][Themes & Appearance:1]]
+;; Modus themes - Built-in high-contrast themes
+;; Reference: https://protesilaos.com/emacs/modus-themes
+;; Load modus-vivendi-tinted theme (dark theme with subtle colors)
+(use-package modus-themes
+  :demand t
+  :custom
+  ;; Readable and aesthetic configuration
+  (modus-themes-italic-constructs t)
+  (modus-themes-bold-constructs t)
+  (modus-themes-mixed-fonts t)
+  (modus-themes-variable-pitch-ui nil)
+  (modus-themes-custom-auto-reload t)
+  (modus-themes-disable-other-themes t)
+  ;; Subtle and elegant org-mode
+  (modus-themes-headings
+   '((1 . (1.3))
+     (2 . (1.2))
+     (3 . (1.1))
+     (t . (1.0))))
+  (modus-themes-org-blocks 'gray-background)
+  ;; More explicit prompts
+  (modus-themes-prompts '(bold))
+  ;; Completion UI
+  (modus-themes-completions
+   '((matches . (extrabold))
+     (selection . (semibold))))
+  :config
+  (modus-themes-load-theme 'modus-vivendi-tinted)
+  ;; Load custom mode-line configuration
+  ;; The mode-line file is self-configuring and sets up automatically when loaded
+  (+require-safe 'danish-mode-line nil t))
+
+;; Vundo - Visual undo tree
+;; Reference: https://github.com/casouri/vundo
+(use-package vundo
+  :commands vundo
+  :custom
+  (vundo-glyph-alist vundo-unicode-symbols))
+
+;; Nerd Icons - Icon fonts for various packages
+;; Reference: https://github.com/rainstormstudio/nerd-icons.el
+(use-package nerd-icons
+  :if (display-graphic-p)
+  :custom
+  (nerd-icons-font-family "Symbols Nerd Font Mono"))
+
+;; Restart Emacs - Restart Emacs from within Emacs
+;; Reference: https://github.com/iqbalansari/restart-emacs
+(use-package restart-emacs
+  :commands restart-emacs)
+;; Themes & Appearance:1 ends here
+
+;; [[file:emacs.org::*gptel - LLM Chat Client][gptel - LLM Chat Client:1]]
+;; gptel - LLM chat client for Emacs
+;; Reference: https://github.com/karthink/gptel
+(use-package gptel
+  :commands (gptel gptel-send gptel-menu gptel-rewrite)
+  :config
+  ;; --- Local backends (no API key required) ---
+
+  ;; Ollama backend - runs models served by `ollama serve`
+  ;; Reference: https://ollama.com/
+  ;; Adjust :models to match what you have pulled locally (`ollama list`).
+  (defvar danish--gptel-ollama-backend
+    (gptel-make-ollama "Ollama"
+                       :host "localhost:11434"
+                       :stream t
+                       :models '(llama3.2:latest
+                                 mistral:latest
+                                 deepseek-coder:latest))
+    "Gptel backend for locally running Ollama server.")
+
+  ;; Llama.cpp backend - uses Llama.cpp's OpenAI-compatible HTTP server
+  ;; Reference: https://github.com/ggerganov/llama.cpp#web-server
+  ;; Start with: `llama-server --model <path>.gguf --port 8000`
+  (defvar danish--gptel-llamacpp-backend
+    (gptel-make-openai "llama-cpp"
+                       :stream t
+                       :protocol "http"
+                       :host "localhost:8000"
+                       ;; Model name is arbitrary for llama.cpp - use something
+                       ;; descriptive to identify which .gguf you loaded.
+                       :models '(local))
+    "Gptel backend for a locally running llama.cpp server.")
+
+  ;; --- Default backend and model ---
+  ;; Set Ollama as the default; switch backends interactively via `gptel-menu'.
+  (setq gptel-backend danish--gptel-ollama-backend
+        gptel-model   'llama3.2:latest)
+
+  ;; --- Future remote backend example (uncomment and fill in when needed) ---
+  ;; Requires gptel >= 0.9 for gptel-make-anthropic.
+  ;; (gptel-make-anthropic "Claude"
+  ;;   :stream t
+  ;;   :key (lambda ()
+  ;;          (auth-source-pick-first-password
+  ;;           :host "api.anthropic.com"
+  ;;           :user "gptel")))
+
+  :custom
+  ;; Use org-mode for chat buffers - integrates naturally with your org workflow
+  (gptel-default-mode 'org-mode)
+  ;; Stream responses token-by-token rather than waiting for the full reply
+  (gptel-stream t)
+  ;; Display responses in the dedicated chat buffer, not inline by default
+  (gptel-use-context 'system)
+  ;; Window display: show chat buffer below without stealing focus
+  (gptel-display-buffer-action
+   '(display-buffer-in-side-window
+     (side . bottom)
+     (window-height . 0.35))))
+;; gptel - LLM Chat Client:1 ends here
+
+;; [[file:emacs.org::*agent-shell - Agentic LLM Shell via ACP][agent-shell - Agentic LLM Shell via ACP:1]]
+;; shell-maker - Comint shell framework (required by agent-shell)
+;; Reference: https://github.com/xenodium/shell-maker
+(use-package shell-maker
+  :ensure (:host github :repo "xenodium/shell-maker"
+           :files ("shell-maker.el")))
+
+;; acp - Agent Client Protocol client library (required by agent-shell)
+;; Reference: https://github.com/xenodium/acp.el
+(use-package acp
+  :ensure (:host github :repo "xenodium/acp.el"
+           :files ("*.el")))
+
+;; agent-shell - Native Emacs shell for ACP-capable LLM agents
+;; Reference: https://github.com/xenodium/agent-shell
+;;
+;; Supported agents: Claude Code, Goose, OpenCode, Auggie, and others.
+;; Each agent requires its own CLI tool installed externally. See upstream
+;; README for per-agent installation instructions.
+;;
+;; Environment variables for remote agents (e.g. Claude Code) can be passed
+;; via `agent-shell-make-environment-variables'. Example using auth-source:
+;;
+;;   (setq agent-shell-anthropic-claude-environment
+;;         (agent-shell-make-environment-variables
+;;          "ANTHROPIC_API_KEY"
+;;          (lambda ()
+;;            (auth-source-pick-first-password
+;;             :host "api.anthropic.com"
+;;             :user "agent-shell"))))
+;;
+;; Note on double-binding: agent-shell is accessible via both SPC a o/t/n/c
+;; (under the "AI" prefix) and SPC o a (under the "open/app" prefix).
+;; The former is the primary entry point; the latter is a convenience alias.
+(use-package agent-shell
+  :ensure (:host github :repo "xenodium/agent-shell"
+           :files ("*.el"))
+  :after (shell-maker acp)
+  :commands (agent-shell
+             agent-shell-toggle
+             agent-shell-anthropic-claude
+             agent-shell-new)
+  :config
+  ;; Start agent-shell buffers in emacs state so y/n/p/q diff prompts work
+  ;; without needing to enter insert mode. Evil's C-z still available.
+  (with-eval-after-load 'evil
+    (evil-set-initial-state 'agent-shell-mode 'emacs))
+
+  ;; Disable minor modes that interfere with agent edits (e.g. auto-indentation)
+  (setq agent-shell-write-inhibit-minor-modes '(aggressive-indent-mode))
+
+  :bind
+  (:map agent-shell-mode-map
+   ;; Evil-friendly: RET inserts a newline; C-c C-c submits the prompt.
+   ;; This mirrors how eshell/vterm are handled elsewhere in this config.
+   ("RET"     . newline)
+   ("C-c C-c" . shell-maker-submit)
+   ("C-c C-k" . agent-shell-interrupt)))
+;; agent-shell - Agentic LLM Shell via ACP:1 ends here
+
+;; [[file:emacs.org::*Vertico - Vertical Completion UI][Vertico - Vertical Completion UI:1]]
+;; Vertico - Vertical completion UI
+;; Reference: https://github.com/minad/vertico
+(use-package vertico
+  :demand t
+  :custom
+  (vertico-count 15)
+  (vertico-resize t)
+  (vertico-cycle t)
+  :init
+  (vertico-mode))
+;; Vertico - Vertical Completion UI:1 ends here
+
+;; [[file:emacs.org::*Orderless - Flexible Matching][Orderless - Flexible Matching:1]]
+;; Orderless - Flexible completion matching
+;; Reference: https://github.com/oantolin/orderless
+(use-package orderless
+  :demand t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+;; Orderless - Flexible Matching:1 ends here
+
+;; [[file:emacs.org::*Marginalia - Rich Annotations][Marginalia - Rich Annotations:1]]
+;; Marginalia - Rich annotations in the minibuffer
+;; Reference: https://github.com/minad/marginalia
+(use-package marginalia
+  :demand t
+  :init
+  (marginalia-mode))
+;; Marginalia - Rich Annotations:1 ends here
+
+;; [[file:emacs.org::*Consult - Enhanced Commands][Consult - Enhanced Commands:1]]
+;; Consult - Practical commands using completing-read
+;; Reference: https://github.com/minad/consult
+(use-package consult
+  :demand t
+  :custom
+  (consult-narrow-key "<")
+  (consult-line-start-from-top nil)
+  (consult-async-min-input 2)
+  (consult-async-refresh-delay 0.15)
+  (consult-async-input-throttle 0.2)
+  (consult-async-input-debounce 0.1)
+  :config
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult-source-bookmark consult-source-file-register
+   consult-source-recent-file consult-source-project-recent-file
+   :preview-key '(:debounce 0.4 any)))
+;; Consult - Enhanced Commands:1 ends here
+
+;; [[file:emacs.org::*Embark - Contextual Actions][Embark - Contextual Actions:1]]
+;; Embark - Contextual actions on completions
+;; Reference: https://github.com/oantolin/embark
+(use-package embark
+  :demand t
+  :custom
+  (embark-quit-after-action nil)
+  (embark-indicators '(embark-minimal-indicator
+                      embark-highlight-indicator
+                      embark-isearch-highlight-indicator))
+  (embark-prompter 'embark-completing-read-prompter)
+  :config
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+;; Embark-consult integration
+;; Reference: https://github.com/oantolin/embark/wiki/Additional-Configuration
+(use-package embark-consult
+  :after (embark consult)
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+;; Embark - Contextual Actions:1 ends here
+
+;; [[file:emacs.org::*Corfu - In-Buffer Completion][Corfu - In-Buffer Completion:1]]
+;; Corfu - Completion overlay in the buffer
+;; Reference: https://github.com/minad/corfu
+(use-package corfu
+  :demand t
+  :custom
+  (corfu-cycle t)              ; Cycle through candidates
+  (corfu-auto t)               ; Auto-complete
+  (corfu-auto-delay 0.2)       ; Delay before auto-complete
+  (corfu-auto-prefix 2)        ; Minimum prefix for auto-complete
+  (corfu-quit-no-match 'separator)
+  (corfu-preview-current nil)  ; Don't preview current candidate
+  (corfu-preselect 'prompt)    ; Don't preselect first candidate
+  (corfu-on-exact-match nil)
+  (corfu-scroll-margin 4)
+  (corfu-count 15)
+  (corfu-max-width 100)
+  (corfu-min-width 40)
+  :hook
+  ;; Enable Corfu in the minibuffer only for commands that use
+  ;; completion-at-point; disable auto-popup to avoid noise.
+  (minibuffer-setup . (lambda ()
+                        (when (where-is-internal #'completion-at-point (list (current-local-map)))
+                          (setq-local corfu-auto nil)
+                          (corfu-mode 1))))
+  ;; In eshell, disable auto-popup but keep manual completion available.
+  (eshell-mode . (lambda ()
+                   (setq-local corfu-auto nil)
+                   (corfu-mode 1)))
+  :init
+  (global-corfu-mode))
+
+;; Corfu terminal support for non-GUI Emacs
+;; Reference: https://codeberg.org/akib/emacs-corfu-terminal
+(use-package corfu-terminal
+  :if (not (display-graphic-p))
+  :demand t
+  :config
+  (corfu-terminal-mode +1))
+
+;; Corfu popup documentation
+;; :ensure nil because corfu-popupinfo ships inside the corfu package directory,
+;; not as a separate elpaca-managed package.
+(use-package corfu-popupinfo
+  :ensure nil
+  :after corfu
+  :custom
+  (corfu-popupinfo-delay '(0.5 . 0.2))
+  (corfu-popupinfo-max-width 80)
+  (corfu-popupinfo-max-height 25)
+  :hook
+  (corfu-mode . corfu-popupinfo-mode))
+
+;; Kind-icon - Icons for completion candidates
+;; Reference: https://github.com/jdtsmith/kind-icon
+(use-package kind-icon
+  :after corfu
+  :custom
+  (kind-icon-default-face 'corfu-default)
+  (kind-icon-blend-background nil)
+  (kind-icon-blend-frac 0.08)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+;; Corfu - In-Buffer Completion:1 ends here
+
+;; [[file:emacs.org::*Cape - Additional Completion Backends][Cape - Additional Completion Backends:1]]
+;; Cape - Completion at point extensions
+;; Reference: https://github.com/minad/cape
+(use-package cape
+  :demand t
+  :custom
+  (cape-dabbrev-min-length 3)
+  (cape-dabbrev-check-other-buffers t)
+  :hook
+  ;; Add useful completion backends to the END of the list so mode-specific
+  ;; completions (e.g. LSP via eglot) take precedence.
+  ((prog-mode text-mode conf-mode) . (lambda ()
+                                       (add-to-list 'completion-at-point-functions #'cape-dabbrev t)
+                                       (add-to-list 'completion-at-point-functions #'cape-file t)
+                                       (add-to-list 'completion-at-point-functions #'cape-elisp-block t)))
+  :config
+  ;; Silence the pcomplete capf, no errors or messages
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent))
+;; Cape - Additional Completion Backends:1 ends here
+
+;; [[file:emacs.org::*Structural Editing with Puni][Structural Editing with Puni:1]]
+;; Puni - Structured editing with balanced expressions
+;; Reference: https://github.com/AmaiKinono/puni
+(use-package puni
+  :hook
+  ;; Enable puni in all programming buffers
+  (prog-mode . puni-mode)
+  ;; In Lisp-family buffers, prevent electric-pair-mode from auto-pairing
+  ;; ' and ` because these are Lisp quote and quasiquote characters, not
+  ;; symmetric delimiters. Puni handles sexp-level structural editing instead.
+  (emacs-lisp-mode . +puni-lisp-setup)
+  (lisp-mode . +puni-lisp-setup)
+  (lisp-interaction-mode . +puni-lisp-setup)
+  (scheme-mode . +puni-lisp-setup)
+  (clojure-ts-mode . +puni-lisp-setup)
+  (clojurescript-mode . +puni-lisp-setup)
+  (clojurec-mode . +puni-lisp-setup)
+  (cider-repl-mode . +puni-lisp-setup)
+  :config
+  (defun +puni-lisp-setup ()
+    "Configure `puni-mode' and pairing behavior for Lisp-family buffers."
+    (let ((default-predicate electric-pair-inhibit-predicate))
+      (setq-local electric-pair-inhibit-predicate
+                  (lambda (char)
+                    (or (memq char '(?\' ?\`))
+                        (funcall default-predicate char)))))))
+;; Structural Editing with Puni:1 ends here
+
+;; [[file:emacs.org::*Tree-sitter Configuration][Tree-sitter Configuration:1]]
+;; Tree-sitter - Syntax tree parsing for better highlighting
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/elisp/Parsing-Program-Source.html
+(use-package treesit
+  :ensure nil
+  :when (and (fboundp 'treesit-available-p)
+             (treesit-available-p))
+  :custom
+  (treesit-font-lock-level 4))  ; Maximum highlighting
+;; Tree-sitter Configuration:1 ends here
+
+;; [[file:emacs.org::*Tree-sitter Auto - Automatic Grammar Management][Tree-sitter Auto - Automatic Grammar Management:1]]
+;; Treesit-auto - Automatic tree-sitter grammar management
+;; Reference: https://github.com/renzmann/treesit-auto
+(use-package treesit-auto
+  :if (and (fboundp 'treesit-available-p)
+           (treesit-available-p))
+  :custom
+  ;; Automatically install grammars when needed (prompt first time)
+  (treesit-auto-install 'prompt)
+  :config
+  ;; Add all supported languages to auto-mode-alist
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode)
+
+  ;; Add custom recipe for Clojure (not in default treesit-auto)
+  (add-to-list 'treesit-auto-recipe-list
+               (make-treesit-auto-recipe
+                :lang 'clojure
+                :ts-mode 'clojure-ts-mode
+                :remap '(clojure-mode clojurec-mode clojurescript-mode)
+                :url "https://github.com/sogaiu/tree-sitter-clojure"
+                :ext "\\.clj[sc]?\\'"))
+
+  ;; Add custom recipe for Nix (not in default treesit-auto)
+  (add-to-list 'treesit-auto-recipe-list
+               (make-treesit-auto-recipe
+                :lang 'nix
+                :ts-mode 'nix-ts-mode
+                :remap 'nix-mode
+                :url "https://github.com/nix-community/tree-sitter-nix"
+                :ext "\\.nix\\'"))
+
+  ;; Add custom recipe for Kotlin (not in default treesit-auto)
+  (add-to-list 'treesit-auto-recipe-list
+               (make-treesit-auto-recipe
+                :lang 'kotlin
+                :ts-mode 'kotlin-ts-mode
+                :remap 'kotlin-mode
+                :url "https://github.com/fwcd/tree-sitter-kotlin"
+                :ext "\\.kts?\\'"))
+
+  ;; treesit-auto is enabled during init so mode remapping is available early.
+  )
+;; Tree-sitter Auto - Automatic Grammar Management:1 ends here
+
+;; [[file:emacs.org::*Xref Enhancement][Xref Enhancement:1]]
+;; Better xref (find references/definitions)
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/emacs/Xref.html
+(use-package xref
+  :ensure nil
+  :custom
+  (xref-search-program 'ripgrep)
+  (xref-show-xrefs-function #'consult-xref)
+  (xref-show-definitions-function #'consult-xref))
+;; Xref Enhancement:1 ends here
+
+;; [[file:emacs.org::*LSP with Eglot][LSP with Eglot:1]]
+;; Eglot - Built-in LSP client
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/eglot/
+(use-package eglot
+  :ensure nil
+  :commands (eglot eglot-ensure)
+  :custom
+  (eglot-autoshutdown t)             ; Shutdown server when last buffer closes
+  (eglot-send-changes-idle-time 0.5) ; Delay before sending changes
+  (eglot-extend-to-xref t)           ; Use eglot for xref
+  (eglot-sync-connect 0)             ; Don't block on connection
+  :config
+  ;; Optimize Eglot for performance
+  (fset #'jsonrpc--log-event #'ignore)
+  (setq eglot-events-buffer-size 0)
+
+  ;; Configure LSP servers for both classic and tree-sitter modes.
+  (dolist (mapping
+           '(((clojure-mode clojure-ts-mode clojurescript-mode clojurec-mode) . ("clojure-lsp"))
+             ((python-mode python-ts-mode) . ("pyright-langserver" "--stdio"))
+             ((js-mode js-ts-mode typescript-mode typescript-ts-mode tsx-ts-mode) . ("typescript-language-server" "--stdio"))
+             ((nix-mode nix-ts-mode) . ("nil"))
+             ((rust-mode rust-ts-mode) . ("rust-analyzer"))
+             ((c-mode c-ts-mode c++-mode c++-ts-mode) . ("clangd"))
+             ((go-mode go-ts-mode) . ("gopls"))
+             ((kotlin-mode kotlin-ts-mode) . ("kotlin-language-server"))
+             ((java-mode java-ts-mode) . ("jdtls"))))
+    (add-to-list 'eglot-server-programs mapping))
+
+  (defun +eglot-supported-p ()
+    "Return non-nil when the current buffer has an Eglot server mapping."
+    (seq-some (lambda (entry)
+                (if (listp (car entry))
+                    (memq major-mode (car entry))
+                  (eq major-mode (car entry))))
+              eglot-server-programs))
+
+  (defun +eglot-server-executable ()
+    "Return the first executable name for the current Eglot server mapping.
+Returns nil for function-valued entries (contact forms) and for modes
+with no mapping, rather than signaling an error."
+    (when-let* ((entry (seq-find (lambda (candidate)
+                                   (if (listp (car candidate))
+                                       (memq major-mode (car candidate))
+                                     (eq major-mode (car candidate))))
+                                 eglot-server-programs))
+                (server (cdr entry)))
+      ;; server can be a list like ("clojure-lsp") or a function (contact form).
+      ;; Only attempt executable lookup for list-valued entries.
+      (when (listp server)
+        (let ((program (car-safe server)))
+          (and (stringp program) program)))))
+
+  (defun +eglot-ensure-supported ()
+    "Start Eglot in supported programming buffers when the server exists."
+    (when (and (derived-mode-p 'prog-mode)
+               (+eglot-supported-p)
+               (not (eglot-current-server)))
+      (if-let ((program (+eglot-server-executable)))
+          (when (executable-find program)
+            (eglot-ensure))
+        ;; No executable to check (e.g. contact form) — attempt connection directly.
+        (eglot-ensure))))
+
+  :hook
+  (prog-mode . +eglot-ensure-supported))
+;; LSP with Eglot:1 ends here
+
+;; [[file:emacs.org::*Eldoc Enhancement][Eldoc Enhancement:1]]
+;; Better documentation display
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/emacs/Lisp-Doc.html
+(use-package eldoc
+  :ensure nil
+  :custom
+  (eldoc-echo-area-use-multiline-p nil)  ; Single line in echo area
+  (eldoc-echo-area-display-truncation-message nil)
+  (eldoc-idle-delay 0.2)
+  :config
+  ;; Enable eldoc in all programming modes
+  (global-eldoc-mode 1))
+
+;; Eldoc box - Show documentation in a popup box
+;; Reference: https://github.com/casouri/eldoc-box
+(use-package eldoc-box
+  :after eldoc
+  :commands (eldoc-box-help-at-point eldoc-box-eglot-help-at-point)
+  :custom
+  (eldoc-box-max-pixel-width 800)
+  (eldoc-box-max-pixel-height 600))
+;; Eldoc Enhancement:1 ends here
+
+;; [[file:emacs.org::*Syntax Checking with Flymake][Syntax Checking with Flymake:1]]
+;; Flymake - On-the-fly syntax checking
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/flymake/
+(use-package flymake
+  :ensure nil
+  :custom
+  (flymake-no-changes-timeout 0.5)
+  (flymake-start-on-flymake-mode t)
+  (flymake-start-on-save-buffer t)
+  :hook
+  (prog-mode . flymake-mode))
+
+;; Biome - JavaScript/TypeScript/JSON/CSS linter and formatter
+(use-package flymake-biome
+  :ensure nil
+  :if (executable-find "biome")
+  :load-path "lisp/packages/flymake/biome"
+  :hook
+  ((css-ts-mode
+    js-ts-mode
+    typescript-ts-mode
+    tsx-ts-mode
+    json-ts-mode
+    graphql-mode) . flymake-biome-init))
+
+;; Ruff - Python linter and formatter
+(use-package flymake-ruff
+  :ensure nil
+  :if (executable-find "ruff")
+  :load-path "lisp/packages/flymake/ruff"
+  :hook
+  (python-ts-mode . flymake-ruff-init))
+
+;; SQLFluff - SQL linter and formatter
+(use-package flymake-sqlfluff
+  :ensure nil
+  :if (executable-find "sqlfluff")
+  :load-path "lisp/packages/flymake/sqlfluff"
+  :hook
+  (sql-mode . flymake-sqlfluff-init))
+
+;; ktlint - Kotlin linter and formatter
+(use-package flymake-ktlint
+  :ensure nil
+  :if (executable-find "ktlint")
+  :load-path "lisp/packages/flymake/ktlint"
+  :hook
+  (kotlin-ts-mode . flymake-ktlint-init))
+;; Syntax Checking with Flymake:1 ends here
+
+;; [[file:emacs.org::*Code Formatting with Apheleia][Code Formatting with Apheleia:1]]
+;; Apheleia - Automatic code formatting on save
+;; Reference: https://github.com/radian-software/apheleia
 (use-package apheleia
+  :demand t
   :config
   (apheleia-global-mode +1)
-  (setf (alist-get 'nixpkgs-fmt apheleia-formatters) '("nixpkgs-fmt"))
-  (setf (alist-get 'prettierd apheleia-formatters) '("prettierd" "--stdin-filepath" filepath))
-  (setf (alist-get 'ruff apheleia-formatters) '("ruff" "format" "-"))
-  (setf (alist-get 'js-ts-mode apheleia-mode-alist) 'prettierd)
-  (setf (alist-get 'json-ts-mode apheleia-mode-alist) 'prettierd)
-  (setf (alist-get 'nix-mode apheleia-mode-alist) 'nixpkgs-fmt)
+
+  ;; Configure formatters with language-specific tools first, then LSP fallback
+  (setf (alist-get 'biome apheleia-formatters)
+        '("biome" "format" "--stdin-file-path" filepath))
+
+  (setf (alist-get 'cljstyle apheleia-formatters)
+        '("cljstyle" "pipe"))
+
+  (setf (alist-get 'nixpkgs-fmt apheleia-formatters)
+        '("nixpkgs-fmt"))
+
+  (setf (alist-get 'ruff apheleia-formatters)
+        '("ruff" "format" "--stdin-filename" filepath "-"))
+
+  (setf (alist-get 'sqlfluff apheleia-formatters)
+        '("sqlfluff" "format" "--stdin-filename" filepath "-"))
+
+  (setf (alist-get 'zprint apheleia-formatters)
+        '("zprint" "{:style :indent-only}"))
+
+  ;; LSP formatter as fallback
+  (setf (alist-get 'eglot apheleia-formatters)
+        '("eglot-format-buffer"))
+
+  ;; Configure mode associations - prefer language-specific formatters
+  (setf (alist-get 'js-ts-mode apheleia-mode-alist) 'biome)
+  (setf (alist-get 'typescript-ts-mode apheleia-mode-alist) 'biome)
+  (setf (alist-get 'tsx-ts-mode apheleia-mode-alist) 'biome)
+  (setf (alist-get 'json-ts-mode apheleia-mode-alist) 'biome)
+  (setf (alist-get 'css-ts-mode apheleia-mode-alist) 'biome)
+  (setf (alist-get 'graphql-mode apheleia-mode-alist) 'biome)
+  (setf (alist-get 'nix-ts-mode apheleia-mode-alist) 'nixpkgs-fmt)
   (setf (alist-get 'python-ts-mode apheleia-mode-alist) 'ruff)
-  (setf (alist-get 'terraform-mode apheleia-mode-alist) 'terraform)
-  (setf (alist-get 'typescript-ts-mode apheleia-mode-alist) 'prettierd)
-  (setf (alist-get 'yaml-ts-mode apheleia-mode-alist) 'prettierd))
-;; Apheleia:1 ends here
+  (setf (alist-get 'rust-ts-mode apheleia-mode-alist) 'rustfmt)
+  (setf (alist-get 'sql-mode apheleia-mode-alist) 'sqlfluff)
+  (setf (alist-get 'clojure-ts-mode apheleia-mode-alist) 'zprint)
 
-;; [[file:../../emacs.org::*AsciiDoc][AsciiDoc:1]]
-(use-package adoc-mode)
-;; AsciiDoc:1 ends here
+  (when (executable-find "ktlint")
+    (setf (alist-get 'ktlint apheleia-formatters)
+          '("ktlint" "--format" "--stdin" "--stdin-file-path" filepath))
+    (setf (alist-get 'kotlin-ts-mode apheleia-mode-alist) 'ktlint)))
+;; Code Formatting with Apheleia:1 ends here
 
-;; [[file:../../emacs.org::*CSS][CSS:1]]
-(use-package sass-mode
-  :init
-  (add-to-list 'auto-mode-alist '("\\.scss\\'" . sass-mode)))
-;; CSS:1 ends here
-
-;; [[file:../../emacs.org::*F#][F#:1]]
-(use-package fsharp-mode)
-;; F#:1 ends here
-
-;; [[file:../../emacs.org::*Go][Go:1]]
-(use-package go-mode)
-;; Go:1 ends here
-
-;; [[file:../../emacs.org::*Groovy][Groovy:1]]
-(use-package groovy-mode)
-;; Groovy:1 ends here
-
-;; [[file:../../emacs.org::*HCL][HCL:1]]
-(use-package hcl-mode)
-;; HCL:1 ends here
-
-;; [[file:../../emacs.org::*HTML][HTML:1]]
-(use-package web-mode)
-
-(use-package emmet-mode
-  :hook
-  ((css-mode sgml-mode) . emmet-mode))
-;; HTML:1 ends here
-
-;; [[file:../../emacs.org::*JavaScript & TypeScript][JavaScript & TypeScript:1]]
-(use-package js2-mode
-  :mode "\\.js\\'"
-  :hook
-  (js2-mode . rainbow-delimiters-mode)
-  :init
-  (setq js-indent-level preferred-tab-width)
-  :interpreter ("node" . js2-mode))
-
-(use-package typescript-mode
-  :hook
-  (typescript-mode . rainbow-delimiters-mode)
-  :init
-  (setq typescript-indent-level preferred-tab-width))
-
-(use-package json-mode)
-;; JavaScript & TypeScript:1 ends here
-
-;; [[file:../../emacs.org::*Lisp][Lisp:1]]
-(use-package rainbow-delimiters
-  :hook
-  ((cider-mode cider-repl-mode clojure-mode clojurec-mode clojurescript-mode emacs-lisp-mode eval-expression-minibuffer-setup ielm-mode lisp-interaction-mode lisp-mode scheme-mode prog-mode) . rainbow-delimiters-mode))
-
-(use-package sly
+;; [[file:emacs.org::*Language Support][Language Support:1]]
+;; Python - Use tree-sitter mode
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/python/index.html
+(use-package python
+  :ensure nil
+  :mode ("\\.py\\'" . python-ts-mode)
   :custom
-  (inferior-lisp-program "sbcl"))
+  (python-indent-offset 4)
+  (python-shell-interpreter "python3"))
 
-(use-package cider
-  :custom
-  (cider-show-error-buffer nil)
-  (cider-repl-display-help-banner nil)
-  (cider-repl-shortcut-dispatch-char ?\;)
-  :hook
-  ((clojure-mode clojurescript-mode) . cider-mode)
-  :init
-  (cider-auto-test-mode 1)
-  :requires queue)
-
-(use-package clojure-mode
-  :hook
-  ;; ((clojure-mode clojurec-mode clojurescript-mode) . inf-clojure-minor-mode)
-  ((clojure-mode clojurec-mode clojurescript-mode) . eldoc-mode))
-
-;; (use-package inf-clojure
-;;   :custom
-;;   (inf-clojure-prompt-read-only nil)
-;;   (inf-clojure-custom-repl-type "clj")
-;;   (inf-clojure-custom-startup "clj -A:compliment")
-;;   :hook
-;;   (inf-clojure-mode . eldoc-mode)
-;;   (inf-clojure-mode . (lambda () (setq completion-at-point-functions nil))))
-
-;; (use-package smartparens
-;;   :bind
-;;   (:map smartparens-mode-map
-;;    ("C-M-a" . 'sp-beginning-of-sexp)
-;;    ("C-M-e" . 'sp-end-of-sexp)
-;;    ("C-M-d" . 'sp-down-sexp)
-;;    ("C-M-u" . 'sp-up-sexp)
-;;    ("C-S-d" . 'sp-backward-down-sexp)
-;;    ("C-S-u" . 'sp-backward-up-sexp)
-;;    ("C-M-f" . 'sp-forward-sexp)
-;;    ("C-M-b" . 'sp-backward-sexp)
-;;    ("C-M-n" . 'sp-next-sexp)
-;;    ("C-M-p" . 'sp-previous-sexp)
-;;    ("C-S-f" . 'sp-forward-symbol)
-;;    ("C-S-b" . 'sp-backward-symbol)
-;;    ("M-[" . 'sp-backward-unwrap-sexp)
-;;    ("M-]" . 'sp-unwrap-sexp)
-;;    ("C-)" . 'sp-forward-slurp-sexp)
-;;    ("M-}" . 'sp-forward-barf-sexp)
-;;    ("C-(" . 'sp-backward-slurp-sexp)
-;;    ("M-{" . 'sp-backward-barf-sexp))
-;;   :config
-;;   (require 'smartparens-config)
-;;   (smartparens-global-mode t)
-;;   (smartparens-global-strict-mode t)
-;;   (sp-pair "(" ")" :wrap "C-c )")
-;;   (sp-pair "[" "]" :wrap "C-c ]")
-;;   (sp-pair "{" "}" :wrap "C-c }")
-;;   (sp-pair "'" "'" :wrap "C-c '")
-;;   (sp-pair "\"" "\"" :wrap "C-c \"")
-;;   (sp-pair "_" "_" :wrap "C-c _")
-;;   (sp-pair "`" "`" :wrap "C-c `"))
-
-(use-package paredit
-  :hook
-  ((cider-mode cider-repl-mode clojure-mode clojurec-mode clojurescript-mode emacs-lisp-mode eval-expression-minibuffer-setup ielm-mode lisp-interaction-mode lisp-mode scheme-mode) . enable-paredit-mode))
-;; Lisp:1 ends here
-
-;; [[file:../../emacs.org::*Markdown][Markdown:1]]
-(use-package markdown-mode
-  :commands (markdown-mode gfm-mode)
+;; JavaScript/TypeScript - Use tree-sitter modes with proper file associations
+(use-package js
+  :ensure nil
   :mode
-  (("README\\.md\\'" . gfm-mode)
-   ("\\.md\\'" . markdown-mode)
-   ("\\.markdown\\'" . markdown-mode)))
+  (("\\.js\\'" . js-ts-mode)
+   ("\\.mjs\\'" . js-ts-mode)
+   ("\\.cjs\\'" . js-ts-mode))
+  :custom
+  (js-indent-level 2))
 
-(use-package markdown-preview-mode
-  :requires markdown-mode)
-;; Markdown:1 ends here
+;; TypeScript, JSON, HTML, CSS, YAML, TOML - All handled by treesit-auto
+;; File associations and grammar installation are automatic
 
-;; [[file:../../emacs.org::*Nix][Nix:1]]
-(use-package nix-mode
+;; Nix - Handled by treesit-auto custom recipe
+(use-package nix-ts-mode
   :mode "\\.nix\\'")
-;; Nix:1 ends here
 
-;; [[file:../../emacs.org::*Python][Python:1]]
-(use-package python-mode
+;; Rust and Go - Handled by treesit-auto
+;; File associations and grammar installation are automatic
+
+;; Clojure - Use tree-sitter mode with full development environment
+;; Reference: https://github.com/clojure-emacs/clojure-ts-mode
+;; Grammar and file associations handled by treesit-auto custom recipe
+(use-package clojure-ts-mode
+  :mode (("\\.clj\\'" . clojure-ts-mode)
+         ("\\.cljs\\'" . clojure-ts-mode)
+         ("\\.cljc\\'" . clojure-ts-mode)
+         ("\\.edn\\'" . clojure-ts-mode))
   :custom
-  (python-shell-interpreter (substring (shell-command-to-string "which ipython") 0 -1))
-  (python-shell-interpreter-args "--simple-prompt -i")
+  ;; Indentation settings
+  (clojure-indent-style 'align-arguments)
+  (clojure-align-forms-automatically t)
+  ;; Threading macro indentation
+  (clojure-thread-all-but-last t))
+
+;; Cider - Interactive Clojure development environment
+;; Reference: https://docs.cider.mx/
+(use-package cider
+  :after clojure-ts-mode
+  :custom
+  ;; REPL settings
+  (cider-repl-display-help-banner nil)
+  (cider-repl-pop-to-buffer-on-connect 'display-only)
+  (cider-repl-use-clojure-font-lock t)
+  (cider-repl-wrap-history t)
+  (cider-repl-history-size 1000)
+
+  ;; Evaluation settings
+  (cider-show-error-buffer 'only-in-repl)
+  (cider-font-lock-dynamically '(macro core function var deprecated))
+  (cider-prompt-for-symbol nil)
+
+  ;; Code formatting
+  (cider-format-code-options '(("indents" ((".*" (("inner" 0)))))))
+
+  ;; Completion
+  (cider-completion-annotations-include-ns t)
+
+  ;; Inspector
+  (cider-inspector-fill-frame t)
+
+  ;; Connection settings
+  (cider-preferred-build-tool 'clojure-cli)
+  (cider-allow-jack-in-without-project t))
+
+;; Clj-refactor - Refactoring support for Clojure
+;; Reference: https://github.com/clojure-emacs/clj-refactor.el
+(use-package clj-refactor
+  :after clojure-ts-mode
+  :custom
+  (cljr-warn-on-eval nil)
+  (cljr-eagerly-build-asts-on-startup nil)
+  (cljr-add-ns-to-blank-clj-files t)
   :hook
-  ((python-mode python-ts-mode) . (lambda ()
-                                    (setq tab-width 4)
-                                    (setq python-indent-offset 4))))
-;; Python:1 ends here
+  (clojure-ts-mode . clj-refactor-mode))
 
-;; [[file:../../emacs.org::*R][R:1]]
-(use-package ess)
-(use-package quarto-mode
-  :mode ("\\.Rmd\\'" . poly-quarto-mode))
-;; R:1 ends here
+;; GraphQL - For Biome linting support
+(use-package graphql-mode
+  :mode
+  (("\\.graphql\\'" . graphql-mode)
+   ("\\.gql\\'" . graphql-mode)))
 
-;; [[file:../../emacs.org::*Rust][Rust:1]]
-(use-package rust-mode
+;; Markdown - No tree-sitter alternative, use standard mode
+(use-package markdown-mode
+  :mode ("\\.md\\'" . markdown-mode)
   :custom
-  (rust-format-on-save t))
-;; Rust:1 ends here
+  (markdown-command "multimarkdown")
+  (markdown-fontify-code-blocks-natively t))
 
-;; [[file:../../emacs.org::*Scala][Scala:1]]
-(use-package scala-mode
-  :mode "\\.s\\(cala\\|bt\\)$")
+;; Web mode for Vue and Svelte (no tree-sitter alternatives yet)
+(use-package web-mode
+  :mode ("\\.vue\\'" "\\.svelte\\'")
+  :custom
+  (web-mode-markup-indent-offset 2)
+  (web-mode-css-indent-offset 2)
+  (web-mode-code-indent-offset 2)
+  (web-mode-enable-auto-pairing t)
+  (web-mode-enable-auto-closing t)
+  (web-mode-enable-current-element-highlight t))
 
-(use-package sbt-mode
-  :commands sbt-start sbt-command)
-;; Scala:1 ends here
-
-;; [[file:../../emacs.org::*Terraform][Terraform:1]]
-(use-package terraform-mode)
-;; Terraform:1 ends here
-
-;; [[file:../../emacs.org::*Tree-Sitter][Tree-Sitter:1]]
-(setq treesit-language-source-alist
-      '((css "https://github.com/tree-sitter/tree-sitter-css")
-        (go "https://github.com/tree-sitter/tree-sitter-go")
-        (groovy "https://github.com/murtaza64/tree-sitter-groovy" "main" "src")
-        (html "https://github.com/tree-sitter/tree-sitter-html")
-        (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-        (json "https://github.com/tree-sitter/tree-sitter-json")
-        (markdown "https://github.com/ikatyang/tree-sitter-markdown" "master" "src")
-        (python "https://github.com/tree-sitter/tree-sitter-python")
-        (rust "https://github.com/tree-sitter/tree-sitter-rust" "master" "src")
-        (toml "https://github.com/tree-sitter/tree-sitter-toml")
-        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-        (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-        (yaml "https://github.com/ikatyang/tree-sitter-yaml" "master" "src")))
-
-(dolist (treesit-lang-src treesit-language-source-alist)
-  (let ((name (car treesit-lang-src)))
-    (unless (treesit-language-available-p name)
-      (treesit-install-language-grammar name))))
-
-(setq major-mode-remap-alist
-      '((css-mode . css-ts-mode)
-        (go-mode . go-ts-mode)
-        (html-mode . html-ts-mode)
-        (js2-mode . js-ts-mode)
-        (json-mode . json-ts-mode)
-        (markdown-mode . markdown-ts-mode)
-        (python-mode . python-ts-mode)
-        (rust-mode . rust-ts-mode)
-        (toml-mode . toml-ts-mode)
-        (typescript-mode . typescript-ts-mode)
-        (yaml-mode . yaml-ts-mode)))
-;; Tree-Sitter:1 ends here
-
-;; [[file:../../emacs.org::*YAML][YAML:1]]
-(use-package yaml-pro
-  :after (:all yaml-mode)
+;; Kotlin - Tree-sitter mode from bricka/emacs-kotlin-ts-mode (via Emacsmirror)
+;; Grammar: fwcd/tree-sitter-kotlin (managed by treesit-auto custom recipe)
+;; Reference: https://gitlab.com/bricka/emacs-kotlin-ts-mode
+(use-package kotlin-ts-mode
+  :ensure (:host gitlab :repo "bricka/emacs-kotlin-ts-mode")
+  :mode (("\\.kt\\'"  . kotlin-ts-mode)
+         ("\\.kts\\'" . kotlin-ts-mode))
+  :custom
+  (kotlin-ts-mode-indent-offset 4)
   :hook
-  ((yaml-mode yaml-ts-mode) . yaml-pro-ts-mode))
-;; YAML:1 ends here
+  (kotlin-ts-mode . (lambda ()
+                      ;; Kotlin convention: 4 spaces, no tabs
+                      (setq-local indent-tabs-mode nil)
+                      (setq-local tab-width 4)
+                      ;; Wire compile-command to gradlew when available
+                      (when-let* ((root (project-root (project-current)))
+                                  (gradlew (expand-file-name "gradlew" root))
+                                  ((file-executable-p gradlew)))
+                        (setq-local compile-command
+                                    (concat gradlew " build"))))))
 
-;; [[file:../../emacs.org::*Language Server Protocol][Language Server Protocol:1]]
-(use-package eglot
-  :after (:all project)
-  :config
-  (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
-  (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve")))
-  (add-to-list 'eglot-stay-out-of 'flymake)
-  :ensure nil
-  :hook
-  (((clojure-mode ess-mode go-mode go-ts-mode js2-mode js-ts-mode markdown-mode nix-mode python-mode python-ts-mode terraform-mode typescript-mode typescript-ts-mode) . eglot-ensure)
-   (eglot-managed-mode . (lambda ()
-                           (setq-local completion-at-point-functions
-                                       (list (cape-capf-super
-                                              #'eglot-completion-at-point
-                                              #'cape-dabbrev 
-                                              #'cape-file))
-                                       eldoc-documentation-strategy
-                                       'eldoc-documentation-compose-eagerly)
-                           (add-hook 'flymake-diagnostic-functions #'eglot-flymake-backend nil t)
-                           (flymake-mode t)))))
-;; Language Server Protocol:1 ends here
+;; Gradle-mode - Run Gradle tasks from Emacs
+;; Reference: https://github.com/jacobono/emacs-gradle-mode
+(use-package gradle-mode
+  :after kotlin-ts-mode)
+;; Language Support:1 ends here
 
-;; [[file:../../emacs.org::*Project Management][Project Management:1]]
-(use-package project)
-;; Project Management:1 ends here
-
-;; [[file:../../emacs.org::*Search][Search:1]]
-(use-package dired
-  :config
-  (when (string= system-type "darwin")
-    (setq dired-use-ls-dired nil))
-  :custom
-  (delete-by-moving-to-trash t)
-  (dired-dwim-target t)
-  (dired-kill-when-opening-new-dired-buffer t)
-  (file-name-shadow-mode 1)
-  :ensure nil
-  :hook (dired-mode . dired-hide-details-mode))
-
-(use-package isearch
-  :custom
-  (isearch-lazy-count t)
-  (lazy-count-prefix-format "(%s/%s) ")
-  (lazy-count-suffix-format nil)
-  (search-whitespace-regexp ".*?")
-  :ensure nil)
-;; Search:1 ends here
-
-;; [[file:../../emacs.org::*Shells][Shells:1]]
-(use-package eshell
-  :after (:all evil)
-  :config
-  (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
-  (define-key evil-normal-state-map (kbd "<home>") 'eshell-bol)
-  (define-key evil-insert-state-map (kbd "<home>") 'eshell-bol)
-  (define-key evil-visual-state-map (kbd "<home>") 'eshell-bol)
-  (evil-normalize-keymaps)
-  (with-eval-after-load 'esh-opt
-    (setq eshell-destroy-buffer-when-process-dies t)
-    (setq eshell-visual-commands '("htop" "zsh" "vim")))
-  :custom
-  (eshell-history-size 1000)
-  (eshell-buffer-maximum-lines 1000)
-  (eshell-hist-ignoredups t)
-  (eshell-scroll-to-bottom-on-input t)
-  :ensure nil
-  :hook
-  ((eshell-pre-command . eshell-save-some-history)))
-
-(use-package eshell-git-prompt
-  :config (eshell-git-prompt-use-theme 'powerline))
-;; Shells:1 ends here
-
-;; [[file:../../emacs.org::*Snippets][Snippets:1]]
+;; [[file:emacs.org::*Snippets][Snippets:1]]
+;; Tempel - Simple templates
+;; Reference: https://github.com/minad/tempel
 (use-package tempel
-  :bind
-  (("M-+" . tempel-complete)
-   ("M-*" . tempel-insert))
+  :hook
+  ((prog-mode text-mode) . +setup-tempel-capf)
   :init
-  (defun setup-tempel-capf ()
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand
-                      completion-at-point-functions)))
-  (add-hook 'prog-mode-hook 'setup-tempel-capf))
+  (defun +setup-tempel-capf ()
+    "Add Tempel expansion ahead of other completion backends."
+    (add-hook 'completion-at-point-functions #'tempel-expand -10 t)))
 
-;; (use-package yasnippet
-;;   :init (yas-global-mode t))
-
-;; (use-package yasnippet-snippets
-;;   :after (:all yasnippet))
-
-;; (use-package cape-yasnippet
-;;   :after (:all yasnippet)
-;;   :ensure (cape-yasnippet
-;;            :branch "master"
-;;            :host github
-;;            :repo "elken/cape-yasnippet"
-;;            :type git)
-;;   :init (add-to-list 'completion-at-point-functions #'cape-yasnippet))
+;; Tempel collection - Template collection
+;; Reference: https://github.com/Crandel/tempel-collection
+(use-package tempel-collection
+  :after tempel)
 ;; Snippets:1 ends here
 
-;; [[file:../../emacs.org::*Syntax][Syntax:1]]
-(use-package flymake
-  :bind
-  (("M-g n" . 'flymake-goto-next-error)
-   ("M-g p" . 'flymake-goto-prev-error))
-  :ensure nil)
+;; [[file:emacs.org::*Project Management][Project Management:1]]
+;; Project - Built-in project management
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/emacs/Projects.html
+(use-package project
+  :ensure nil
+  :demand t
+  :custom
+  (project-switch-commands '((project-find-file "Find file")
+                             (project-find-regexp "Find regexp")
+                             (consult-ripgrep "Ripgrep" ?g)
+                             (project-dired "Dired")
+                             (project-eshell "Eshell")
+                             (magit-project-status "Magit" ?m)))
+  :config
+  ;; Add additional project root markers
+  (setq project-vc-extra-root-markers
+        '(".project"        ; Generic marker
+          "Cargo.toml"      ; Rust
+          "package.json"    ; Node
+          "setup.py"        ; Python
+          "requirements.txt"
+          "pyproject.toml"
+          "go.mod"          ; Go
+          "pom.xml"         ; Java/Maven
+          "build.gradle"    ; Java/Gradle
+          "build.gradle.kts"   ; Kotlin/Gradle
+          "settings.gradle.kts" ; Kotlin/Gradle
+          "gradlew")))
+;; Project Management:1 ends here
 
-(use-package flymake-eslint
+;; [[file:emacs.org::*Dired & File Navigation][Dired & File Navigation:1]]
+;; Dired - Directory editor
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :custom
+  (delete-by-moving-to-trash t)
+  (dired-dwim-target t)                        ; Guess target directory
+  (dired-kill-when-opening-new-dired-buffer t) ; Clean up old buffers
+  (dired-recursive-copies 'always)
+  (dired-recursive-deletes 'always)
   :hook
-  (envrc-mode . (lambda () (when (or (derived-mode-p 'js-ts-mode)
-                                     (derived-mode-p 'typescript-ts-mode))
-                             (flymake-eslint-enable))))
-  :init
-  (setq flymake-eslint-defer-binary-check t
-        flymake-eslint-show-rule-name t))
+  (dired-mode . dired-hide-details-mode)
+  :config
+  (cond
+   ((and (eq system-type 'darwin)
+         (executable-find "gls"))
+    (setq insert-directory-program (executable-find "gls")
+          dired-use-ls-dired t
+          dired-listing-switches "-agho --group-directories-first"))
+   ((eq system-type 'darwin)
+    (setq dired-use-ls-dired nil
+          dired-listing-switches "-alh"))
+   (t
+    (setq dired-listing-switches "-agho --group-directories-first"))))
 
-(use-package flymake-ruff
+;; Dired-x - Extra dired features
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/dired-x/
+(use-package dired-x
+  :ensure nil
+  :after dired
   :hook
-  ((python-mode python-ts-mode) . setup-flymake-ruff-backend)
-  :load-path "lisp/packages/flymake/ruff")
+  (dired-mode . dired-omit-mode)
+  :config
+  (setq dired-omit-files
+        (concat dired-omit-files "\\|^\\..*$\\|^__pycache__$\\|^node_modules$\\|\\.pyc$"))
+  (setq dired-clean-confirm-killing-deleted-buffers nil))
 
-(use-package flymake-sqlfluff
+;; Dired-subtree - Expand/collapse directories in place
+;; Reference: https://github.com/Fuco1/dired-hacks
+(use-package dired-subtree
+  :after dired)
+
+;; All-the-icons-dired - Icons for dired
+;; Reference: https://github.com/jtbm37/all-the-icons-dired
+(use-package all-the-icons-dired
+  :if (display-graphic-p)
   :hook
-  (sql-mode . setup-flymake-sqlfluff-backend)
-  :load-path "lisp/packages/flymake/sqlfluff")
+  (dired-mode . all-the-icons-dired-mode))
+;; Dired & File Navigation:1 ends here
 
-;; (use-package flycheck
-;;   :config
-;;   (add-hook 'after-init-hook #'global-flycheck-mode)
-;;   (provide 'init-flycheck)
-;;   :init
-;;   (setq flycheck-check-syntax-automatically '(mode-enabled idle-buffer-switch idle-change save)
-;;         flycheck-idle-buffer-switch-delay 1.0
-;;         flycheck-idle-change-delay 3.0))
+;; [[file:emacs.org::*Search][Search:1]]
+;; Isearch - Incremental search configuration
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/emacs/Incremental-Search.html
+(use-package isearch
+  :ensure nil
+  :custom
+  (isearch-lazy-count t)                    ; Show match count
+  (lazy-count-prefix-format "(%s/%s) ")
+  (lazy-count-suffix-format nil)
+  (search-whitespace-regexp ".*?"))         ; Space matches anything
+;; Search:1 ends here
 
-;; (use-package flycheck-color-mode-line
-;;   :config
-;;   (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode))
+;; [[file:emacs.org::*Eshell][Eshell:1]]
+;; Eshell - Emacs shell
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/eshell/
+(use-package eshell
+  :ensure nil
+  :commands eshell
+  :custom
+  (eshell-history-size 10000)
+  (eshell-buffer-maximum-lines 10000)
+  (eshell-hist-ignoredups t)
+  (eshell-scroll-to-bottom-on-input t)
+  (eshell-destroy-buffer-when-process-dies t)
+  (eshell-visual-commands '("htop" "top" "zsh" "vim" "nvim"))
+  :hook
+  (eshell-pre-command . eshell-save-some-history)
+  :config
+  (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer))
 
-;; (use-package flycheck-pos-tip)
-;; Syntax:1 ends here
+;; Eshell git prompt - Git-aware prompt
+;; Reference: https://github.com/xuchunyang/eshell-git-prompt
+(use-package eshell-git-prompt
+  :after eshell
+  :config
+  (eshell-git-prompt-use-theme 'powerline))
+;; Eshell:1 ends here
 
-;; [[file:../../emacs.org::*Terminals][Terminals:1]]
+;; [[file:emacs.org::*Eat Terminal][Eat Terminal:1]]
+;; Eat - Emulate A Terminal
+;; Reference: https://codeberg.org/akib/emacs-eat
 (use-package eat
-  :after (:all evil evil-collection)
-  :quelpa (eat :fetcher git
-               :url "https://codeberg.org/akib/emacs-eat.git"
+  :ensure (eat :repo "https://codeberg.org/akib/emacs-eat.git"
                :files ("*.el" "dir"
                        "*.info" "*.texi"
                        "*.ti" ("e" "e/*")
                        ("terminfo/65" "terminfo/65/*")
                        ("integration" "integration/*")
                        (:exclude ".dir-locals.el" "*-tests.el")))
-  :config
-  (evil-set-initial-state 'eat-mode 'emacs)
+  :commands (eat eat-project eat-other-window)
+  :custom
+  (eat-term-name "xterm-256color")
+  (eat-kill-buffer-on-exit t)
+  (eat-enable-char-mode t)
+  (eat-term-shell-integration-directory
+   (expand-file-name "elpaca/builds/eat/integration" user-emacs-directory))
   :hook
-  (eshell-load . eat-eshell-mode))
-
-;; (use-package vterm)
-;; Terminals:1 ends here
-
-;; [[file:../../emacs.org::*Version Control][Version Control:1]]
-(use-package transient)
-
-(use-package magit
-  :after (:all transient)
-  :bind
-  (("C-x g" . 'magit-status)
-   ("C-x M-g" . 'magit-dispatch-popup)))
-;; Version Control:1 ends here
-
-;; [[file:../../emacs.org::*Core][Core:1]]
-(use-package org
+  ;; Integrate eat with eshell for terminal commands in eshell sessions.
+  ;; Note: do NOT add eat-semi-char-mode here — it requires a live process
+  ;; and will error if called on a buffer without one. eat handles char-mode
+  ;; internally after process launch.
+  (eshell-load . eat-eshell-mode)
+  :init
+  (defun +eat-ensure-terminfo ()
+    "Ensure eat terminfo is compiled."
+    (let ((terminfo-dir (expand-file-name "elpaca/builds/eat/terminfo" user-emacs-directory)))
+      (unless (file-directory-p terminfo-dir)
+        (when (require 'eat nil t)
+          (message "Compiling eat terminfo database...")
+          (condition-case err
+              (progn
+                (eat-compile-terminfo)
+                (message "✓ Eat terminfo compiled successfully"))
+            (error
+             (warn "Failed to compile eat terminfo: %s" (error-message-string err))))))))
+  (add-hook 'elpaca-after-init-hook #'+eat-ensure-terminfo)
   :config
-  (auto-fill-mode 0)
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (visual-line-mode 1)
+  (with-eval-after-load 'evil
+    (evil-set-initial-state 'eat-mode 'emacs)))
+;; Eat Terminal:1 ends here
+
+;; [[file:emacs.org::*Vterm][Vterm:1]]
+;; Vterm - Full-featured terminal emulator
+;; Reference: https://github.com/akermu/emacs-libvterm
+(use-package vterm
+  :ensure (vterm :post-build
+                 (progn
+                   (setq vterm-always-compile-module t)
+                   (require 'vterm)
+                   (with-current-buffer (get-buffer-create vterm-install-buffer-name)
+                     (goto-char (point-min))
+                     (while (not (eobp))
+                       (message "%S"
+                                (buffer-substring (line-beginning-position)
+                                                  (line-end-position)))
+                       (forward-line)))
+                   (when-let* ((so (expand-file-name "./vterm-module.so"))
+                               ((file-exists-p so)))
+                     (make-symbolic-link
+                      so (expand-file-name (file-name-nondirectory so)
+                                           "../../builds/vterm")
+                      'ok-if-already-exists))))
+  :commands (vterm vterm-other-window)
+  :config
+  (with-eval-after-load 'evil
+    (evil-set-initial-state 'vterm-mode 'emacs)))
+;; Vterm:1 ends here
+
+;; [[file:emacs.org::*Magit][Magit:1]]
+;; Transient - Command interface framework (required by Magit)
+;; Reference: https://github.com/magit/transient
+(use-package transient
+  :defer t)
+
+;; Magit - Git interface
+;; Reference: https://magit.vc/
+(use-package magit
+  :commands (magit-status magit-dispatch magit-file-dispatch)
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+  (magit-diff-refine-hunk t)       ; Show word-level diff
+  (magit-save-repository-buffers 'dontask))
+
+;; Diff-hl - Show git diff in fringe
+;; Reference: https://github.com/dgutov/diff-hl
+(use-package diff-hl
+  :demand t
+  :hook
+  ((magit-pre-refresh  . diff-hl-magit-pre-refresh)
+   (magit-post-refresh . diff-hl-magit-post-refresh)
+   (vc-checkin         . diff-hl-update))
+  :config
+  (global-diff-hl-mode)
+  (diff-hl-flydiff-mode)
+  (diff-hl-margin-mode))
+;; Magit:1 ends here
+
+;; [[file:emacs.org::*Core Org Configuration][Core Org Configuration:1]]
+;; Org mode - Organize your life in plain text
+;; Reference: https://orgmode.org/
+(use-package org
+  :ensure nil
+  :mode ("\\.org\\'" . org-mode)
   :custom
   (org-todo-keywords
    '((sequence "TODO(t)" "IN PROGRESS(i)" "|" "CANCELLED(c)" "DONE(d)")))
   (org-log-done 'time)
   (org-hide-leading-stars t)
-  (org-ellipsis " \u25BE")
-  (org-agenda-files
-   (append (file-expand-wildcards "~/org/agendas/*.org")))
-  :ensure nil
+  (org-hide-emphasis-markers t)
+  (org-pretty-entities t)
+  (org-ellipsis " ▾")
+  (org-startup-indented t)
+  (org-startup-folded 'content)
+  (org-src-fontify-natively t)
+  (org-src-tab-acts-natively t)
+  (org-edit-src-content-indentation 0)
+  (org-confirm-babel-evaluate nil)
+  ;; Returns nil gracefully when ~/org/agendas/ doesn't exist yet.
+  (org-agenda-files (file-expand-wildcards "~/org/agendas/*.org"))
   :hook
-  ((org-mode . (lambda () (org-babel-do-load-languages
-                           'org-babel-load-languages
-                           '((emacs-lisp . t)))))
-   (org-mode . (lambda () (add-hook 'after-save-hook #'danish--org-babel-tangle-config)))))
+  (org-mode . (lambda () (auto-fill-mode 0)))
+  (org-mode . variable-pitch-mode)
+  (org-mode . visual-line-mode)
+  (org-mode . org-indent-mode)
+  ;; Register the auto-tangle hook only when emacs.org itself is opened,
+  ;; not for every org file. The after-save-hook is buffer-local so it
+  ;; fires only in this buffer and does not affect other org files.
+  (find-file . (lambda ()
+                 (when (string-equal (file-truename (or buffer-file-name ""))
+                                     (file-truename (expand-file-name "~/dotfiles/config/emacs/emacs.org")))
+                   (add-hook 'after-save-hook #'danish--org-babel-tangle-config nil t))))
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)
+     (shell . t))))
+;; Core Org Configuration:1 ends here
 
-(use-package org-bullets
-  :config (setq org-bullets-bullet-list '("\u2605" "\u29BF" "\u25EC" "\u29BE" "\u25CF" "\u25E6" "\u2022"))
-  :hook (org-mode . (lambda () (org-bullets-mode 1)))
-  :requires org)
+;; [[file:emacs.org::*Org Structure Templates][Org Structure Templates:1]]
+;; Org tempo - Easy template expansion with < triggers
+;; Reference: https://www.gnu.org/software/emacs/manual/html_node/org/Structure-Templates.html
+(with-eval-after-load 'org
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+  (add-to-list 'org-structure-template-alist '("ts" . "src typescript"))
+  (add-to-list 'org-structure-template-alist '("json" . "src json"))
+  (add-to-list 'org-structure-template-alist '("yml" . "src yaml"))
+  (add-to-list 'org-structure-template-alist '("kt" . "src kotlin")))
+;; Org Structure Templates:1 ends here
 
-(use-package org-journal
-  :requires org)
+;; [[file:emacs.org::*Org-roam - Zettelkasten Note-Taking System][Org-roam - Zettelkasten Note-Taking System:1]]
+;; Org-roam - Zettelkasten note-taking system
+;; Reference: https://www.orgroam.com/
+(use-package org-roam
+  :after org
+  :custom
+  ;; Core directories - roam directory is customizable
+  (org-roam-directory (file-truename "~/Notes/Roam/"))
+  (org-roam-db-location (file-truename "~/Notes/Roam/org-roam.db"))
 
-(use-package org-sticky-header
-  :hook (org-mode . org-sticky-header-mode)
-  :requires org)
-;; Core:1 ends here
+  (org-roam-capture-templates
+   '(("d" "default" plain
+      "%?"
+      :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)
+     ("n" "note" plain
+      "%?"
+      :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: %^G\n"))))
 
-;; [[file:../../emacs.org::*Late Hooks][Late Hooks:1]]
-(add-hook 'envrc-mode-hook #'danish--add-local-node-bin-to-exec-path)
-;; Late Hooks:1 ends here
+  ;; Dailies configuration
+  (org-roam-dailies-directory "Daily/")
+  (org-roam-dailies-capture-templates
+   '(("d" "default" entry
+      "* %?"
+      :target (file+head "%<%Y-%m-%d>.org"
+                         "#+title: %<%Y-%m-%d>\n"))))
 
-;; [[file:../../emacs.org::*Structure Templates][Structure Templates:1]]
-(require 'org-tempo)
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("json" . "src json"))
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
-(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-(add-to-list 'org-structure-template-alist '("yml" . "src yaml"))
-;; Structure Templates:1 ends here
+  ;; Completion and display settings
+  (org-roam-completion-everywhere t)
+  (org-roam-node-display-template
+   (concat "${title:*} "
+           (propertize "${tags:10}" 'face 'org-tag)))
 
-;; [[file:../../emacs.org::*Provisions & Footnotes][Provisions & Footnotes:1]]
+  ;; Graph settings for visualization
+  (org-roam-graph-viewer
+   (cond
+    ((executable-find "firefox") "firefox")
+    ((executable-find "chromium") "chromium")
+    ((executable-find "google-chrome") "google-chrome")
+    (t nil)))
+
+  :config
+  ;; Enable automatic database synchronization
+  ;; This ensures the database stays up-to-date as you edit files
+  (org-roam-db-autosync-mode 1)
+
+  ;; Ensure org-roam directory exists
+  (unless (file-directory-p org-roam-directory)
+    (make-directory org-roam-directory t))
+
+  ;; Ensure dailies directory exists
+  (let ((dailies-dir (expand-file-name org-roam-dailies-directory org-roam-directory)))
+    (unless (file-directory-p dailies-dir)
+      (make-directory dailies-dir t))))
+;; Org-roam - Zettelkasten Note-Taking System:1 ends here
+
+;; [[file:emacs.org::*Org-roam-ui - Visual Graph Interface][Org-roam-ui - Visual Graph Interface:1]]
+;; Simple-httpd - Lightweight HTTP server (required by org-roam-ui)
+;; Reference: https://github.com/skeeto/emacs-web-server
+;; Note: This package is in a multi-package repository, so we need an explicit recipe
+(use-package simple-httpd
+  :ensure (simple-httpd :host github
+                        :repo "skeeto/emacs-web-server"
+                        :files ("simple-httpd.el"))
+  :defer t)
+
+;; Websocket - WebSocket support (required for org-roam-ui real-time updates)
+;; Reference: https://github.com/ahyatt/emacs-websocket
+(use-package websocket
+  :after org-roam
+  :defer t)
+
+;; Org-roam-ui - Web-based visualization for org-roam
+;; Reference: https://github.com/org-roam/org-roam-ui
+(use-package org-roam-ui
+  :after org-roam
+  :custom
+  ;; Sync settings
+  (org-roam-ui-sync-theme t)              ; Sync with Emacs theme
+  (org-roam-ui-follow t)                   ; Follow node in graph when visiting
+  (org-roam-ui-update-on-save t)           ; Update graph on save
+
+  ;; Graph visualization settings
+  (org-roam-ui-open-on-start nil)          ; Don't open browser automatically
+  (org-roam-ui-browser-function #'browse-url) ; Use default browser
+
+  ;; Display settings
+  (org-roam-ui-port 35901)                 ; Default port for web server
+
+  ;; Graph physics and layout
+  (org-roam-ui-custom-theme
+   '((bg . "#1e1e2e")
+     (bg-alt . "#313244")
+     (fg . "#cdd6f4")
+     (fg-alt . "#bac2de")
+     (red . "#f38ba8")
+     (orange . "#fab387")
+     (yellow . "#f9e2af")
+     (green . "#a6e3a1")
+     (cyan . "#89dceb")
+     (blue . "#89b4fa")
+     (violet . "#cba6f7")
+     (magenta . "#f5c2e7"))))
+;; Org-roam-ui - Visual Graph Interface:1 ends here
+
+;; [[file:emacs.org::*Closing][Closing:1]]
+;; Required so that (require 'init) works during byte-compilation
+;; and when loading init.el as a library rather than as a top-level script.
 (provide 'init)
 
 ;;; init.el ends here
-;; Provisions & Footnotes:1 ends here
+;; Closing:1 ends here

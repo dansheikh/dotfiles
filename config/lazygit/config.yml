@@ -1,20 +1,3 @@
-os:
-  editCommand: "nvim"
-  editInTerminal: true
-
-gui:
-  paging:
-    colorArg: always
-    pager: delta --dark --paging=never
-
-git:
-  commit:
-    autoWrapCommitMessage: false
-
-keybinding:
-  universal:
-    return: "<esc>"
-
 customCommands:
   - key: "<c-p>"
     description: "Push a specific branch to origin"
@@ -37,3 +20,25 @@ customCommands:
         valueFormat: "{{ .branch }}"
         labelFormat: "{{ .branch | green }}"
     command: "git {{index .PromptResponses 0}} origin {{index .PromptResponses 1}}"
+  - key: "U"
+    description: "Untrack file"
+    context: "files"
+    command: "git rm --cached {{.SelectedFile.Name}}"
+    output: terminal
+
+git:
+  commit:
+    autoWrapCommitMessage: false
+
+gui:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+
+keybinding:
+  universal:
+    return: "<esc>"
+
+os:
+  editCommand: "nvim"
+  editInTerminal: true

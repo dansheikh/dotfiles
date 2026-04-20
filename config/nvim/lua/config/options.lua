@@ -1,44 +1,72 @@
-local global = vim.g
+-- Editor Options (Neovim 0.12+)
 local opt = vim.opt
 
-global.loaded_netrw = 1
-global.loaded_netrwPlugin = 1
-global.floaterm_width = 0.95
-global.floaterm_height = 0.95
+-- Disable netrw (using oil.nvim)
+vim.g.loaded_netrw       = 1
+vim.g.loaded_netrwPlugin = 1
 
-opt.autoindent = true
-opt.backup = false
-opt.clipboard = 'unnamedplus'
-opt.confirm = true
-opt.expandtab = true
-opt.fillchars = 'eob: '
-opt.guicursor =
-'n-v-c:block-nCursor-blinkwait300-blinkon300-blinkoff300,i-ci-ve:ver20-iCursor-blinkwait300-blinkon150-blinkoff150,r-cr-ve:ver20-Cursor-blinkwait300-blinkon150-blinkoff150'
-opt.ignorecase = true
-opt.listchars = 'tab:▸ ,trail:·'
-opt.list = true
-opt.mouse = 'a'
-opt.number = true
-opt.pumheight = 10
-opt.redrawtime = 10000
-opt.relativenumber = true
-opt.scrolloff = 5
-opt.shiftround = true
-opt.shiftwidth = 2
-opt.showmode = false
-opt.sidescrolloff = 5
-opt.signcolumn = 'yes:2'
-opt.smartcase = true
+-- Indentation
+opt.autoindent  = true
 opt.smartindent = true
-opt.softtabstop = 2
-opt.spell = true
+opt.smarttab    = true
+opt.expandtab   = true
+opt.shiftwidth  = 2
+opt.tabstop     = 2
+opt.softtabstop = 0
+opt.shiftround  = true
+
+-- UI
+opt.number         = true
+opt.relativenumber = true
+opt.signcolumn     = 'yes:2'
+opt.cursorline     = false
+opt.showmode       = false
+opt.termguicolors  = true
+opt.title          = true
+opt.fillchars      = 'eob: '
+opt.listchars      = 'tab:▸ ,trail:·'
+opt.list           = true
+
+-- Cursor
+opt.guicursor = 'n-v-c:block-nCursor-blinkwait300-blinkon300-blinkoff300,'
+  .. 'i-ci-ve:ver20-iCursor-blinkwait300-blinkon150-blinkoff150,'
+  .. 'r-cr-ve:ver20-Cursor-blinkwait300-blinkon150-blinkoff150'
+
+-- Scrolling
+opt.scrolloff     = 5
+opt.sidescrolloff = 5
+
+-- Search
+opt.ignorecase = true
+opt.smartcase  = true
+
+-- Splits
 opt.splitbelow = true
 opt.splitright = true
-opt.swapfile = false
-opt.tabstop = 4
-opt.termguicolors = true
-opt.title = true
-opt.undofile = true
-opt.updatetime = 250
-opt.wildmode = 'longest:full,full'
-opt.wrap = false
+
+-- Completion
+-- 0.12: disable native autocomplete (we use nvim-cmp for the full UI)
+opt.autocomplete = false
+-- 0.12: popup border and width options
+opt.pumborder   = 'rounded'
+opt.pummaxwidth = 40
+opt.pumheight   = 10
+opt.wildmode    = 'longest:full,full'
+
+-- Files
+opt.backup    = false
+opt.swapfile  = false
+opt.undofile  = true
+
+-- 0.12: shelltemp defaults to false; make it explicit
+opt.shelltemp = false
+
+-- Misc
+opt.clipboard   = 'unnamedplus'
+opt.confirm     = true
+opt.mouse       = 'a'
+opt.updatetime  = 300   -- CursorHold delay for diagnostic float
+opt.redrawtime  = 10000
+opt.spell       = false -- enabled per-filetype in after/ftplugin/
+opt.wrap        = false
+opt.timeoutlen  = 300   -- mini.clue popup

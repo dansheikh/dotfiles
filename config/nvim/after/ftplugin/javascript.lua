@@ -1,22 +1,11 @@
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
+-- JavaScript filetype settings
 local opt = vim.opt_local
+
+-- JavaScript indentation (2 spaces)
 opt.shiftwidth = 2
 opt.softtabstop = 2
+opt.tabstop = 2
+opt.expandtab = true
 
-dofile(os.getenv('XDG_CONFIG_HOME') .. '/nvim/lua/lib/efm_config.lua')
-
-local config = {
-  autostart = true,
-  capabilities = capabilities,
-  cmd = { 'typescript-language-server', '--stdio' },
-  name = 'ts_ls',
-  root_dir = vim.fs.root(0, { '.git', 'jsconfig.json', 'package.json' })
-}
-
-vim.lsp.start(config, {
-  reuse_client = function(client, conf)
-    return (
-      client.name == conf.name and client.config.root_dir == conf.root_dir
-    )
-  end
-})
+-- Comments
+opt.commentstring = '// %s'

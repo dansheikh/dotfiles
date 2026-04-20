@@ -9,6 +9,7 @@ config/emacs/anaconda-mode/
 config/emacs/auto-save-list/
 config/emacs/backups/
 config/emacs/bookmarks
+config/emacs/custom.el
 config/emacs/.cache/
 config/emacs/.dap-breakpoints
 config/emacs/eln-cache/
@@ -34,9 +35,10 @@ config/emacs/quelpa/
 config/lazygit/state.yml
 config/micro/buffers/
 config/micro/plug/
+config/nushell/history.sqlite*
 config/nvim/plugin/
-config/tmux/.tmux/plugins/*
-config/!tmux/.tmux/plugins/tpm
+config/tmux/plugins/*
+!config/tmux/plugins/tpm/
 nix/darwin/result
 vim/.vim/bundle/start/*
 !vim/.vim/bundle/start/fzf

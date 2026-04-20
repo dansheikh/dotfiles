@@ -1,20 +1,15 @@
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
+-- Rust filetype settings
 local opt = vim.opt_local
-opt.shiftwidth = 2
-opt.softtabstop = 2
 
-local config = {
-  autostart = true,
-  capabilities = capabilities,
-  cmd = { 'rustup', 'run', 'stable', 'rust_analyzer' },
-  name = 'rust_analyzer',
-  root_dir = vim.fs.root(0, { '.git', 'cargo.lock', 'cargo.toml' })
-}
+-- Rust indentation (4 spaces)
+opt.shiftwidth = 4
+opt.softtabstop = 4
+opt.tabstop = 4
+opt.expandtab = true
 
-vim.lsp.start(config, {
-  reuse_client = function(client, conf)
-    return (
-      client.name == conf.name and client.config.root_dir == conf.root_dir
-    )
-  end
-})
+-- Text width
+opt.textwidth = 100
+opt.colorcolumn = '+1'
+
+-- Comments
+opt.commentstring = '// %s'
