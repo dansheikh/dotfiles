@@ -35,11 +35,12 @@ config/emacs/quelpa/
 config/lazygit/state.yml
 config/micro/buffers/
 config/micro/plug/
+config/nushell/config.local.nu
 config/nushell/history.sqlite*
 config/nvim/plugin/
 config/tmux/plugins/*
 !config/tmux/plugins/tpm/
-nix/darwin/result
+nix/**/result*
 vim/.vim/bundle/start/*
 !vim/.vim/bundle/start/fzf
 vim/.vim/pack/minpac/*

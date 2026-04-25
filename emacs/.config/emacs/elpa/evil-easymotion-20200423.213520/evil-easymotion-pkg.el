@@ -1,0 +1,2 @@
+;;; Generated package description from evil-easymotion.el  -*- no-byte-compile: t -*-
+(define-package "evil-easymotion" "20200423.213520" "A port of vim's easymotion to emacs" '((emacs "24") (avy "0.3.0") (cl-lib "0.5")) :authors '(("PythonNut" . "pythonnut@pythonnut.com")) :maintainer '("PythonNut" . "pythonnut@pythonnut.com") :keywords '("convenience" "evil") :url "https://github.com/pythonnut/evil-easymotion")
