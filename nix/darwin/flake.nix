@@ -13,7 +13,6 @@
     , nixpkgs
     , nixpkgs-unstable
     , nix-darwin
-    ,
     }:
     let
       system = "aarch64-darwin";
@@ -24,6 +23,13 @@
       pkgs-unstable = import nixpkgs-unstable {
         inherit system;
         config.allowUnfree = true;
+        overlays = [
+          (final: prev: {
+            direnv = prev.direnv.overrideAttrs (old: {
+              doCheck = false;
+            });
+          })
+        ];
       };
       configuration =
         { pkgs, pkgs-unstable, ... }:
@@ -67,6 +73,7 @@
             pkgs-unstable.biome
             pkgs-unstable.bruno
             pkgs-unstable.bruno-cli
+            pkgs-unstable.carapace
             pkgs-unstable.claude-code
             pkgs-unstable.clojure-lsp
             pkgs-unstable.cmake
@@ -92,6 +99,7 @@
             pkgs-unstable.llama-cpp
             pkgs-unstable.lua-language-server
             pkgs-unstable.neovim
+            pkgs-unstable.nushell
             pkgs-unstable.nil
             pkgs-unstable.ollama
             pkgs-unstable.opencode
