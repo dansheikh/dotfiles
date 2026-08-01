@@ -1,0 +1,4 @@
+background-opacity = 0.9
+font-family = "VictorMono Nerd Font"
+font-size = 12
+theme = catppuccin-mocha

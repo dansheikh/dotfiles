@@ -1,0 +1,426 @@
+{
+  /**
+   * Defaults
+   **/
+  "diffEditor.ignoreTrimWhitespace": false,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.copyWithSyntaxHighlighting": false,
+  "editor.detectIndentation": false,
+  "editor.emptySelectionClipboard": false,
+  "editor.fontLigatures": true,
+  "editor.formatOnSave": true,
+  "editor.insertSpaces": true,
+  "editor.multiCursorModifier": "ctrlCmd",
+  "editor.snippetSuggestions": "top",
+  "editor.suggest.snippetsPreventQuickSuggestions": true,
+  "editor.tabCompletion": "on",
+  "editor.tabSize": 2,
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "git.allowForcePush": true,
+  "window.newWindowDimensions": "inherit",
+  "window.restoreWindows": "none",
+  "workbench.colorTheme": "Bearded Theme Monokai Stone",
+  "workbench.editor.enablePreview": false,
+  "workbench.iconTheme": "bearded-icons",
+  "workbench.productIconTheme": "material-product-icons",
+  "workbench.settings.editor": "json",
+  "workbench.startupEditor": "none",
+  "telemetry.telemetryLevel": "off",
+
+  /**
+   * Relaxed Minimalism (LSP-friendly)
+   **/
+  "breadcrumbs.enabled": false,
+  "editor.codeLens": true,
+  "editor.gotoLocation.multipleDeclarations": "goto",
+  "editor.gotoLocation.multipleDefinitions": "goto",
+  "editor.gotoLocation.multipleImplementations": "goto",
+  "editor.gotoLocation.multipleReferences": "goto",
+  "editor.gotoLocation.multipleTypeDefinitions": "goto",
+  "editor.guides.indentation": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.hideCursorInOverviewRuler": true,
+  "editor.hover.enabled": "on",
+  "editor.hover.delay": 300,
+  "editor.hover.sticky": true,
+  "editor.lightbulb.enabled": "onCode",
+  "editor.lineNumbers": "relative",
+  "editor.matchBrackets": "never",
+  "editor.minimap.enabled": true,
+  "editor.minimap.renderCharacters": false,
+  "editor.minimap.maxColumn": 80,
+  "editor.minimap.showSlider": "mouseover",
+  "editor.minimap.side": "right",
+  "editor.occurrencesHighlight": "singleFile",
+  "editor.renderControlCharacters": false,
+  "editor.renderLineHighlight": "line",
+  "editor.renderLineHighlightOnlyWhenFocus": true,
+  "editor.renderWhitespace": "boundary",
+  "editor.selectionHighlight": true,
+  "editor.overviewRulerBorder": false,
+  "problems.decorations.enabled": true,
+  "problems.showCurrentInStatus": true,
+  "problems.sortOrder": "severity",
+  "scm.diffDecorations": "all",
+  "scm.defaultViewMode": "tree",
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.editor.showTabs": "single",
+  "workbench.sideBar.location": "right",
+  "workbench.statusBar.visible": true,
+  "outline.showVariables": true,
+
+  /**
+   * Styling
+   **/
+  "editor.cursorBlinking": "expand",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.cursorStyle": "block",
+  "editor.fontFamily": "'Iosevka Nerd Font', 'VictorMono Nerd Font', 'JetBrainsMono Nerd Font', Consolas, 'Courier New', monospace",
+  "editor.fontSize": 16,
+  "editor.scrollbar.horizontal": "auto",
+  "editor.scrollbar.vertical": "auto",
+  "editor.scrollbar.verticalScrollbarSize": 10,
+  "editor.scrollbar.horizontalScrollbarSize": 10,
+  "editor.suggestLineHeight": 28,
+  "editor.suggestFontSize": 14,
+  "editor.lineHeight": 28,
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.lineHeight": 1.5,
+  "terminal.integrated.fontFamily": "'Iosevka Nerd Font', 'VictorMono Nerd Font', 'JetBrainsMono Nerd Font'",
+
+  /**
+   * LSP & IntelliSense
+   **/
+  "editor.inlayHints.enabled": "onUnlessPressed",
+  "editor.suggest.preview": true,
+  "editor.quickSuggestions": {
+    "other": "on",
+    "comments": false,
+    "strings": "on"
+  },
+  "editor.parameterHints.enabled": true,
+  "editor.suggestOnTriggerCharacters": true,
+  "editor.suggestSelection": "first",
+  "editor.acceptSuggestionOnCommitCharacter": true,
+  "editor.acceptSuggestionOnEnter": "on",
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+
+  /**
+   * Find & Search
+   **/
+  "search.useIgnoreFiles": false,
+  "search.smartCase": true,
+  "search.quickOpen.includeSymbols": true,
+  "search.followSymlinks": true,
+  "search.exclude": {
+    "**/*.code-search": true,
+    "**/bin": true,
+    "**/bower_components": true,
+    "**/dist": true,
+    "**/package-lock.json": true,
+    "**/node_modules": true,
+  },
+
+  /**
+   * Window Settings
+   **/
+  "window.menuBarVisibility": "toggle",
+
+  /**
+   * Terminal Integration
+   **/
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.enablePersistentSessions": true,
+  "terminal.integrated.persistentSessionReviveProcess": "onExitAndWindowClose",
+  "terminal.integrated.tabs.enabled": true,
+  "terminal.integrated.tabs.location": "right",
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.gpuAcceleration": "on",
+  "terminal.integrated.smoothScrolling": true,
+  "terminal.integrated.shellIntegration.enabled": true,
+  "terminal.integrated.shellIntegration.decorationsEnabled": "both",
+  "terminal.integrated.shellIntegration.history": 100,
+  "terminal.integrated.scrollback": 10000,
+
+  /**
+   * Git Configuration (Lightweight)
+   **/
+  "git.decorations.enabled": true,
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.autofetch": true,
+  "git.openRepositoryInParentFolders": "always",
+  "gitblame.statusBarMessageFormat": "${author.name} (${time.ago})",
+  "gitblame.statusBarMessageNoCommit": "Not committed yet",
+
+  /**
+   * Error Lens (Inline Diagnostics)
+   **/
+  "errorLens.enabled": true,
+  "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+  "errorLens.followCursor": "activeLine",
+  "errorLens.fontSize": "0.9em",
+  "errorLens.fontWeight": "normal",
+  "errorLens.margin": "2ch",
+  "errorLens.messageBackgroundMode": "none",
+  "errorLens.messageTemplate": "$message",
+  "errorLens.onSave": true,
+  "errorLens.delay": 300,
+
+  /**
+   * Remote Development (SSH)
+   **/
+  "remote.SSH.enableAgentForwarding": true,
+  "remote.SSH.connectTimeout": 60,
+  "remote.SSH.showLoginTerminal": true,
+  "remote.SSH.enableDynamicForwarding": true,
+  "remote.autoForwardPorts": true,
+  "remote.autoForwardPortsSource": "hybrid",
+  "remote.restoreForwardedPorts": true,
+
+  /**
+   * Path IntelliSense
+   **/
+  "path-intellisense.autoSlashAfterDirectory": true,
+  "path-intellisense.extensionOnImport": true,
+
+  /**
+   * Language-Specific Settings
+   **/
+
+  // JSON
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+
+  // TypeScript/JavaScript
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+
+  // Python (Ruff)
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.analysis.typeCheckingMode": "standard",
+  "python.terminal.activateEnvironment": false,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
+    }
+  },
+  "ruff.lineLength": 88,
+  "ruff.lint.enable": true,
+
+  // Go
+  "[go]": {
+    "editor.defaultFormatter": "golang.go",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "go.useLanguageServer": true,
+  "go.toolsManagement.autoUpdate": false,
+  "gopls.ui.semanticTokens": true,
+  "gopls.ui.completion.usePlaceholders": true,
+
+  // Rust
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true
+  },
+  "rust-analyzer.checkOnSave.command": "clippy",
+  "rust-analyzer.inlayHints.chainingHints.enable": true,
+  "rust-analyzer.inlayHints.parameterHints.enable": true,
+  "rust-analyzer.inlayHints.typeHints.enable": true,
+
+  // SQL (SQLFluff)
+  "[sql]": {
+    "editor.defaultFormatter": "dorzey.vscode-sqlfluff",
+    "editor.formatOnSave": true
+  },
+  "sqlfluff.linter.run": "onSave",
+
+  // Emmet
+  "emmet.includeLanguages": {
+    "phoenix-heex": "html",
+  },
+
+  /**
+   * Telemetry & Updates
+   **/
+  "redhat.telemetry.enabled": false,
+  "update.mode": "none",
+
+  /**
+   * Notebook Configuration
+   **/
+  // Jupyter / Python Notebooks
+  "notebook.cellToolbarLocation": {
+    "default": "right",
+    "jupyter-notebook": "left"
+  },
+  "notebook.consolidatedOutputButton": false,
+  "notebook.lineNumbers": "on",
+  "notebook.output.textLineLimit": 100,
+  "notebook.formatOnSave.enabled": true,
+  "notebook.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "jupyter.askForKernelRestart": false,
+  "jupyter.interactiveWindow.textEditor.executeSelection": true,
+  "jupyter.generateSVGPlots": true,
+  "jupyter.widgetScriptSources": ["jsdelivr.com", "unpkg.com"],
+
+  // Interactive Window
+  "interactiveWindow.executeWithShiftEnter": true,
+  "interactiveWindow.textEditor.executeSelection": true,
+
+  /**
+   * Vim Settings
+   **/
+  "vim.camelCaseMotion.enable": true,
+  "vim.cursorStylePerMode.insert": "line",
+  "vim.cursorStylePerMode.normal": "block",
+  "vim.cursorStylePerMode.replace": "block",
+  "vim.cursorStylePerMode.visual": "block",
+  "vim.cursorStylePerMode.visualblock": "block",
+  "vim.cursorStylePerMode.visualline": "block",
+  "vim.easymotion": true,
+  "vim.hlsearch": true,
+  "vim.highlightedyank.enable": true,
+  "vim.incsearch": true,
+  "vim.leader": "<space>",
+  "vim.useCtrlKeys": true,
+  "vim.useSystemClipboard": true,
+  "vim.handleKeys": {
+    "<C-d>": true,
+    "<C-u>": true,
+    "<C-s>": false,
+    "<C-z>": false,
+    "<C-a>": false,
+    "<C-c>": false,
+    "<C-v>": false
+  },
+  "vim.normalModeKeyBindingsNonRecursive": [
+    // File operations
+    {
+      "before": ["<leader>", "w"],
+      "commands": ["workbench.action.files.save"]
+    },
+    {
+      "before": ["<leader>", "q"],
+      "commands": ["workbench.action.closeActiveEditor"]
+    },
+    // Fuzzy finding
+    {
+      "before": ["<leader>", "f", "f"],
+      "commands": ["workbench.action.quickOpen"]
+    },
+    {
+      "before": ["<leader>", "f", "g"],
+      "commands": ["workbench.action.findInFiles"]
+    },
+    {
+      "before": ["<leader>", "f", "s"],
+      "commands": ["workbench.action.gotoSymbol"]
+    },
+    {
+      "before": ["<leader>", "f", "w"],
+      "commands": ["workbench.action.showAllSymbols"]
+    },
+    // LSP navigation
+    {
+      "before": ["g", "d"],
+      "commands": ["editor.action.revealDefinition"]
+    },
+    {
+      "before": ["g", "D"],
+      "commands": ["editor.action.revealDeclaration"]
+    },
+    {
+      "before": ["g", "r"],
+      "commands": ["editor.action.goToReferences"]
+    },
+    {
+      "before": ["g", "i"],
+      "commands": ["editor.action.goToImplementation"]
+    },
+    {
+      "before": ["g", "t"],
+      "commands": ["editor.action.goToTypeDefinition"]
+    },
+    {
+      "before": ["K"],
+      "commands": ["editor.action.showHover"]
+    },
+    // Diagnostics navigation
+    {
+      "before": ["[", "d"],
+      "commands": ["editor.action.marker.prevInFiles"]
+    },
+    {
+      "before": ["]", "d"],
+      "commands": ["editor.action.marker.nextInFiles"]
+    },
+    {
+      "before": ["[", "e"],
+      "commands": ["editor.action.marker.prev"]
+    },
+    {
+      "before": ["]", "e"],
+      "commands": ["editor.action.marker.next"]
+    },
+    // LSP actions
+    {
+      "before": ["<leader>", "r", "n"],
+      "commands": ["editor.action.rename"]
+    },
+    {
+      "before": ["<leader>", "c", "a"],
+      "commands": ["editor.action.quickFix"]
+    },
+    {
+      "before": ["<leader>", "c", "f"],
+      "commands": ["editor.action.formatDocument"]
+    },
+    // Git operations
+    {
+      "before": ["<leader>", "g", "b"],
+      "commands": ["gitblame.quickInfo"]
+    },
+    {
+      "before": ["<leader>", "g", "g"],
+      "commands": ["git-graph.view"]
+    }
+  ],
+  "vim.visualModeKeyBindingsNonRecursive": [
+    {
+      "before": ["<leader>", "c", "a"],
+      "commands": ["editor.action.quickFix"]
+    },
+    {
+      "before": ["<leader>", "c", "f"],
+      "commands": ["editor.action.formatSelection"]
+    }
+  ]
+}

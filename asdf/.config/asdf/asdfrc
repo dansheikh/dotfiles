@@ -1,0 +1,8 @@
+# Automatically run `asdf reshim` after installing plugins/packages
+always_keep_download = false
+
+# Legacy version file support (e.g. read .nvmrc, .ruby-version, etc.)
+legacy_version_file = yes
+
+# Disable automatic update checks since package is managed via pacman/paru
+disable_plugin_short_name_repository = no

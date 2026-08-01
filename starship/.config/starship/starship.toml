@@ -1,0 +1,343 @@
+# Starship Configuration - Minimal Clean with Right-Aligned Info
+# Location: ~/.config/starship.toml
+# Optimized for readability and information density
+
+# ============================================================================
+# General Settings
+# ============================================================================
+format = """
+[┌─](bold green)$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$git_state\
+$fill\
+$python\
+$nodejs\
+$rust\
+$golang\
+$lua\
+$ruby\
+$java\
+$docker_context\
+$cmd_duration\
+$jobs
+[└─](bold green)$character"""
+
+right_format = ""
+continuation_prompt = '[∙](bright-black) '
+command_timeout = 500
+add_newline = true
+
+# ============================================================================
+# Fill - Creates space between left and right sections
+# ============================================================================
+[fill]
+symbol = ' '
+disabled = false
+
+# ============================================================================
+# Character (Prompt Symbol)
+# ============================================================================
+[character]
+success_symbol = '[❯](bold green)'
+error_symbol = '[❯](bold red)'
+vimcmd_symbol = '[❮](bold green)'
+
+# ============================================================================
+# Username & Hostname
+# ============================================================================
+[username]
+style_user = 'bold yellow'
+style_root = 'bold red'
+format = '[$user]($style) '
+show_always = false
+disabled = false
+
+[hostname]
+ssh_only = true
+ssh_symbol = '󰒍 '
+format = '[@$hostname]($style) '
+style = 'bold cyan'
+disabled = false
+
+# ============================================================================
+# Directory - Repo-relative, no icon substitutions
+# ============================================================================
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+truncation_symbol = '…/'
+read_only = ' 󰌾'
+style = 'bold cyan'
+home_symbol = '~'
+repo_root_style = 'bold blue'
+format = '[$path]($style)[$read_only]($read_only_style) '
+repo_root_format = '[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) '
+
+# No icon substitutions - use plain text for clarity
+[directory.substitutions]
+
+# ============================================================================
+# Git Branch
+# ============================================================================
+[git_branch]
+symbol = '󰊢 '
+style = 'bold purple'
+format = '[$symbol$branch(:$remote_branch)]($style) '
+truncation_length = 25
+truncation_symbol = '…'
+always_show_remote = false
+
+# ============================================================================
+# Git Commit - Show on right when detached
+# ============================================================================
+[git_commit]
+commit_hash_length = 7
+format = '[$hash$tag]($style) '
+style = 'bold green'
+only_detached = true
+disabled = false
+tag_symbol = '🏷 '
+tag_disabled = false
+
+# ============================================================================
+# Git Status - Compact format with symbol before number
+# ============================================================================
+[git_status]
+style = 'bold red'
+format = '([$all_status$ahead_behind]($style))'
+
+# Symbol before number for clarity
+ahead = '[⇡$count](bold cyan) '
+behind = '[⇣$count](bold cyan) '
+diverged = '[⇕$ahead_count⇣$behind_count](bold cyan) '
+conflicted = '[=$count](bold red) '
+deleted = '[-$count](bold red) '
+renamed = '[~$count](bold blue) '
+modified = '[Δ$count](bold yellow) '
+staged = '[+$count](bold green) '
+untracked = '[?$count](yellow) '
+stashed = '[$$count](bold magenta) '
+
+disabled = false
+ignore_submodules = false
+
+# ============================================================================
+# Git State
+# ============================================================================
+[git_state]
+format = '[\\([$state( $progress_current/$progress_total)]($style)\\) ]($style)'
+style = 'bold yellow'
+rebase = 'REBASING'
+merge = 'MERGING'
+revert = 'REVERTING'
+cherry_pick = 'CHERRY-PICKING'
+bisect = 'BISECTING'
+am = 'AM'
+am_or_rebase = 'AM/REBASE'
+
+# ============================================================================
+# Git Metrics (Disabled for performance)
+# ============================================================================
+[git_metrics]
+disabled = true
+
+# ============================================================================
+# Command Duration - Right-aligned
+# ============================================================================
+[cmd_duration]
+min_time = 2_000
+format = '[󱎫 $duration]($style) '
+style = 'bold yellow'
+show_milliseconds = false
+show_notifications = false
+
+# ============================================================================
+# Languages & Tools - Right-aligned with versions
+# ============================================================================
+
+[python]
+symbol = '󱔎 '
+style = 'bold yellow'
+format = '[$symbol$version]($style) '
+pyenv_version_name = false
+python_binary = ['python3', 'python']
+detect_extensions = ['py']
+detect_files = ['requirements.txt', 'pyproject.toml', 'Pipfile', 'setup.py', '.python-version']
+detect_folders = ['.venv', 'venv', 'env']
+
+[nodejs]
+symbol = '󰎙 '
+style = 'bold green'
+format = '[$symbol$version]($style) '
+detect_extensions = ['js', 'mjs', 'cjs', 'ts', 'mts', 'cts']
+detect_files = ['package.json', '.node-version', '.nvmrc']
+detect_folders = ['node_modules']
+
+[rust]
+symbol = '󱘗 '
+style = 'bold red'
+format = '[$symbol$version]($style) '
+detect_extensions = ['rs']
+detect_files = ['Cargo.toml', 'Cargo.lock']
+
+[golang]
+symbol = '󰟓 '
+style = 'bold cyan'
+format = '[$symbol$version]($style) '
+detect_extensions = ['go']
+detect_files = ['go.mod', 'go.sum', 'go.work']
+detect_folders = []
+
+[lua]
+symbol = '󰢱 '
+style = 'bold blue'
+format = '[$symbol$version]($style) '
+detect_extensions = ['lua']
+detect_files = ['.lua-version']
+detect_folders = ['lua']
+
+[ruby]
+symbol = ' '
+style = 'bold red'
+format = '[$symbol$version]($style) '
+detect_extensions = ['rb']
+detect_files = ['Gemfile', '.ruby-version']
+
+[java]
+symbol = ' '
+style = 'bold red'
+format = '[$symbol$version]($style) '
+detect_extensions = ['java', 'class', 'jar']
+detect_files = ['pom.xml', 'build.gradle.kts', 'build.sbt', '.java-version']
+
+[c]
+symbol = ' '
+style = 'bold blue'
+format = '[$symbol$version]($style) '
+detect_extensions = ['c', 'h']
+
+[zig]
+symbol = ' '
+style = 'bold yellow'
+format = '[$symbol$version]($style) '
+detect_extensions = ['zig']
+
+[elixir]
+symbol = ' '
+style = 'bold purple'
+format = '[$symbol$version]($style) '
+detect_extensions = ['ex', 'exs']
+detect_files = ['mix.exs']
+
+[nim]
+symbol = '󰆥 '
+style = 'bold yellow'
+format = '[$symbol$version]($style) '
+detect_extensions = ['nim', 'nims', 'nimble']
+
+# ============================================================================
+# Docker Context - Right-aligned
+# ============================================================================
+[docker_context]
+symbol = '󰡨 '
+style = 'bold blue'
+format = '[$symbol$context]($style) '
+only_with_files = true
+detect_files = ['docker-compose.yml', 'docker-compose.yaml', 'Dockerfile']
+detect_folders = []
+
+# ============================================================================
+# Container - Right-aligned
+# ============================================================================
+[container]
+symbol = '⬢ '
+style = 'bold red dimmed'
+format = '[$symbol$name]($style) '
+disabled = false
+
+# ============================================================================
+# Nix Shell - Right-aligned
+# ============================================================================
+[nix_shell]
+symbol = ' '
+style = 'bold blue'
+format = '[$symbol$state]($style) '
+impure_msg = '[impure](bold red)'
+pure_msg = '[pure](bold green)'
+
+# ============================================================================
+# Package Version - Right-aligned
+# ============================================================================
+[package]
+symbol = '󰏗 '
+style = 'bold yellow'
+format = '[$symbol$version]($style) '
+disabled = false
+display_private = false
+
+# ============================================================================
+# Jobs - Right-aligned
+# ============================================================================
+[jobs]
+symbol = '✦'
+style = 'bold blue'
+number_threshold = 1
+symbol_threshold = 1
+format = '[$symbol$number]($style) '
+
+# ============================================================================
+# Status (Exit Code)
+# ============================================================================
+[status]
+style = 'bold red'
+symbol = '✖'
+format = '[$symbol$status( $signal_name)]($style) '
+disabled = false
+recognize_signal_code = true
+map_symbol = true
+pipestatus = true
+
+# ============================================================================
+# Line Break
+# ============================================================================
+[line_break]
+disabled = false
+
+# ============================================================================
+# Time (Optional - uncomment to show current time on right)
+# ============================================================================
+[time]
+disabled = true
+format = '[$time]($style) '
+style = 'bold white'
+time_format = '%T'
+
+# ============================================================================
+# Battery (Optional - uncomment for laptops)
+# ============================================================================
+[battery]
+full_symbol = '🔋'
+charging_symbol = '⚡'
+discharging_symbol = '💀'
+disabled = true
+
+[[battery.display]]
+threshold = 10
+style = 'bold red'
+
+[[battery.display]]
+threshold = 30
+style = 'bold yellow'
+
+# ============================================================================
+# Memory Usage (Optional)
+# ============================================================================
+[memory_usage]
+symbol = '󰍛 '
+style = 'bold white'
+format = '[$symbol$ram]($style) '
+threshold = 75
+disabled = true
