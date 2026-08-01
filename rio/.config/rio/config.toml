@@ -1,0 +1,56 @@
+confirm-before-quit = true
+option-as-alt = "both"
+
+[adaptive-theme]
+light = "catppuccin-latte"
+dark = "catppuccin-mocha"
+
+[bell]
+audio = false
+visual = false
+
+[cursor]
+blinking = true
+blinking-interval = 800
+shape = "block"
+
+[fonts]
+size = 16
+features = []
+use-drawable-chars = true
+symbol-map = []
+disable-warnings-not-found = false
+additional-dirs = []
+
+[fonts.regular]
+family = "VictorMono Nerd Font"
+style = "Normal"
+width = "Normal"
+weight = 400
+
+[fonts.bold]
+family = "VictorMono Nerd Font"
+style = "Normal"
+width = "Normal"
+weight = 800
+
+[fonts.italic]
+family = "VictorMono Nerd Font"
+style = "Italic"
+width = "Normal"
+weight = 400
+
+[fonts.bold-italic]
+family = "VictorMono Nerd Font"
+style = "Italic"
+width = "Normal"
+weight = 800
+
+[keyboard]
+disable-ctlseqs-alt = false
+ime-cursor-positioning = true
+
+[window]
+blur = true
+decorations = "transparent"
+opacity = 0.75
