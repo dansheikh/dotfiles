@@ -1,0 +1,47 @@
+# ==============================================================================
+# 1. GLOBAL LSP CONFIGURATIONS
+# ==============================================================================
+[language-server.rust-analyzer.config]
+checkOnSave = { command = "clippy" }
+inlayHints = { bindingModeHints = { enable = true }, closingBraceHints = { enable = true } }
+
+
+# ==============================================================================
+# 2. INDIVIDUAL LANGUAGE DEFINITIONS
+# ==============================================================================
+[[language]]
+name = "python"
+auto-format = true
+roots = ["pyproject.toml", "setup.py", "requirements.txt"]
+language-servers = ["pyright"]
+
+[[language]]
+name = "typescript"
+auto-format = true
+language-servers = ["typescript-language-server"]
+
+[[language]]
+name = "javascript"
+auto-format = true
+language-servers = ["typescript-language-server"]
+
+[[language]]
+name = "rust"
+auto-format = true
+language-servers = ["rust-analyzer"]
+
+[[language]]
+name = "go"
+auto-format = true
+language-servers = ["gopls"]
+
+[[language]]
+name = "nix"
+auto-format = true
+formatter = { command = "nixfmt" }
+
+[[language]]
+name = "lua"
+auto-format = true
+language-servers = ["lua-language-server"]
+formatter = { command = "stylua", args = ["--search-parent-directories", "--stdin-filepath", "%{buffer_name}", "-"] }

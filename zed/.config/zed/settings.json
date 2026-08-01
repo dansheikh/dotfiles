@@ -1,0 +1,38 @@
+{
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 5000
+    }
+  },
+  "buffer_font_fallback": [
+    "JetBrainsMono Nerd Font",
+    "Noto Sans"
+  ],
+  "buffer_font_family": "VictorMono Nerd Font Mono",
+  "buffer_font_size": 15,
+  "enable_language_server": true,
+  "format_on_save": "on",
+  "formatter": "language_server",
+  "project_panel": {
+    "dock": "right",
+    "file_icons": true
+  },
+  "tabs": {
+    "file_icons": true
+  },
+  "terminal": {
+    "font_size": 15,
+    "font_family": "VictorMono Nerd Font Mono"
+  },
+  "theme": "Catppuccin Mocha",
+  "ui_font_fallback": [
+    "JetBrainsMono Nerd Font",
+    "Noto Sans"
+  ],
+  "ui_font_family": "VictorMono Nerd Font Mono",
+  "ui_font_size": 15,
+  "vim": {
+    "toggle_relative_line_numbers": true
+  },
+  "vim_mode": true
+}

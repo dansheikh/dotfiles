@@ -1,0 +1,110 @@
+[general]
+avatar_image = "/home/danish/Pictures/Avatars/dan_sheikh.png"
+radius_ratio = 0.25
+
+[theme]
+mode = "dark"
+source = "builtin"
+builtin = "Catppuccin"
+
+[location]
+name = "Newburyport, MA"
+month_before_day = true
+
+# ── Bar Layout & Alignment ──────────────────────────────────────────────────
+[bar.main]
+position = "top"
+bar_type = "simple"
+density = "comfortable"
+background_opacity = 0.85
+show_capsule = true
+
+start = [
+  "control-center",
+  "network",
+  "bluetooth"
+]
+
+center = [
+  "workspaces"
+]
+
+end = [
+  "script-caffeine",
+  "taskbar",
+  "volume",
+  "brightness",
+  "battery",
+  "clock",
+  "notifications",
+  "tray"
+]
+
+# ── Widget Settings ─────────────────────────────────────────────────────────
+[widget.workspaces]
+display = "numbers"
+hide_when_empty = false
+show_special = true
+
+[widget.control-center]
+glyph = "brand-arch"
+
+[widget.battery]
+always_show_percentage = false
+warning_threshold = 20
+
+[widget.clock]
+format = "%H:%M"
+vertical_format = "%H %M"
+use_monospaced_font = true
+
+[widget.notifications]
+hide_when_no_unread = false
+
+# ── Caffeine / Idle Inhibitor Bar Widget ────────────────────────────────────
+[widget.caffeine-script]
+type = "script"
+on_click = "idle-toggle"
+interval = 2
+exec = '''
+if pgrep -f "systemd-inhibit.*caffeine" >/dev/null 2>&1; then
+    echo '{"text": "☕", "tooltip": "Caffeine: ENABLED (System will stay awake)", "class": "active"}'
+else
+    echo '{"text": "💤", "tooltip": "Caffeine: DISABLED (Normal idle timers)", "class": "inactive"}'
+fi
+'''
+
+# ── Lock Screen (Official v5 Specification) ────────────────────────────────
+[lockscreen]
+enabled = true
+anchor = ["top", "bottom", "left", "right"]
+ignore_exclusive = true
+offset_x = 0
+offset_y = 0
+
+[lockscreen.background]
+blur_radius = 20
+
+[lockscreen.clock]
+enabled = true
+format = "%H:%M"
+
+[lockscreen.user_card]
+enabled = true
+show_avatar = true
+
+# ── Wallpaper Setup (Native Noctalia Engine) ────────────────────────────────
+[wallpaper]
+default = { path = "/home/danish/Pictures/Wallpapers/mountains.jpg" }
+directory = "/home/danish/Pictures/Wallpapers"
+
+[wallpaper.automation]
+enabled = true
+interval_seconds = 1800
+order = "random"
+recursive = true
+
+# ── Power & Idle Management ─────────────────────────────────────────────────
+# Handled externally by hypridle + idle-toggle
+[idle]
+enabled = false

@@ -1,0 +1,96 @@
+theme = "catppuccin_macchiato"
+
+[editor]
+line-number = "relative"
+cursorline = true
+cursorcolumn = false
+scrolloff = 5
+mouse = true
+middle-click-paste = true
+scroll-lines = 3
+shell = ["sh", "-c"]
+color-modes = true
+auto-pairs = true
+bufferline = "multiple"
+completion-trigger-len = 1
+auto-format = true
+idle-timeout = 200
+
+[editor.cursor-shape]
+normal = "block"
+insert = "bar"
+select = "underline"
+
+[editor.file-picker]
+hidden = true
+git-ignore = true
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "file-modification-indicator"]
+center = []
+right = ["diagnostics", "selections", "register", "position", "file-encoding", "file-type"]
+separator = "│"
+mode.normal = "NORMAL"
+mode.insert = "INSERT"
+mode.select = "SELECT"
+
+[editor.lsp]
+enable = true
+display-messages = true
+display-inlay-hints = true
+display-signature-help-docs = true
+snippets = true
+
+[editor.indent-guides]
+render = true
+character = "⸽"
+skip-levels = 1
+
+[editor.whitespace.render]
+space = "none"
+tab = "all"
+
+[editor.whitespace.characters]
+tab = "→"
+tabpad = " "
+
+[editor.soft-wrap]
+enable = true
+max-wrap = 25
+
+# --- Keymappings ---
+# Preserves Helix selection-first paradigm while leveraging Leader conventions
+
+[keys.normal]
+# Quick window navigation
+"C-h" = "jump_view_left"
+"C-j" = "jump_view_down"
+"C-k" = "jump_view_up"
+"C-l" = "jump_view_right"
+
+# Leader key mappings (<space>)
+[keys.normal.space]
+f = "file_picker"
+b = "buffer_picker"
+e = "file_picker_in_current_directory"
+"/" = "global_search"
+s = "symbol_picker"
+S = "workspace_symbol_picker"
+d = "diagnostics_picker"
+r = "rename_symbol"
+a = "code_action"
+
+[keys.normal.space.w]
+v = "vsplit"
+s = "hsplit"
+q = "wclose"
+h = "jump_view_left"
+j = "jump_view_down"
+k = "jump_view_up"
+l = "jump_view_right"
+
+[keys.normal.g]
+d = "goto_definition"
+r = "goto_reference"
+y = "goto_type_definition"
+i = "goto_implementation"
