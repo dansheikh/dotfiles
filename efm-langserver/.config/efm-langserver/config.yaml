@@ -1,0 +1,459 @@
+version: 2
+
+# Root markers help efm-langserver find project roots
+root-markers:
+  - .git/
+  - package.json
+  - go.mod
+  - pyproject.toml
+  - Cargo.toml
+  - flake.nix
+
+# Debounce settings for better performance
+lint-debounce: 500ms
+format-debounce: 300ms
+
+# Logging (optional - uncomment to enable)
+# log-file: /tmp/efm-langserver.log
+log-level: 1
+
+# Lint triggers
+lint-after-open: true
+lint-on-save: true
+
+tools:
+  # ============================================================================
+  # Oxlint & Oxfmt (Oxc toolchain)
+  # ============================================================================
+  oxlint: &oxlint
+    lint-command: "bunx --bun --no-install oxlint --type-aware --type-check --format unix ${INPUT}"
+    lint-stdin: false
+    lint-source: "oxlint"
+    lint-ignore-exit-code: true
+    lint-formats:
+      - "%f:%l:%c: %m [%trror]"
+      - "%f:%l:%c: %m [%tarning]"
+      - "%f:%l:%c: %m"
+      - "%-G%.%#"
+    lint-category-map:
+      E: E
+      W: W
+      I: I
+      H: H
+    root-markers:
+      - .oxlintrc.json
+      - .oxlintrc.jsonc
+      - oxlint.config.ts
+      - oxlint.config.js
+      - package.json
+
+  oxfmt: &oxfmt
+    format-command: "bunx --bun --no-install oxfmt --stdin-filepath ${INPUT}"
+    format-stdin: true
+    root-markers:
+      - .oxfmtrc.json
+      - .oxfmtrc
+      - oxfmt.config.ts
+      - oxfmt.config.js
+      - .prettierrc
+      - .prettierrc.json
+      - package.json
+
+  # ============================================================================
+  # Biome - modern unified toolchain for web projects
+  # ============================================================================
+  biome: &biome
+    format-command: "biome format --stdin-file-path ${INPUT}"
+    format-stdin: true
+    lint-command: "biome lint --files-ignore-unknown=true --reporter=github ${INPUT}"
+    lint-stdin: true
+    lint-source: "biome"
+    lint-formats:
+      - "::error title=%m,file=%f,line=%l,endLine=%*\\d,col=%c,endColumn=%*\\d::%m"
+      - "::warning title=%m,file=%f,line=%l,endLine=%*\\d,col=%c,endColumn=%*\\d::%m"
+      - "::notice title=%m,file=%f,line=%l,endLine=%*\\d,col=%c,endColumn=%*\\d::%m"
+      - "%-G%.%#"
+    lint-ignore-exit-code: true
+    lint-severity: 1
+    root-markers:
+      - biome.json
+      - biome.jsonc
+
+  # ============================================================================
+  # Lua - stylua formatter
+  # ============================================================================
+  stylua: &stylua
+    format-command: "stylua --color Never --stdin-filepath ${INPUT} -"
+    format-stdin: true
+    root-markers:
+      - .stylua.toml
+      - stylua.toml
+
+  # ============================================================================
+  # Go
+  # ============================================================================
+  golangci-lint: &golangci-lint
+    lint-command: "golangci-lint run --out-format=line-number --print-issued-lines=false ${INPUT}"
+    lint-formats:
+      - "%f:%l:%c: %m"
+      - "%-G%.%#"
+    lint-source: "golangci-lint"
+    lint-ignore-exit-code: true
+    lint-stdin: false
+    root-markers:
+      - go.mod
+      - .golangci.yml
+      - .golangci.yaml
+      - .golangci.toml
+      - .golangci.json
+
+  # ============================================================================
+  # JSON
+  # ============================================================================
+  json-jq: &json-jq
+    lint-command: "jq ."
+    lint-stdin: true
+    lint-source: "jq"
+    lint-formats:
+      - "parse error: %m at line %l, column %c"
+      - "%-G%.%#"
+
+  # ============================================================================
+  # Nix
+  # ============================================================================
+  nixfmt: &nixfmt
+    format-command: "nixfmt"
+    format-stdin: true
+
+  nixpkgs-fmt: &nixpkgs-fmt
+    format-command: "nixpkgs-fmt"
+    format-stdin: true
+
+  # ============================================================================
+  # Prettier & Prettierd
+  # ============================================================================
+  prettier: &prettier
+    format-command: >
+      prettier
+      --stdin-filepath ${INPUT}
+      ${--range-start:charStart}
+      ${--range-end:charEnd}
+      ${--tab-width:tabWidth}
+      ${--use-tabs:!insertSpaces}
+    format-stdin: true
+    root-markers:
+      - .prettierrc
+      - .prettierrc.json
+      - .prettierrc.js
+      - .prettierrc.yml
+      - .prettierrc.yaml
+      - .prettierrc.json5
+      - .prettierrc.mjs
+      - .prettierrc.cjs
+      - .prettierrc.toml
+      - prettier.config.js
+      - prettier.config.cjs
+      - prettier.config.mjs
+
+  prettierd: &prettierd
+    format-command: >
+      prettierd
+      ${INPUT}
+      ${--range-start=charStart}
+      ${--range-end=charEnd}
+      ${--tab-width=tabSize}
+      ${--use-tabs=!insertSpaces}
+    format-stdin: true
+    root-markers:
+      - .prettierrc
+      - .prettierrc.json
+      - .prettierrc.js
+      - .prettierrc.yml
+      - .prettierrc.yaml
+      - .prettierrc.json5
+      - .prettierrc.mjs
+      - .prettierrc.cjs
+      - .prettierrc.toml
+      - prettier.config.js
+      - prettier.config.cjs
+      - prettier.config.mjs
+
+  # ============================================================================
+  # Python - Ruff & Mypy
+  # ============================================================================
+  python-ruff: &python-ruff
+    format-command: "ruff format --stdin-filename ${INPUT} -"
+    format-stdin: true
+    lint-command: "ruff check --output-format concise --stdin-filename ${INPUT} -"
+    lint-source: "ruff"
+    lint-formats:
+      - "%f:%l:%c: %m"
+      - "%-G%.%#"
+    lint-ignore-exit-code: true
+    lint-stdin: true
+    root-markers:
+      - pyproject.toml
+      - ruff.toml
+      - .ruff.toml
+
+  python-mypy: &python-mypy
+    lint-command: "mypy --show-column-numbers --no-error-summary ${INPUT}"
+    lint-source: "mypy"
+    lint-formats:
+      - "%f:%l:%c: %trror: %m"
+      - "%f:%l:%c: %tarning: %m"
+      - "%f:%l:%c: %tote: %m"
+      - "%-G%.%#"
+    lint-stdin: false
+    lint-category-map:
+      E: E
+      W: W
+      N: I
+    root-markers:
+      - pyproject.toml
+      - mypy.ini
+      - setup.cfg
+
+  # ============================================================================
+  # SQL
+  # ============================================================================
+  sqlfluff: &sqlfluff
+    format-command: "sqlfluff format --stdin-filename ${INPUT} -"
+    format-stdin: true
+    lint-command: "sqlfluff lint --stdin-filename ${INPUT} -"
+    lint-source: "sqlfluff"
+    lint-formats:
+      - "%-P== %#[%f] %#%*[A-Z]"
+      - "%AL: %#%l %#| %#P: %# %c %#| %*[A-Z0-9] | %#%m"
+      - "%C %#| %#[%m]"
+      - "%ZAll %#Finished%.%#%-Q"
+      - "%-G%.%#"
+    lint-ignore-exit-code: true
+    lint-stdin: true
+    root-markers:
+      - .sqlfluff
+      - .sqlfluffignore
+      - pyproject.toml
+
+  sqlfmt: &sqlfmt
+    format-command: "sqlfmt -"
+    format-stdin: true
+
+  # ============================================================================
+  # YAML - yamllint
+  # ============================================================================
+  yamllint: &yamllint
+    lint-command: "yamllint -f parsable -"
+    lint-source: "yamllint"
+    lint-formats:
+      - "%f:%l:%c: [%tarning] %m"
+      - "%f:%l:%c: [%trror] %m"
+      - "%-G%.%#"
+    lint-stdin: true
+    root-markers:
+      - .yamllint
+      - .yamllint.yaml
+      - .yamllint.yml
+
+  # ============================================================================
+  # Shellcheck & Shfmt
+  # ============================================================================
+  shellcheck: &shellcheck
+    lint-command: "shellcheck -f gcc -x -"
+    lint-formats:
+      - "%f:%l:%c: %trror: %m [SC%n]"
+      - "%f:%l:%c: %tarning: %m [SC%n]"
+      - "%f:%l:%c: %tote: %m [SC%n]"
+      - "%-G%.%#"
+    lint-stdin: true
+    lint-source: "shellcheck"
+    lint-category-map:
+      E: E
+      W: W
+      N: I
+      S: H
+
+  shfmt: &shfmt
+    format-command: "shfmt -i 2 -bn -ci -sr"
+    format-stdin: true
+
+  # ============================================================================
+  # Markdown - markdownlint
+  # ============================================================================
+  markdownlint: &markdownlint
+    lint-command: "markdownlint --stdin"
+    lint-source: "markdownlint"
+    lint-formats:
+      - "%f:%l:%c %m"
+      - "%f:%l %m"
+      - "%f: %l: %m"
+      - "%-G%.%#"
+    lint-stdin: true
+    lint-ignore-exit-code: true
+    root-markers:
+      - .markdownlint.json
+      - .markdownlint.yaml
+      - .markdownlintrc
+
+  # ============================================================================
+  # Container & Infrastructure
+  # ============================================================================
+  hadolint: &hadolint
+    lint-command: "hadolint --no-color --format=tty -"
+    lint-source: "hadolint"
+    lint-formats:
+      - "%f:%l %m"
+      - "%-G%.%#"
+    lint-stdin: true
+
+  terraform-fmt: &terraform-fmt
+    format-command: "terraform fmt -"
+    format-stdin: true
+
+  # ============================================================================
+  # TOML
+  # ============================================================================
+  taplo: &taplo
+    format-command: "taplo format -"
+    format-stdin: true
+    lint-command: "taplo lint -"
+    lint-source: "taplo"
+    lint-stdin: true
+    lint-formats:
+      - "%f:%l:%c: %m"
+      - "%-G%.%#"
+
+  # ============================================================================
+  # Kotlin
+  # ============================================================================
+  ktlint: &ktlint
+    format-command: "ktlint --format --stdin"
+    format-stdin: true
+    lint-command: "ktlint --stdin"
+    lint-source: "ktlint"
+    lint-stdin: true
+    lint-formats:
+      - "%f:%l:%c: %m"
+      - "%-G%.%#"
+    lint-ignore-exit-code: true
+    root-markers:
+      - .editorconfig
+      - build.gradle.kts
+      - build.gradle
+      - settings.gradle.kts
+      - settings.gradle
+    lint-category-map:
+      E: E
+      W: W
+      N: I
+      S: H
+
+languages:
+  # Lua
+  lua:
+    - <<: *stylua
+
+  # Go
+  go:
+    - <<: *golangci-lint
+
+  # JavaScript / TypeScript (oxlint + oxfmt primary)
+  javascript:
+    - <<: *oxlint
+    - <<: *oxfmt
+
+  typescript:
+    - <<: *oxlint
+    - <<: *oxfmt
+
+  javascriptreact:
+    - <<: *oxlint
+    - <<: *oxfmt
+
+  typescriptreact:
+    - <<: *oxlint
+    - <<: *oxfmt
+
+  # JSON / JSONC
+  json:
+    - <<: *oxfmt
+    - <<: *json-jq
+
+  jsonc:
+    - <<: *oxfmt
+
+  # Nix
+  nix:
+    - <<: *nixfmt
+
+  # Python
+  python:
+    - <<: *python-ruff
+    - <<: *python-mypy
+
+  # SQL
+  sql:
+    - <<: *sqlfluff
+
+  # Shell scripts
+  sh:
+    - <<: *shellcheck
+    - <<: *shfmt
+
+  bash:
+    - <<: *shellcheck
+    - <<: *shfmt
+
+  zsh:
+    - <<: *shellcheck
+    - <<: *shfmt
+
+  # YAML
+  yaml:
+    - <<: *prettierd
+    - <<: *yamllint
+
+  # Markdown
+  markdown:
+    - <<: *markdownlint
+    - <<: *prettierd
+
+  # Dockerfile
+  dockerfile:
+    - <<: *hadolint
+
+  # Terraform
+  terraform:
+    - <<: *terraform-fmt
+
+  # TOML
+  toml:
+    - <<: *taplo
+
+  # Web styling & templates
+  css:
+    - <<: *prettierd
+
+  scss:
+    - <<: *prettierd
+
+  less:
+    - <<: *prettierd
+
+  html:
+    - <<: *prettierd
+
+  graphql:
+    - <<: *prettierd
+
+  vue:
+    - <<: *oxlint
+    - <<: *prettierd
+
+  svelte:
+    - <<: *oxlint
+    - <<: *prettierd
+
+  # Kotlin
+  kotlin:
+    - <<: *ktlint
