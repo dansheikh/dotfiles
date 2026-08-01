@@ -1,0 +1,2074 @@
+#+title: Emacs Configuration
+#+author: Dan Sheikh
+#+description: Literate, daemon-first Emacs 31+ configuration for Linux & macOS (GUI and Tmux TUI)
+#+property: header-args:emacs-lisp :tangle init.el :comments link :mkdirp t
+#+startup: overview
+
+* Overview & Architecture
+
+This literate configuration is the single source of truth for Emacs 31+ across
+Linux and macOS, supporting both graphical frames (=emacsclient -c=) and
+terminal frames inside Tmux (=emacsclient -t= under Kitty, WezTerm, or Alacritty).
+
+Saving this file automatically tangles and byte-compiles its outputs:
+- =early-init.el= — GC tuning, native compilation, Truecolor environment setup,
+  Evil pre-init flags, =package-quickstart= cache path, and frame defaults.
+- =init.el= — Package archive setup (=package.el= + built-in =use-package= with
+  =:vc=), completion, polyglot IDE tooling, and coding-agent integrations.
+- =user-lisp/danish-display.el= — Per-frame GUI/TUI adaptation, Truecolor face
+  sync, hairline split dividers, margins, CSI-u key decoding, mouse support,
+  and OSC 52 / OS clipboard parity.
+- =user-lisp/danish-editing.el= — Editing and window-management utilities.
+- =user-lisp/danish-modeline.el= — Hook-cached custom modeline with Nerd Icons
+  and Catppuccin Macchiato styling.
+- =user-lisp/danish-agents.el= — Dedicated side-window rules and context/diagnostic
+  dispatchers for Claude Code, Pi, and OpenCode.
+
+* Core Architecture & Startup
+
+** Early Initialization (=early-init.el=)
+
+Runs before package activation and frame creation to maximize startup speed,
+guarantee 24-bit Truecolor negotiation for daemon TTY clients, prevent
+white-screen flashes, and align =package-quickstart-file= with =no-littering=.
+
+#+begin_src emacs-lisp :tangle early-init.el :comments no
+;;; early-init.el --- Early initialization -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;; Executed prior to `package.el' and GUI/TUI frame initialization.
+;; Configures GC thresholds, native compilation, Truecolor daemon environment,
+;; Evil pre-autoload flags, `package-quickstart' paths, and frame defaults.
+
+;;; Code:
+
+;; Defer garbage collection during startup; restore a balanced threshold once ready.
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.6)
+
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq gc-cons-threshold (* 32 1024 1024)
+                  gc-cons-percentage 0.1)))
+
+;; Ensure daemon TTY clients negotiate 24-bit Truecolor (16,777,216 colors)
+;; before terminal initialization runs.
+(unless (getenv "COLORTERM")
+  (setenv "COLORTERM" "truecolor"))
+
+;; Native compilation settings (Emacs 31+)
+(when (featurep 'native-compile)
+  (setq native-comp-jit-compilation t
+        native-comp-async-report-warnings-errors 'silent
+        native-comp-speed 2))
+
+;; Must be set before `package-quickstart' activates Evil autoloads and hooks.
+(defvar evil-mode-buffers nil)
+(setq evil-want-integration t
+      evil-want-keybinding nil)
+
+;; Align quickstart cache path with `no-littering' (`var/package-quickstart.el').
+(setq package-quickstart-file
+      (expand-file-name "var/package-quickstart.el" user-emacs-directory)
+      package-enable-at-startup t
+      package-quickstart t)
+
+;; Suppress GUI toolbars/scrollbars and set Catppuccin Macchiato defaults early.
+(setq frame-inhibit-implied-resize t)
+(push '(menu-bar-lines . 0) default-frame-alist)
+(push '(tool-bar-lines . 0) default-frame-alist)
+(push '(vertical-scroll-bars) default-frame-alist)
+(push '(font . "Maple Mono NF-14") default-frame-alist)
+(push '(background-color . "#24273a") default-frame-alist)
+(push '(foreground-color . "#cad3f5") default-frame-alist)
+
+(provide 'early-init)
+;;; early-init.el ends here
+#+end_src
+
+** Package Archives & Built-in =use-package= (=init.el=)
+
+Configures GNU ELPA, NonGNU ELPA, and MELPA priorities alongside Emacs 31's
+built-in =use-package= (including =:vc= support). On a fresh installation where
+packages are not yet present, archive metadata is fetched once automatically.
+
+#+begin_src emacs-lisp :tangle init.el :comments no
+;;; init.el --- Main Emacs configuration -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;; Primary configuration entry point tangled from `emacs.org'.
+;; Targets Emacs 31+ across Linux and macOS in daemon, GUI, and TUI modes.
+
+;;; Code:
+
+;; Increase subprocess read chunk size (1 MB) for LSP and terminal throughput.
+(setq read-process-output-max (* 1024 1024))
+
+;; Package archives and priority order
+(require 'package)
+(setq package-archives
+      '(("gnu"    . "https://elpa.gnu.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+        ("melpa"  . "https://melpa.org/packages/"))
+      package-archive-priorities
+      '(("gnu"    . 99)
+        ("nongnu" . 80)
+        ("melpa"  . 50)))
+
+(unless package--initialized
+  (package-initialize))
+
+;; Built-in `use-package' defaults
+(require 'use-package)
+(setq use-package-always-ensure t
+      use-package-always-defer t
+      use-package-vc-prefer-newest t
+      use-package-compute-statistics t)
+
+;; Refresh archive metadata automatically only on a clean bootstrap when core
+;; packages are not yet installed.
+(when (and (not package-archive-contents)
+           (not (package-installed-p 'no-littering)))
+  (package-refresh-contents))
+#+end_src
+
+** Directory Hygiene (=no-littering=)
+
+Keeps =custom.el=, backups, auto-saves, history files, and package caches
+organized inside =etc/= and =var/= so =~/.config/emacs/= remains clean.
+
+#+begin_src emacs-lisp
+(use-package no-littering
+  :demand t
+  :config
+  (no-littering-theme-backups)
+  (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
+  (when (file-exists-p custom-file)
+    (load custom-file nil 'nomessage)))
+#+end_src
+
+** Cross-Platform Shell & Environment Synchronization
+
+Imports =PATH= and developer toolchain variables from the login shell in
+daemon and GUI sessions across macOS and Linux without hardcoding OS-specific
+store paths.
+
+#+begin_src emacs-lisp
+(use-package exec-path-from-shell
+  :if (or (daemonp)
+          (memq window-system '(mac ns x pgtk)))
+  :demand t
+  :custom
+  (exec-path-from-shell-variables
+   '("PATH" "MANPATH" "GOPATH" "CARGO_HOME" "RUSTUP_HOME"
+     "ANTHROPIC_API_KEY" "OPENAI_API_KEY"))
+  (exec-path-from-shell-arguments '("-l"))
+  :config
+  (exec-path-from-shell-initialize))
+
+;; Resolve a POSIX shell portably across Linux, NixOS, and macOS.
+(setq shell-file-name (or (executable-find "bash")
+                          (executable-find "zsh")
+                          "/bin/sh"))
+
+;; macOS modifier key ergonomics
+(when (eq system-type 'darwin)
+  (setq mac-command-modifier 'meta
+        mac-option-modifier 'super
+        ns-use-native-fullscreen nil))
+#+end_src
+
+** Emacs 31+ Core Defaults & Auto-Tangle Pipeline
+
+Configures core editor ergonomics with =setopt=, activates built-in persistence
+modes, and ensures saving =emacs.org= automatically tangles, byte-compiles, and
+reloads =user-lisp/= autoloads.
+
+#+begin_src emacs-lisp
+(setopt inhibit-startup-screen t
+        inhibit-startup-message t
+        initial-scratch-message nil
+        visible-bell nil
+        ring-bell-function #'ignore
+        use-short-answers t
+        confirm-kill-emacs #'y-or-n-p
+        frame-title-format '("Emacs – %b")
+        truncate-lines nil
+        word-wrap t
+        scroll-conservatively 101
+        scroll-margin 3
+        scroll-preserve-screen-position t
+        indent-tabs-mode nil
+        tab-width 2
+        fill-column 80
+        kill-buffer-quit-windows t
+        completion-eager-update t
+        global-auto-revert-non-file-buffers t
+        auto-revert-verbose nil)
+
+;; Standardize on UTF-8 everywhere
+(set-charset-priority 'unicode)
+(prefer-coding-system 'utf-8-unix)
+(set-default-coding-systems 'utf-8-unix)
+(setq locale-coding-system 'utf-8-unix
+      default-process-coding-system '(utf-8-unix . utf-8-unix))
+
+;; Built-in editing & persistence modes
+(electric-pair-mode 1)
+(global-auto-revert-mode 1)
+(save-place-mode 1)
+(savehist-mode 1)
+(recentf-mode 1)
+(global-hl-line-mode 1)
+(delete-selection-mode 1)
+(editorconfig-mode 1)
+
+;; Relative line numbers in text/code buffers; disabled in terminals
+(global-display-line-numbers-mode 1)
+(setq display-line-numbers-type 'relative)
+(dolist (hook '(term-mode-hook
+                shell-mode-hook
+                eshell-mode-hook
+                vterm-mode-hook
+                eat-mode-hook
+                agent-shell-mode-hook))
+  (add-hook hook (lambda () (display-line-numbers-mode 0))))
+
+;; Compile `user-lisp/' and regenerate autoloads on demand or during --batch bootstrap.
+(defun danish-refresh-user-lisp ()
+  "Byte-compile `user-lisp/' and regenerate `user-lisp-autoloads.el'."
+  (interactive)
+  (let* ((dir (locate-user-emacs-file "user-lisp"))
+         (out (expand-file-name "user-lisp-autoloads.el" dir)))
+    (when (file-directory-p dir)
+      (add-to-list 'load-path dir)
+      (byte-recompile-directory dir 0)
+      (loaddefs-generate dir out)
+      (load out nil 'nomessage))))
+
+(defun danish--tangle-on-save ()
+  "Automatically tangle `emacs.org' and refresh `user-lisp/' on save."
+  (when (and buffer-file-name
+             (string-equal (file-truename buffer-file-name)
+                           (file-truename (locate-user-emacs-file "emacs.org"))))
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle)
+      (danish-refresh-user-lisp))))
+
+(add-hook 'after-save-hook #'danish--tangle-on-save)
+
+;; Emacs 31 natively activates `user-lisp/' during interactive/daemon startup;
+;; in `--batch' runs, load existing autoloads or generate them if missing.
+(let* ((user-lisp-dir (locate-user-emacs-file "user-lisp"))
+       (autoloads-file (expand-file-name "user-lisp-autoloads.el" user-lisp-dir)))
+  (when (file-directory-p user-lisp-dir)
+    (add-to-list 'load-path user-lisp-dir)
+    (unless (fboundp 'danish-display-init)
+      (if (file-exists-p autoloads-file)
+          (load autoloads-file nil 'nomessage)
+        (danish-refresh-user-lisp)))))
+#+end_src
+
+* Situationally Aware GUI & TUI Architecture
+
+** Per-Frame Display, Tmux CSI-u & Clipboard Module (=user-lisp/danish-display.el=)
+
+Adapts each frame dynamically as clients connect or switch focus—so one daemon
+can simultaneously serve graphical frames (=Maple Mono NF-14=, pixel scrolling,
+window fringes, native GUI clipboard) and Tmux TUI frames (24-bit Truecolor
+faces, Unicode hairline split dividers =│=, 1-column fringe-equivalent margins,
+xterm mouse, CSI-u decoding for =C-.= / =C-;= / =C-S-d=, margin diff indicators,
+and OSC 52 + =pbcopy=/=wl-copy=/=xclip= sync).
+
+#+begin_src emacs-lisp :tangle user-lisp/danish-display.el :comments no
+;;; danish-display.el --- Situational GUI/TUI frame, input & clipboard setup -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;; Dynamically adapts frame font, scrolling, Truecolor faces, split dividers,
+;; margins, diff-hl indicators, CSI-u terminal key decoding, mouse support, and
+;; clipboard integration per frame type.
+
+;;; Code:
+
+(defvar xterm-extra-capabilities)
+(declare-function diff-hl-margin-mode "diff-hl" (&optional arg))
+(declare-function tty-set-up-initial-frame-faces "faces" ())
+
+(defgroup danish-display nil
+  "Situational GUI and TUI display settings."
+  :group 'environment)
+
+(defcustom danish-gui-font "Maple Mono NF-14"
+  "Default font specification for graphical frames."
+  :type 'string
+  :group 'danish-display)
+
+(defun danish-display--setup-tui-ui (&optional frame)
+  "Apply Truecolor, GUI-parity borders/margins, mouse, and CSI-u keys to TUI FRAME."
+  (with-selected-frame (or frame (selected-frame))
+    (unless (display-graphic-p)
+      (unless (getenv "COLORTERM")
+        (setenv "COLORTERM" "truecolor"))
+      (when (fboundp 'tty-set-up-initial-frame-faces)
+        (tty-set-up-initial-frame-faces))
+      (when (featurep 'catppuccin-theme)
+        (enable-theme 'catppuccin))
+
+      ;; Replace ASCII '|' split dividers with continuous Unicode box-drawing lines
+      (unless standard-display-table
+        (setq standard-display-table (make-display-table)))
+      (set-display-table-slot standard-display-table 'vertical-border (make-glyph-code ?│))
+      (set-face-attribute 'vertical-border (selected-frame)
+                          :foreground "#363a4f" :background 'unspecified)
+
+      ;; Give TUI windows breathing room matching GUI fringes
+      (set-window-margins nil 1 1)
+
+      ;; Enable xterm mouse clicks, wheel scrolling, and drag selection
+      (xterm-mouse-mode 1)
+      (unless (fboundp 'mouse-wheel-mode)
+        (global-set-key [mouse-4] (lambda () (interactive) (scroll-down 3)))
+        (global-set-key [mouse-5] (lambda () (interactive) (scroll-up 3))))
+
+      ;; Decode CSI-u sequences forwarded by Kitty/WezTerm/Alacritty through Tmux
+      (let ((map input-decode-map))
+        (define-key map "\e[46;5u" (kbd "C-."))
+        (define-key map "\e[59;5u" (kbd "C-;"))
+        (define-key map "\e[68;6u" (kbd "C-S-d"))
+        (define-key map "\e[100;6u" (kbd "C-S-d"))
+        (define-key map "\e[13;2u" (kbd "S-<return>"))
+        (define-key map "\e[13;5u" (kbd "C-<return>"))))))
+
+(defun danish-display--osc52-copy (text)
+  "Copy TEXT to the outer terminal clipboard using OSC 52 (Tmux-aware)."
+  (let* ((b64 (base64-encode-string (encode-coding-string text 'utf-8) t))
+         (seq (if (getenv "TMUX")
+                  (format "\ePtmux;\e\e]52;c;%s\a\e\\" b64)
+                (format "\e]52;c;%s\a" b64))))
+    (send-string-to-terminal seq)))
+
+(defun danish-display--tui-cut-function (text)
+  "Copy TEXT from TUI frames via OSC 52 and native OS clipboard utilities."
+  (danish-display--osc52-copy text)
+  (cond
+   ((and (eq system-type 'darwin) (executable-find "pbcopy"))
+    (let ((process-connection-type nil))
+      (let ((proc (start-process "pbcopy" nil "pbcopy")))
+        (process-send-string proc text)
+        (process-send-eof proc))))
+   ((and (getenv "WAYLAND_DISPLAY") (executable-find "wl-copy"))
+    (let ((process-connection-type nil))
+      (let ((proc (start-process "wl-copy" nil "wl-copy")))
+        (process-send-string proc text)
+        (process-send-eof proc))))
+   ((and (getenv "DISPLAY") (executable-find "xclip"))
+    (let ((process-connection-type nil))
+      (let ((proc (start-process "xclip" nil "xclip" "-selection" "clipboard")))
+        (process-send-string proc text)
+        (process-send-eof proc))))))
+
+(defun danish-display--sync-frame-context (&optional frame)
+  "Apply GUI or TUI display, margin, and clipboard settings to FRAME."
+  (let ((f (or frame (selected-frame))))
+    (when (frame-live-p f)
+      (with-selected-frame f
+        (if (display-graphic-p f)
+            (progn
+              (when (find-font (font-spec :name danish-gui-font))
+                (set-frame-font danish-gui-font nil t))
+              (when (fboundp 'pixel-scroll-precision-mode)
+                (pixel-scroll-precision-mode 1))
+              (set-window-margins nil 0 0)
+              (when (bound-and-true-p diff-hl-margin-mode)
+                (diff-hl-margin-mode -1))
+              (setq interprogram-cut-function #'gui-select-text))
+          (danish-display--setup-tui-ui f)
+          (when (fboundp 'diff-hl-margin-mode)
+            (diff-hl-margin-mode 1))
+          (setq interprogram-cut-function #'danish-display--tui-cut-function))))))
+
+;;;###autoload
+(defun danish-display-init ()
+  "Register frame lifecycle hooks for situational GUI and TUI adaptation."
+  (setq xterm-extra-capabilities '(modifyOtherKeys getSelection setSelection)
+        save-interprogram-paste-before-kill t)
+  (add-hook 'after-make-frame-functions #'danish-display--sync-frame-context)
+  (add-hook 'tty-setup-hook #'danish-display--setup-tui-ui)
+  (add-hook 'window-selection-change-functions
+            (lambda (_win)
+              (danish-display--sync-frame-context (selected-frame))))
+  (unless (daemonp)
+    (danish-display--sync-frame-context (selected-frame))))
+
+(provide 'danish-display)
+;;; danish-display.el ends here
+#+end_src
+
+** Theme (=catppuccin-theme=) & Unified Icons (=nerd-icons=)
+
+#+begin_src emacs-lisp
+;; Activate situational GUI/TUI frame adaptation
+(danish-display-init)
+
+;; Catppuccin Macchiato theme
+(use-package catppuccin-theme
+  :demand t
+  :custom
+  (catppuccin-flavor 'macchiato)
+  (catppuccin-italic-comments t)
+  (catppuccin-italic-variables t)
+  :config
+  (load-theme 'catppuccin t))
+
+;; Unified Nerd Font icon stack across GUI, TUI modeline, Dired, and Corfu
+(use-package nerd-icons
+  :demand t
+  :custom
+  (nerd-icons-font-family "Maple Mono NF"))
+
+(use-package nerd-icons-dired
+  :hook (dired-mode . nerd-icons-dired-mode))
+#+end_src
+
+** Editing & Window Helpers (=user-lisp/danish-editing.el=)
+
+#+begin_src emacs-lisp :tangle user-lisp/danish-editing.el :comments no
+;;; danish-editing.el --- Editing and window utilities -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;; Helper commands for duplicating lines/regions, copying balanced expressions,
+;; and toggling window maximization without losing split layouts.
+
+;;; Code:
+
+;;;###autoload
+(defun danish-duplicate-line-or-region ()
+  "Duplicate the active region or the current line, preserving column."
+  (interactive)
+  (if (use-region-p)
+      (let* ((beg (region-beginning))
+             (end (region-end))
+             (text (buffer-substring-no-properties beg end)))
+        (goto-char end)
+        (insert text))
+    (let ((col (current-column))
+          (line (buffer-substring-no-properties
+                 (line-beginning-position) (line-end-position))))
+      (end-of-line)
+      (newline)
+      (insert line)
+      (move-to-column col))))
+
+;;;###autoload
+(defun danish-copy-sexp ()
+  "Copy the following balanced expression to the kill ring without moving point."
+  (interactive)
+  (save-excursion
+    (let ((beg (point)))
+      (forward-sexp)
+      (kill-ring-save beg (point)))))
+
+;;;###autoload
+(defun danish-toggle-maximize-window ()
+  "Toggle maximizing the selected window while preserving the frame layout."
+  (interactive)
+  (if (= 1 (length (window-list)))
+      (jump-to-register '_danish-max-win)
+    (window-configuration-to-register '_danish-max-win)
+    (delete-other-windows)))
+
+(provide 'danish-editing)
+;;; danish-editing.el ends here
+#+end_src
+
+** Modal Editing (=evil=), Built-in =which-key= & Leader Keys (=general=)
+
+Uses built-in =which-key-mode= and built-in =undo-redo= (paired with =vundo=),
+with =SPC= / =M-SPC= global leader bindings and =,= / =M-,= local-leader
+bindings defined on =general-override-mode-map=.
+
+#+begin_src emacs-lisp
+;; Built-in `which-key' (Emacs 30/31+)
+(use-package which-key
+  :ensure nil
+  :demand t
+  :custom
+  (which-key-idle-delay 0.2)
+  (which-key-sort-order #'which-key-key-order-alpha)
+  (which-key-add-column-padding 1)
+  (which-key-min-display-lines 6)
+  :config
+  (which-key-mode 1))
+
+;; Visual undo tree backed by Emacs built-in `undo-redo'
+(use-package vundo
+  :commands vundo
+  :custom
+  (vundo-glyph-alist vundo-unicode-symbols))
+
+;; Evil modal editing
+(use-package evil
+  :demand t
+  :init
+  (setq evil-want-integration t
+        evil-want-keybinding nil
+        evil-want-C-u-scroll t
+        evil-want-C-i-jump nil
+        evil-undo-system 'undo-redo
+        evil-respect-visual-line-mode t
+        evil-split-window-below t
+        evil-vsplit-window-right t)
+  :config
+  (evil-mode 1)
+  (evil-global-set-key 'motion "j" #'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" #'evil-previous-visual-line)
+  (evil-set-initial-state 'messages-buffer-mode 'normal))
+
+(use-package evil-collection
+  :after evil
+  :demand t
+  :config
+  (evil-collection-init))
+
+(use-package evil-commentary
+  :after evil
+  :demand t
+  :config
+  (evil-commentary-mode 1))
+
+(use-package evil-surround
+  :after evil
+  :demand t
+  :config
+  (global-evil-surround-mode 1))
+
+(use-package ace-window
+  :commands (ace-window ace-swap-window ace-delete-window)
+  :custom
+  (aw-scope 'frame)
+  (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (aw-background t))
+
+(use-package avy
+  :commands (avy-goto-char-timer avy-goto-word-1 avy-goto-line)
+  :custom
+  (avy-timeout-seconds 0.3)
+  (avy-single-candidate-jump t))
+
+;; Leader keybindings via General.el
+(use-package general
+  :demand t
+  :config
+  (general-create-definer +leader
+    :states '(normal visual motion)
+    :keymaps 'general-override-mode-map
+    :prefix "SPC"
+    :non-normal-prefix "M-SPC")
+
+  (general-create-definer +local-leader
+    :states '(normal visual motion)
+    :keymaps 'general-override-mode-map
+    :prefix ","
+    :non-normal-prefix "M-,")
+
+  ;; Quick window jump across all states
+  (general-define-key
+   :keymaps 'general-override-mode-map
+   "M-o" #'ace-window)
+
+  ;; Seamless C-h/j/k/l window navigation (cooperates with Tmux passthrough)
+  (general-define-key
+   :states '(normal visual)
+   :keymaps 'general-override-mode-map
+   "C-h"   #'evil-window-left
+   "C-j"   #'evil-window-down
+   "C-k"   #'evil-window-up
+   "C-l"   #'evil-window-right
+   "C-S-d" #'danish-duplicate-line-or-region)
+
+  ;; Embark contextual actions (CSI-u C-./C-; plus TUI-safe C-c ./C-c ; fallbacks)
+  (general-define-key
+   "C-."   #'embark-act
+   "C-;"   #'embark-dwim
+   "C-c ." #'embark-act
+   "C-c ;" #'embark-dwim
+   "C-h B" #'embark-bindings)
+
+  (+leader
+    "SPC" '(execute-extended-command :which-key "M-x")
+    ":"   '(eval-expression :which-key "eval")
+    ";"   '(pp-eval-last-sexp :which-key "eval last sexp")
+    "u"   '(universal-argument :which-key "universal arg")
+    "U"   '(vundo :which-key "visual undo")
+    "."   '(embark-act :which-key "embark act")
+
+    ;; AI & Coding Agents (SPC a)
+    "a"   '(:ignore t :which-key "AI/agents")
+    "aa"  '(gptel :which-key "gptel chat")
+    "as"  '(gptel-send :which-key "gptel send")
+    "am"  '(gptel-menu :which-key "gptel menu")
+    "ar"  '(gptel-rewrite :which-key "gptel rewrite")
+    "ao"  '(agent-shell :which-key "agent shell")
+    "at"  '(agent-shell-toggle :which-key "toggle agent")
+    "an"  '(agent-shell-new :which-key "new agent session")
+    "ac"  '(agent-shell-anthropic-claude :which-key "claude code")
+    "ap"  '(danish-agent-run-pi :which-key "pi agent (eat)")
+    "aO"  '(danish-agent-run-opencode :which-key "opencode (eat)")
+    "ax"  '(danish-agent-send-context :which-key "send region/file to agent")
+    "ad"  '(danish-agent-send-diagnostics :which-key "send diagnostics to agent")
+
+    ;; Buffers (SPC b)
+    "b"   '(:ignore t :which-key "buffer")
+    "bb"  '(consult-buffer :which-key "switch buffer")
+    "bd"  '(kill-current-buffer :which-key "kill buffer")
+    "bn"  '(next-buffer :which-key "next buffer")
+    "bp"  '(previous-buffer :which-key "prev buffer")
+    "br"  '(revert-buffer :which-key "revert buffer")
+    "bs"  '(save-buffer :which-key "save buffer")
+
+    ;; Code / Eglot / Flymake (SPC c)
+    "c"   '(:ignore t :which-key "code")
+    "ca"  '(eglot-code-actions :which-key "code actions")
+    "cc"  '(consult-flymake :which-key "consult diagnostics")
+    "cd"  '(eldoc-doc-buffer :which-key "documentation")
+    "cD"  '(flymake-show-buffer-diagnostics :which-key "buffer diagnostics")
+    "cf"  '(apheleia-format-buffer :which-key "format buffer")
+    "ch"  '(eglot-inlay-hints-mode :which-key "toggle inlay hints")
+    "ci"  '(eglot-find-implementation :which-key "implementation")
+    "cr"  '(eglot-rename :which-key "rename")
+    "ct"  '(eglot-find-typeDefinition :which-key "type definition")
+
+    ;; Notes & Org-roam (SPC n) + Quick Capture (SPC X)
+    "X"   '(org-capture :which-key "org capture")
+    "n"   '(:ignore t :which-key "notes")
+    "nf"  '(org-roam-node-find :which-key "find node")
+    "ni"  '(org-roam-node-insert :which-key "insert node")
+    "nc"  '(org-roam-capture :which-key "capture")
+    "nb"  '(org-roam-buffer-toggle :which-key "backlinks")
+    "nt"  '(org-roam-dailies-goto-today :which-key "today's daily")
+
+    ;; Files (SPC f)
+    "f"   '(:ignore t :which-key "file")
+    "ff"  '(find-file :which-key "find file")
+    "fr"  '(consult-recent-file :which-key "recent files")
+    "fs"  '(save-buffer :which-key "save file")
+    "fD"  '(delete-file :which-key "delete file")
+    "fR"  '(rename-file :which-key "rename file")
+
+    ;; Git (SPC g)
+    "g"   '(:ignore t :which-key "git")
+    "gg"  '(magit-status :which-key "magit status")
+    "gd"  '(magit-dispatch :which-key "magit dispatch")
+    "gf"  '(magit-file-dispatch :which-key "magit file")
+    "gb"  '(magit-blame :which-key "magit blame")
+    "gl"  '(magit-log-buffer-file :which-key "log file")
+
+    ;; Help (SPC h)
+    "h"   '(:ignore t :which-key "help")
+    "hf"  '(describe-function :which-key "function")
+    "hv"  '(describe-variable :which-key "variable")
+    "hk"  '(describe-key :which-key "key")
+    "hm"  '(describe-mode :which-key "mode")
+    "hp"  '(describe-package :which-key "package")
+
+    ;; Jump (SPC j)
+    "j"   '(:ignore t :which-key "jump")
+    "jj"  '(avy-goto-char-timer :which-key "avy char")
+    "jw"  '(avy-goto-word-1 :which-key "avy word")
+    "jl"  '(avy-goto-line :which-key "avy line")
+    "jd"  '(xref-find-definitions :which-key "definition")
+    "jr"  '(xref-find-references :which-key "references")
+    "jb"  '(xref-go-back :which-key "back")
+
+    ;; Open / Terminals (SPC o)
+    "o"   '(:ignore t :which-key "open")
+    "oa"  '(agent-shell-toggle :which-key "agent shell")
+    "od"  '(dired-jump :which-key "dired")
+    "oe"  '(eshell :which-key "eshell")
+    "ot"  '(eat :which-key "eat")
+    "oT"  '(vterm :which-key "vterm")
+
+    ;; Project (SPC p)
+    "p"   '(:ignore t :which-key "project")
+    "pp"  '(project-switch-project :which-key "switch project")
+    "pf"  '(project-find-file :which-key "find file")
+    "pb"  '(project-switch-to-buffer :which-key "switch buffer")
+    "pd"  '(project-dired :which-key "dired")
+    "pc"  '(project-compile :which-key "compile")
+    "pt"  '(eat-project :which-key "project eat")
+
+    ;; Search (SPC s)
+    "s"   '(:ignore t :which-key "search")
+    "ss"  '(consult-line :which-key "line")
+    "sb"  '(consult-line-multi :which-key "all buffers")
+    "sf"  '(consult-fd :which-key "find file")
+    "si"  '(consult-imenu :which-key "imenu")
+    "sr"  '(consult-ripgrep :which-key "ripgrep")
+
+    ;; Toggles (SPC t)
+    "t"   '(:ignore t :which-key "toggle")
+    "tl"  '(display-line-numbers-mode :which-key "line numbers")
+    "tv"  '(visual-line-mode :which-key "visual line")
+    "tw"  '(whitespace-mode :which-key "whitespace")
+
+    ;; Windows (SPC w) — leverages Emacs 31 `window-layout-*' commands
+    "w"   '(:ignore t :which-key "window")
+    "wd"  '(delete-window :which-key "delete")
+    "wD"  '(delete-other-windows :which-key "delete others")
+    "wh"  '(evil-window-left :which-key "left")
+    "wj"  '(evil-window-down :which-key "down")
+    "wk"  '(evil-window-up :which-key "up")
+    "wl"  '(evil-window-right :which-key "right")
+    "ws"  '(split-window-below :which-key "split below")
+    "wv"  '(split-window-right :which-key "split right")
+    "ww"  '(ace-window :which-key "ace window")
+    "wm"  '(danish-toggle-maximize-window :which-key "maximize toggle")
+    "wt"  '(window-layout-transpose :which-key "transpose layout")
+    "wr"  '(window-layout-rotate-clockwise :which-key "rotate layout")
+    "w="  '(balance-windows :which-key "balance")
+    "wu"  '(winner-undo :which-key "winner undo")
+
+    ;; Quit / Frame (SPC q)
+    "q"   '(:ignore t :which-key "quit")
+    "qq"  '(save-buffers-kill-terminal :which-key "quit emacs")
+    "qf"  '(delete-frame :which-key "delete frame")
+    "qr"  '(restart-emacs :which-key "restart emacs"))
+
+  (+local-leader
+    :keymaps 'org-mode-map
+    ","   '(org-ctrl-c-ctrl-c :which-key "dwim / execute")
+    "t"   '(org-todo :which-key "cycle todo")
+    "T"   '(org-babel-tangle :which-key "tangle file")
+    "l"   '(org-insert-link :which-key "insert link")
+    "e"   '(org-edit-special :which-key "edit src block")
+    "o"   '(olivetti-mode :which-key "toggle centered prose")))
+
+(winner-mode 1)
+#+end_src
+
+* Custom Modeline (=user-lisp/danish-modeline.el=)
+
+High-signal, Catppuccin Macchiato modeline designed for both GUI and Tmux TUI
+frames:
+- Caches Git branch, Flymake diagnostic counts, and active virtualenv/direnv
+  status via hooks rather than recomputing on every redisplay.
+- Renders Nerd Font icons in both GUI and Nerd-Font-capable terminals (with
+  ASCII fallbacks for dumb consoles) and colors Elisp major-mode icons in
+  Emacs purple (=#9b72cf=).
+- Surfaces Evil state badges, narrowing/macro recording alerts, Eglot server
+  status, live coding agent session counts, and a right-aligned clock.
+
+#+begin_src emacs-lisp :tangle user-lisp/danish-modeline.el :comments no
+;;; danish-modeline.el --- High-signal, hook-cached custom modeline -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;; Display-agnostic custom modeline aligned with Catppuccin Macchiato.
+;; Expensive status checks (Git branch, Flymake counts, Python/direnv state)
+;; are cached via hooks to keep redisplay fast.
+
+;;; Code:
+
+(require 'subr-x)
+(require 'time)
+
+(defvar evil-state)
+(declare-function flymake-diagnostics "flymake" (&optional beg end))
+(declare-function flymake-diagnostic-type "flymake" (diag))
+(declare-function flymake--severity "flymake" (type))
+(declare-function flymake-show-buffer-diagnostics "flymake" ())
+(declare-function flymake-show-project-diagnostics "flymake" ())
+(declare-function eglot-current-server "eglot" ())
+(declare-function eglot-project-nickname "eglot" (server))
+(declare-function jsonrpc--request-continuations "jsonrpc" (connection))
+
+(defgroup danish-modeline nil
+  "Custom high-signal modeline."
+  :group 'mode-line)
+
+;;; --- Faces (Catppuccin Macchiato Palette) ---
+
+(defface danish-modeline-evil-normal
+  '((t :foreground "#24273a" :background "#a6da95" :weight bold))
+  "Face for Evil normal state badge."
+  :group 'danish-modeline)
+
+(defface danish-modeline-evil-insert
+  '((t :foreground "#24273a" :background "#8aadf4" :weight bold))
+  "Face for Evil insert state badge."
+  :group 'danish-modeline)
+
+(defface danish-modeline-evil-visual
+  '((t :foreground "#24273a" :background "#eed49f" :weight bold))
+  "Face for Evil visual state badge."
+  :group 'danish-modeline)
+
+(defface danish-modeline-evil-replace
+  '((t :foreground "#24273a" :background "#ed8796" :weight bold))
+  "Face for Evil replace state badge."
+  :group 'danish-modeline)
+
+(defface danish-modeline-evil-operator
+  '((t :foreground "#24273a" :background "#8bd5ca" :weight bold))
+  "Face for Evil operator state badge."
+  :group 'danish-modeline)
+
+(defface danish-modeline-evil-motion
+  '((t :foreground "#24273a" :background "#91d7e3" :weight bold))
+  "Face for Evil motion state badge."
+  :group 'danish-modeline)
+
+(defface danish-modeline-evil-emacs
+  '((t :foreground "#24273a" :background "#c6a0f6" :weight bold))
+  "Face for Evil emacs state badge."
+  :group 'danish-modeline)
+
+(defface danish-modeline-buffer-modified
+  '((t :foreground "#c6a0f6" :weight bold))
+  "Face for modified buffer names."
+  :group 'danish-modeline)
+
+(defface danish-modeline-agent-active
+  '((t :foreground "#f5a97f" :weight bold))
+  "Face for active coding agent indicator."
+  :group 'danish-modeline)
+
+(defface danish-modeline-env
+  '((t :foreground "#8bd5ca" :slant italic))
+  "Face for active toolchain/virtualenv segment."
+  :group 'danish-modeline)
+
+(defface danish-modeline-emacs-icon
+  '((t :foreground "#9b72cf"))
+  "Emacs purple face for Emacs Lisp major-mode icons."
+  :group 'danish-modeline)
+
+(defcustom danish-modeline-use-nerd-icons t
+  "When non-nil, render Nerd Font glyphs in GUI and Nerd-Font-capable terminals."
+  :type 'boolean
+  :group 'danish-modeline)
+
+;;; --- Display-Safe Icon Helper ---
+
+(defun danish-modeline--glyph (nerd-glyph ascii-fallback)
+  "Return NERD-GLYPH when Nerd Icons are enabled and terminal is capable."
+  (if (and danish-modeline-use-nerd-icons
+           (or (display-graphic-p)
+               (not (member (getenv "TERM") '("dumb" "linux" nil)))))
+      nerd-glyph
+    ascii-fallback))
+
+;;; --- Segment 1: Evil Modal Badge ---
+
+(defconst danish-modeline--evil-alist
+  '((normal   . ("󰰓" "N" danish-modeline-evil-normal))
+    (insert   . ("󰰄" "I" danish-modeline-evil-insert))
+    (visual   . ("󰰫" "V" danish-modeline-evil-visual))
+    (replace  . ("󰰟" "R" danish-modeline-evil-replace))
+    (operator . ("󰲞" "O" danish-modeline-evil-operator))
+    (motion   . ("󰰐" "M" danish-modeline-evil-motion))
+    (emacs    . ("󰯸" "E" danish-modeline-evil-emacs)))
+  "Mapping from `evil-state' to (NERD-GLYPH ASCII-FALLBACK FACE).")
+
+(defun danish-modeline--render-evil ()
+  "Render the active Evil state badge."
+  (if (bound-and-true-p evil-local-mode)
+      (pcase-let* ((`(,glyph ,fallback ,face)
+                    (or (alist-get evil-state danish-modeline--evil-alist)
+                        '("" "?" danish-modeline-evil-emacs)))
+                   (label (danish-modeline--glyph glyph fallback)))
+        (propertize (format " %s " label) 'face face))
+    (propertize " EMACS " 'face 'danish-modeline-evil-emacs)))
+
+(defvar danish-modeline--seg-evil
+  '(:eval (danish-modeline--render-evil))
+  "Modeline construct for Evil state.")
+
+;;; --- Segment 2: Buffer Name, Narrowing & Macro Recording ---
+
+(defun danish-modeline--render-buffer ()
+  "Render buffer name with modified, read-only, narrowing, and macro indicators."
+  (let* ((mod-p (buffer-modified-p))
+         (ro-p buffer-read-only)
+         (name (propertize (buffer-name)
+                           'face (cond
+                                  ((not (mode-line-window-selected-p)) 'mode-line-inactive)
+                                  (mod-p 'danish-modeline-buffer-modified)
+                                  (t 'bold))))
+         (badges (concat
+                  (when ro-p (propertize " [RO]" 'face 'shadow))
+                  (when (buffer-narrowed-p) (propertize " [NARROW]" 'face 'warning))
+                  (when defining-kbd-macro (propertize " [REC]" 'face 'error)))))
+    (concat " " name badges " ")))
+
+(defvar danish-modeline--seg-buffer
+  '(:eval (danish-modeline--render-buffer))
+  "Modeline construct for buffer identification.")
+
+;;; --- Segment 3: Cached Git Branch & State ---
+
+(defvar-local danish-modeline--vc-cache nil
+  "Cached VC branch string for the current buffer.")
+
+(defun danish-modeline--update-vc (&rest _)
+  "Refresh cached Git branch string for the current buffer."
+  (setq danish-modeline--vc-cache
+        (when (and vc-mode (stringp vc-mode))
+          (let* ((branch (replace-regexp-in-string "^ Git[:-]" "" vc-mode))
+                 (icon (danish-modeline--glyph "󰊢" "git:")))
+            (propertize (format "%s %s " icon (string-trim branch))
+                        'face 'font-lock-constant-face)))))
+
+(add-hook 'find-file-hook #'danish-modeline--update-vc)
+(add-hook 'after-save-hook #'danish-modeline--update-vc)
+(add-hook 'vc-checkin-hook #'danish-modeline--update-vc)
+(advice-add 'vc-refresh-state :after #'danish-modeline--update-vc)
+(with-eval-after-load 'magit
+  (add-hook 'magit-post-refresh-hook
+            (lambda ()
+              (dolist (buf (buffer-list))
+                (with-current-buffer buf
+                  (when buffer-file-name
+                    (danish-modeline--update-vc)))))))
+
+(defvar danish-modeline--seg-vc
+  '(:eval (when (mode-line-window-selected-p) danish-modeline--vc-cache))
+  "Modeline construct for cached Git status.")
+
+;;; --- Segment 4: Major Mode with Nerd Icons (GUI & TUI) ---
+
+(defun danish-modeline--render-major-mode ()
+  "Render major-mode Nerd Icon (Emacs purple for Elisp) and mode name."
+  (when (mode-line-window-selected-p)
+    (let* ((raw-icon (if (and danish-modeline-use-nerd-icons
+                              (fboundp 'nerd-icons-icon-for-mode))
+                         (nerd-icons-icon-for-mode major-mode :v-adjust 0.0)
+                       (danish-modeline--glyph "λ" "λ")))
+           (icon (copy-sequence raw-icon))
+           (mode-str (string-remove-suffix "-mode" (symbol-name major-mode))))
+      (when (derived-mode-p 'emacs-lisp-mode 'lisp-interaction-mode)
+        (add-face-text-property 0 (length icon) 'danish-modeline-emacs-icon nil icon))
+      (concat icon " " (propertize mode-str 'face 'italic) " "))))
+
+(defvar danish-modeline--seg-major-mode
+  '(:eval (danish-modeline--render-major-mode))
+  "Modeline construct for major mode.")
+
+;;; --- Segment 5: Single-Pass Cached Flymake Diagnostics ---
+
+(defvar-local danish-modeline--flymake-cache nil
+  "Cached Flymake diagnostic summary string.")
+
+(defvar danish-modeline--flymake-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map [mode-line down-mouse-1] #'flymake-show-buffer-diagnostics)
+    (define-key map [mode-line down-mouse-2] #'flymake-show-project-diagnostics)
+    map)
+  "Mouse map for clicking Flymake counts in the modeline.")
+
+(defun danish-modeline--update-flymake (&rest _)
+  "Compute Flymake error/warning/note counts in a single pass and cache."
+  (setq danish-modeline--flymake-cache
+        (when (bound-and-true-p flymake-mode)
+          (let ((err 0) (warn 0) (note 0)
+                (sev-err (flymake--severity :error))
+                (sev-warn (flymake--severity :warning)))
+            (dolist (d (flymake-diagnostics))
+              (let ((s (flymake--severity (flymake-diagnostic-type d))))
+                (cond
+                 ((>= s sev-err) (cl-incf err))
+                 ((>= s sev-warn) (cl-incf warn))
+                 (t (cl-incf note)))))
+            (when (> (+ err warn note) 0)
+              (propertize
+               (concat
+                (when (> err 0)
+                  (propertize (format "%s%d " (danish-modeline--glyph "󰈸 " "E:") err)
+                              'face 'error))
+                (when (> warn 0)
+                  (propertize (format "%s%d " (danish-modeline--glyph " " "W:") warn)
+                              'face 'warning))
+                (when (> note 0)
+                  (propertize (format "%s%d " (danish-modeline--glyph " " "I:") note)
+                              'face 'success)))
+               'mouse-face 'mode-line-highlight
+               'local-map danish-modeline--flymake-map
+               'help-echo "mouse-1: buffer diagnostics | mouse-2: project diagnostics"))))))
+
+(with-eval-after-load 'flymake
+  (advice-add 'flymake--handle-report :after #'danish-modeline--update-flymake)
+  (add-hook 'flymake-mode-hook #'danish-modeline--update-flymake))
+
+(defvar danish-modeline--seg-flymake
+  '(:eval (when (mode-line-window-selected-p) danish-modeline--flymake-cache))
+  "Modeline construct for cached Flymake diagnostics.")
+
+;;; --- Segment 6: Eglot LSP Status ---
+
+(defun danish-modeline--render-eglot ()
+  "Render concise Eglot server status when active in the selected window."
+  (when (and (mode-line-window-selected-p)
+             (bound-and-true-p eglot--managed-mode)
+             (fboundp 'eglot-current-server))
+    (when-let* ((server (eglot-current-server)))
+      (let* ((nick (eglot-project-nickname server))
+             (pending (hash-table-count (jsonrpc--request-continuations server)))
+             (icon (danish-modeline--glyph "󰒋" "LSP")))
+        (propertize (format "[%s %s%s] "
+                            icon nick
+                            (if (> pending 0) (format ":%d" pending) ""))
+                    'face 'font-lock-function-name-face)))))
+
+(defvar danish-modeline--seg-eglot
+  '(:eval (danish-modeline--render-eglot))
+  "Modeline construct for Eglot LSP status.")
+
+;;; --- Segment 7: Cached Toolchain / Environment (Python venv / Direnv) ---
+
+(defvar-local danish-modeline--env-cache nil
+  "Cached environment badge for the current buffer.")
+
+(defun danish-modeline--update-env (&rest _)
+  "Detect active Python virtualenv or direnv environment and cache badge."
+  (setq danish-modeline--env-cache
+        (let ((venv (or (bound-and-true-p python-shell-virtualenv-root)
+                        (getenv "VIRTUAL_ENV")
+                        (getenv "CONDA_DEFAULT_ENV")))
+              (direnv (getenv "DIRENV_DIR")))
+          (cond
+           (venv
+            (propertize (format "(%s) " (file-name-nondirectory
+                                         (directory-file-name venv)))
+                        'face 'danish-modeline-env))
+           (direnv
+            (propertize "[direnv] " 'face 'danish-modeline-env))
+           (t nil)))))
+
+(add-hook 'find-file-hook #'danish-modeline--update-env)
+(add-hook 'python-base-mode-hook #'danish-modeline--update-env)
+(with-eval-after-load 'envrc
+  (advice-add 'envrc--update :after #'danish-modeline--update-env))
+
+(defvar danish-modeline--seg-env
+  '(:eval (when (mode-line-window-selected-p) danish-modeline--env-cache))
+  "Modeline construct for active environment.")
+
+;;; --- Segment 8: Active Coding Agent Status ---
+
+(defun danish-modeline--render-agents ()
+  "Show badge when any coding agent session (`agent-shell', Pi, OpenCode) is live."
+  (when (mode-line-window-selected-p)
+    (let ((live (seq-filter
+                 (lambda (buf)
+                   (with-current-buffer buf
+                     (or (derived-mode-p 'agent-shell-mode)
+                         (string-match-p "\\*\\(claude\\|pi\\|opencode\\)-agent:"
+                                         (buffer-name buf)))))
+                 (buffer-list))))
+      (when live
+        (propertize (format "%s %d "
+                            (danish-modeline--glyph "󰚩" "AI:")
+                            (length live))
+                    'face 'danish-modeline-agent-active
+                    'help-echo "Active coding agent session(s)")))))
+
+(defvar danish-modeline--seg-agents
+  '(:eval (danish-modeline--render-agents))
+  "Modeline construct for live coding agent sessions.")
+
+;;; --- Risky Declarations & Global Activation ---
+
+(dolist (construct '(danish-modeline--seg-evil
+                     danish-modeline--seg-buffer
+                     danish-modeline--seg-vc
+                     danish-modeline--seg-major-mode
+                     danish-modeline--seg-flymake
+                     danish-modeline--seg-eglot
+                     danish-modeline--seg-env
+                     danish-modeline--seg-agents))
+  (put construct 'risky-local-variable t))
+
+;;;###autoload
+(defun danish-modeline-init ()
+  "Activate `danish-modeline' globally with a right-aligned clock."
+  (setq display-time-format "%a %d %b %H:%M"
+        display-time-default-load-average nil
+        display-time-mail-directory nil
+        display-time-mail-function nil
+        display-time-use-mail-icon nil
+        mode-line-right-align-edge 'right-margin)
+  (display-time-mode 1)
+  (setq-default mode-line-format
+                '("%e"
+                  danish-modeline--seg-evil
+                  danish-modeline--seg-buffer
+                  danish-modeline--seg-vc
+                  danish-modeline--seg-major-mode
+                  danish-modeline--seg-flymake
+                  danish-modeline--seg-eglot
+                  danish-modeline--seg-env
+                  danish-modeline--seg-agents
+                  mode-line-format-right-align
+                  (:eval (when (mode-line-window-selected-p)
+                           (propertize (concat (string-trim-right display-time-string) " ")
+                                       'face 'shadow))))))
+
+(provide 'danish-modeline)
+;;; danish-modeline.el ends here
+#+end_src
+
+** Activate Custom Modeline
+
+#+begin_src emacs-lisp
+(danish-modeline-init)
+#+end_src
+
+* Modern Completion Stack
+
+Vertico, Orderless, Marginalia, Consult, Embark, Corfu (native Emacs 31 GUI
+and TTY child-frames with =kind-icon=), and Cape.
+
+#+begin_src emacs-lisp
+(use-package vertico
+  :demand t
+  :custom
+  (vertico-count 15)
+  (vertico-resize t)
+  (vertico-cycle t)
+  :config
+  (vertico-mode 1))
+
+(use-package orderless
+  :demand t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+
+(use-package marginalia
+  :demand t
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :config
+  (marginalia-mode 1))
+
+(use-package consult
+  :bind (("C-s"     . consult-line)
+         ("C-x b"   . consult-buffer)
+         ("M-y"     . consult-yank-pop)
+         ("M-g g"   . consult-goto-line)
+         ("M-g M-g" . consult-goto-line)
+         ("M-g i"   . consult-imenu)
+         ("M-g I"   . consult-imenu-multi)
+         ("M-s d"   . consult-fd)
+         ("M-s g"   . consult-grep)
+         ("M-s r"   . consult-ripgrep)
+         ("M-s l"   . consult-line)
+         ("M-s L"   . consult-line-multi))
+  :custom
+  (consult-narrow-key "<")
+  (consult-async-min-input 2)
+  (consult-async-refresh-delay 0.15)
+  :config
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   :preview-key '(:debounce 0.4 any)))
+
+(use-package embark
+  :commands (embark-act embark-dwim embark-bindings)
+  :custom
+  (embark-quit-after-action nil)
+  (embark-indicators '(embark-minimal-indicator
+                       embark-highlight-indicator
+                       embark-isearch-highlight-indicator))
+  :config
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+(use-package embark-consult
+  :after (embark consult)
+  :hook (embark-collect-mode . consult-preview-at-point-mode))
+
+(use-package corfu
+  :demand t
+  :bind (:map corfu-map
+         ("TAB"     . corfu-next)
+         ([tab]     . corfu-next)
+         ("S-TAB"   . corfu-previous)
+         ([backtab] . corfu-previous)
+         ("RET"     . corfu-insert)
+         ([return]  . corfu-insert)
+         ("M-d"     . corfu-popupinfo-toggle))
+  :custom
+  (corfu-cycle t)
+  (corfu-auto t)
+  (corfu-auto-delay 0.2)
+  (corfu-auto-prefix 2)
+  (corfu-quit-no-match 'separator)
+  (corfu-preview-current nil)
+  (corfu-preselect 'prompt)
+  (corfu-count 15)
+  :hook
+  (minibuffer-setup . (lambda ()
+                        (when (where-is-internal #'completion-at-point
+                                                 (list (current-local-map)))
+                          (setq-local corfu-auto nil)
+                          (corfu-mode 1))))
+  (eshell-mode . (lambda ()
+                   (setq-local corfu-auto nil)
+                   (corfu-mode 1)))
+  :config
+  (global-corfu-mode 1))
+
+(use-package corfu-popupinfo
+  :ensure nil
+  :after corfu
+  :custom
+  (corfu-popupinfo-delay '(0.5 . 0.2))
+  :hook (corfu-mode . corfu-popupinfo-mode))
+
+(use-package kind-icon
+  :after corfu
+  :demand t
+  :custom
+  (kind-icon-default-face 'corfu-default)
+  (kind-icon-blend-background nil)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+(use-package cape
+  :demand t
+  :custom
+  (cape-dabbrev-min-length 3)
+  (cape-dabbrev-check-other-buffers t)
+  :hook
+  ((prog-mode text-mode conf-mode) . (lambda ()
+                                       (add-to-list 'completion-at-point-functions #'cape-dabbrev t)
+                                       (add-to-list 'completion-at-point-functions #'cape-file t)
+                                       (add-to-list 'completion-at-point-functions #'cape-elisp-block t)))
+  :config
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent))
+#+end_src
+
+* Polyglot IDE (=treesit= + =eglot= + Oxlint/Oxfmt)
+
+** Native Tree-sitter (Emacs 31+)
+
+Uses Emacs 31's built-in Tree-sitter mode remapping and on-demand grammar
+installer alongside custom grammar sources for Clojure, Nix, and Kotlin.
+
+#+begin_src emacs-lisp
+(use-package treesit
+  :ensure nil
+  :when (and (fboundp 'treesit-available-p) (treesit-available-p))
+  :custom
+  (treesit-font-lock-level 4)
+  :config
+  (when (boundp 'treesit-auto-install-grammar)
+    (setq treesit-auto-install-grammar 'ask))
+  (when (boundp 'treesit-enabled-modes)
+    (setq treesit-enabled-modes t))
+  (dolist (source '((clojure "https://github.com/sogaiu/tree-sitter-clojure")
+                    (nix     "https://github.com/nix-community/tree-sitter-nix")
+                    (kotlin  "https://github.com/fwcd/tree-sitter-kotlin")))
+    (add-to-list 'treesit-language-source-alist source)))
+#+end_src
+
+** Environment Awareness (=envrc= / direnv)
+
+Propagates project-local =.envrc= environments (virtualenvs, Node toolchains,
+Go/Rust paths, or Nix devShells) buffer-locally before =eglot= or =flymake= starts.
+
+#+begin_src emacs-lisp
+(use-package envrc
+  :if (executable-find "direnv")
+  :demand t
+  :config
+  (envrc-global-mode 1))
+#+end_src
+
+** Eglot, Eldoc & Xref
+
+#+begin_src emacs-lisp
+(use-package xref
+  :ensure nil
+  :custom
+  (xref-search-program 'ripgrep)
+  (xref-show-xrefs-function #'consult-xref)
+  (xref-show-definitions-function #'consult-xref))
+
+(use-package eldoc
+  :ensure nil
+  :custom
+  (eldoc-echo-area-use-multiline-p nil)
+  (eldoc-echo-area-display-truncation-message nil)
+  (eldoc-idle-delay 0.2)
+  :config
+  (global-eldoc-mode 1))
+
+(use-package eldoc-box
+  :after eldoc
+  :commands (eldoc-box-help-at-point eldoc-box-eglot-help-at-point)
+  :custom
+  (eldoc-box-max-pixel-width 800)
+  (eldoc-box-max-pixel-height 600))
+
+(use-package eglot
+  :ensure nil
+  :commands (eglot eglot-ensure)
+  :bind (:map eglot-mode-map
+         ("C-h ." . eldoc-box-help-at-point)
+         ("M-."   . xref-find-definitions)
+         ("M-,"   . xref-go-back))
+  :custom
+  (eglot-autoshutdown t)
+  (eglot-send-changes-idle-time 0.4)
+  (eglot-extend-to-xref t)
+  (eglot-sync-connect 0)
+  (eglot-events-buffer-size 0)
+  (eglot-workspace-configuration
+   '((:rust-analyzer . (:check (:command "clippy")
+                        :cargo (:buildScripts (:enable t))
+                        :procMacro (:enable t)))
+     (:gopls . (:gofumpt t
+                :staticcheck t
+                :usePlaceholders t
+                :hints (:assignVariableTypes t
+                        :compositeLiteralFields t
+                        :parameterNames t)))))
+  :config
+  (fset #'jsonrpc--log-event #'ignore)
+
+  ;; Prefer basedpyright when installed, falling back to pyright-langserver
+  (let ((py-lsp (if (executable-find "basedpyright-langserver")
+                    '("basedpyright-langserver" "--stdio")
+                  '("pyright-langserver" "--stdio"))))
+    (dolist (mapping
+             `(((python-mode python-ts-mode) . ,py-lsp)
+               ((js-mode js-ts-mode typescript-mode typescript-ts-mode tsx-ts-mode)
+                . ("typescript-language-server" "--stdio"))
+               ((go-mode go-ts-mode) . ("gopls"))
+               ((rust-mode rust-ts-mode) . ("rust-analyzer"))
+               ((clojure-mode clojure-ts-mode clojurescript-mode clojurec-mode)
+                . ("clojure-lsp"))
+               ((nix-mode nix-ts-mode) . ("nil"))
+               ((kotlin-mode kotlin-ts-mode) . ("kotlin-language-server"))))
+      (add-to-list 'eglot-server-programs mapping)))
+
+  (defun danish--eglot-ensure-if-installed ()
+    "Start `eglot' automatically only when a matching LSP binary is installed."
+    (when (and (derived-mode-p 'prog-mode)
+               (not (eglot-current-server)))
+      (when-let* ((entry (seq-find (lambda (item)
+                                     (if (listp (car item))
+                                         (memq major-mode (car item))
+                                       (eq major-mode (car item))))
+                                   eglot-server-programs))
+                  (contact (cdr entry))
+                  (bin (car-safe contact)))
+        (when (and (stringp bin) (executable-find bin))
+          (eglot-ensure)))))
+
+  :hook
+  (prog-mode . danish--eglot-ensure-if-installed))
+#+end_src
+
+** Flymake with Oxlint & Ruff
+
+#+begin_src emacs-lisp
+(use-package flymake
+  :ensure nil
+  :bind (:map flymake-mode-map
+         ("M-g n"   . flymake-goto-next-error)
+         ("M-g p"   . flymake-goto-prev-error)
+         ("M-g M-n" . flymake-goto-next-error)
+         ("M-g M-p" . flymake-goto-prev-error))
+  :custom
+  (flymake-no-changes-timeout 0.4)
+  (flymake-start-on-flymake-mode t)
+  (flymake-start-on-save-buffer t)
+  :hook
+  (prog-mode . flymake-mode))
+
+;; Oxlint (JavaScript / TypeScript / TSX) via asynchronous `make-process'
+(with-eval-after-load 'flymake
+  (defvar-local danish--oxlint-proc nil)
+
+  (defun danish-flymake-oxlint (report-fn &rest _args)
+    "Flymake backend running `oxlint' on the current buffer."
+    (unless (executable-find "oxlint")
+      (error "Cannot find `oxlint' executable"))
+    (when (process-live-p danish--oxlint-proc)
+      (kill-process danish--oxlint-proc))
+    (let* ((source (current-buffer))
+           (fname (or (buffer-file-name) "stdin.ts")))
+      (save-restriction
+        (widen)
+        (setq danish--oxlint-proc
+              (make-process
+               :name "danish-oxlint"
+               :noquery t
+               :connection-type 'pipe
+               :buffer (generate-new-buffer " *oxlint*")
+               :command (list "oxlint" "--format" "unix" "--stdin-filepath" fname)
+               :sentinel
+               (lambda (proc _event)
+                 (when (memq (process-status proc) '(exit signal))
+                   (unwind-protect
+                       (when (with-current-buffer source
+                               (eq proc danish--oxlint-proc))
+                         (with-current-buffer (process-buffer proc)
+                           (goto-char (point-min))
+                           (let (diags)
+                             (while (re-search-forward
+                                     "^.+?:\\([0-9]+\\):\\([0-9]+\\): \\(.+\\) \\[\\(Error\\|Warning\\)/\\(.+?\\)\\]$"
+                                     nil t)
+                               (let* ((line (string-to-number (match-string 1)))
+                                      (col  (string-to-number (match-string 2)))
+                                      (msg  (format "[%s] %s" (match-string 5) (match-string 3)))
+                                      (type (if (string= (match-string 4) "Error") :error :warning))
+                                      (region (flymake-diag-region source line col)))
+                                 (push (flymake-make-diagnostic
+                                        source (car region) (cdr region) type msg)
+                                       diags)))
+                             (funcall report-fn (nreverse diags)))))
+                     (kill-buffer (process-buffer proc)))))))
+        (process-send-region danish--oxlint-proc (point-min) (point-max))
+        (process-send-eof danish--oxlint-proc))))
+
+  (defun danish-flymake-oxlint-setup ()
+    "Enable `danish-flymake-oxlint' when `oxlint' is available."
+    (when (executable-find "oxlint")
+      (add-hook 'flymake-diagnostic-functions #'danish-flymake-oxlint nil t)))
+
+  (dolist (hook '(js-ts-mode-hook
+                  typescript-ts-mode-hook
+                  tsx-ts-mode-hook))
+    (add-hook hook #'danish-flymake-oxlint-setup)))
+
+;; Ruff (Python) via `flymake-ruff'
+(use-package flymake-ruff
+  :if (executable-find "ruff")
+  :hook (python-ts-mode . flymake-ruff-load))
+#+end_src
+
+** Formatting on Save (=apheleia= with Oxfmt, Ruff, Gofumpt & Rustfmt)
+
+#+begin_src emacs-lisp
+(use-package apheleia
+  :demand t
+  :config
+  (apheleia-global-mode 1)
+
+  ;; Oxfmt for JS, TS, TSX, JSON, CSS, YAML, and GraphQL
+  (setf (alist-get 'oxfmt apheleia-formatters)
+        '("oxfmt" "--stdin-filepath" filepath))
+
+  ;; Ruff for Python
+  (setf (alist-get 'ruff apheleia-formatters)
+        '("ruff" "format" "--stdin-filename" filepath "-"))
+
+  ;; Gofumpt (with built-in gofmt fallback) for Go
+  (setf (alist-get 'gofumpt apheleia-formatters)
+        '("gofumpt"))
+
+  ;; Clojure & Nix formatters
+  (setf (alist-get 'zprint apheleia-formatters)
+        '("zprint" "{:style :indent-only}"))
+  (setf (alist-get 'nixfmt apheleia-formatters)
+        '("nixfmt"))
+
+  (let ((go-fmt (if (executable-find "gofumpt") 'gofumpt 'gofmt))
+        (nix-fmt (cond ((executable-find "nixfmt") 'nixfmt)
+                       ((executable-find "alejandra") 'alejandra)
+                       (t 'nixpkgs-fmt))))
+    (dolist (pair `((js-ts-mode         . oxfmt)
+                    (typescript-ts-mode . oxfmt)
+                    (tsx-ts-mode        . oxfmt)
+                    (json-ts-mode       . oxfmt)
+                    (css-ts-mode        . oxfmt)
+                    (yaml-ts-mode       . oxfmt)
+                    (graphql-mode       . oxfmt)
+                    (python-ts-mode     . ruff)
+                    (go-ts-mode         . ,go-fmt)
+                    (rust-ts-mode       . rustfmt)
+                    (clojure-ts-mode    . zprint)
+                    (nix-ts-mode        . ,nix-fmt)))
+      (setf (alist-get (car pair) apheleia-mode-alist) (cdr pair)))))
+#+end_src
+
+** Language Modes & Local =node_modules/.bin= Hook
+
+#+begin_src emacs-lisp
+;; Prepend project-local `node_modules/.bin' to buffer-local `exec-path'.
+(defun danish--add-local-node-bin ()
+  "Prepend nearest `node_modules/.bin' to buffer-local `exec-path'."
+  (when-let* ((root (locate-dominating-file
+                     (or (buffer-file-name) default-directory)
+                     "node_modules"))
+              (bin (expand-file-name "node_modules/.bin" root))
+              ((file-directory-p bin)))
+    (setq-local exec-path (cons bin exec-path))))
+
+(dolist (hook '(js-ts-mode-hook typescript-ts-mode-hook tsx-ts-mode-hook))
+  (add-hook hook #'danish--add-local-node-bin))
+
+;; Python
+(use-package python
+  :ensure nil
+  :mode ("\\.py\\'" . python-ts-mode)
+  :custom
+  (python-indent-offset 4)
+  (python-shell-interpreter "python3"))
+
+;; Go (tabs width 4 + organize imports on save via Eglot)
+(use-package go-ts-mode
+  :ensure nil
+  :mode (("\\.go\\'" . go-ts-mode)
+         ("/go\\.mod\\'" . go-mod-ts-mode))
+  :custom
+  (go-ts-mode-indent-offset 4)
+  :hook
+  (go-ts-mode . (lambda ()
+                  (setq-local indent-tabs-mode t
+                              tab-width 4)
+                  (add-hook 'before-save-hook
+                            (lambda ()
+                              (when (eglot-managed-p)
+                                (ignore-errors
+                                  (eglot-code-action-organize-imports (point-min) (point-max)))))
+                            nil t))))
+
+;; Rust
+(use-package rust-ts-mode
+  :ensure nil
+  :mode ("\\.rs\\'" . rust-ts-mode))
+
+;; Nix
+(use-package nix-ts-mode
+  :mode "\\.nix\\'")
+
+;; Clojure + CIDER + clj-refactor
+(use-package clojure-ts-mode
+  :mode (("\\.clj\\'"  . clojure-ts-mode)
+         ("\\.cljs\\'" . clojure-ts-mode)
+         ("\\.cljc\\'" . clojure-ts-mode)
+         ("\\.edn\\'"  . clojure-ts-mode))
+  :custom
+  (clojure-indent-style 'align-arguments)
+  (clojure-align-forms-automatically t))
+
+(use-package cider
+  :after clojure-ts-mode
+  :custom
+  (cider-repl-display-help-banner nil)
+  (cider-repl-pop-to-buffer-on-connect 'display-only)
+  (cider-show-error-buffer 'only-in-repl)
+  (cider-prompt-for-symbol nil))
+
+(use-package clj-refactor
+  :after clojure-ts-mode
+  :custom
+  (cljr-warn-on-eval nil)
+  (cljr-eagerly-build-asts-on-startup nil)
+  :hook (clojure-ts-mode . clj-refactor-mode))
+
+;; Kotlin via Emacs 31 built-in `:vc'
+(use-package kotlin-ts-mode
+  :vc (:url "https://gitlab.com/bricka/emacs-kotlin-ts-mode")
+  :mode (("\\.kt\\'"  . kotlin-ts-mode)
+         ("\\.kts\\'" . kotlin-ts-mode))
+  :custom
+  (kotlin-ts-mode-indent-offset 4))
+
+;; GraphQL, Markdown & Web
+(use-package graphql-mode
+  :mode ("\\.graphql\\'" "\\.gql\\'"))
+
+(use-package markdown-mode
+  :mode ("\\.md\\'" . markdown-mode)
+  :custom
+  (markdown-fontify-code-blocks-natively t))
+
+(use-package web-mode
+  :mode ("\\.vue\\'" "\\.svelte\\'")
+  :custom
+  (web-mode-markup-indent-offset 2)
+  (web-mode-css-indent-offset 2)
+  (web-mode-code-indent-offset 2))
+#+end_src
+
+** Structural Editing, Templates, Git, Dired & Org
+
+#+begin_src emacs-lisp
+;; Puni structural editing (guarded so `prog-mode-hook' is safe during bootstrap)
+(use-package puni
+  :commands (puni-mode
+             puni-forward-sexp-or-up-list
+             puni-backward-sexp-or-up-list
+             puni-beginning-of-sexp
+             puni-end-of-sexp
+             puni-transpose)
+  :init
+  (defun danish--enable-puni ()
+    "Enable `puni-mode' once `puni' is installed."
+    (when (fboundp 'puni-mode)
+      (puni-mode 1)))
+  (add-hook 'prog-mode-hook #'danish--enable-puni)
+  :hook
+  ((emacs-lisp-mode lisp-mode lisp-interaction-mode scheme-mode clojure-ts-mode)
+   . (lambda ()
+       (let ((default-pred electric-pair-inhibit-predicate))
+         (setq-local electric-pair-inhibit-predicate
+                     (lambda (char)
+                       (or (memq char '(?\' ?\`))
+                           (funcall default-pred char)))))))
+  :bind (:map puni-mode-map
+         ("C-M-f"   . puni-forward-sexp-or-up-list)
+         ("C-M-b"   . puni-backward-sexp-or-up-list)
+         ("C-M-a"   . puni-beginning-of-sexp)
+         ("C-M-e"   . puni-end-of-sexp)
+         ("C-M-t"   . puni-transpose)
+         ("C-M-w"   . danish-copy-sexp)
+         ("C-M-SPC" . mark-sexp)))
+
+;; Tempel snippets
+(use-package tempel
+  :bind (("M-+" . tempel-complete)
+         ("M-*" . tempel-insert))
+  :hook ((prog-mode text-mode) . (lambda ()
+                                   (add-hook 'completion-at-point-functions
+                                             #'tempel-expand -10 t))))
+
+(use-package tempel-collection
+  :after tempel)
+
+;; Built-in `project.el'
+(use-package project
+  :ensure nil
+  :custom
+  (project-switch-commands '((project-find-file "Find file")
+                             (consult-ripgrep "Ripgrep" ?g)
+                             (project-dired "Dired")
+                             (eat-project "Eat" ?t)
+                             (magit-project-status "Magit" ?m)))
+  (project-vc-extra-root-markers
+   '(".project" "Cargo.toml" "package.json" "pyproject.toml"
+     "go.mod" "build.gradle.kts" "gradlew")))
+
+;; Dired (prefers GNU `gls' on macOS when available)
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :custom
+  (delete-by-moving-to-trash t)
+  (dired-dwim-target t)
+  (dired-kill-when-opening-new-dired-buffer t)
+  (dired-recursive-copies 'always)
+  (dired-recursive-deletes 'always)
+  :hook (dired-mode . dired-hide-details-mode)
+  :config
+  (if (and (eq system-type 'darwin) (not (executable-find "gls")))
+      (setq dired-use-ls-dired nil
+            dired-listing-switches "-alh")
+    (when (and (eq system-type 'darwin) (executable-find "gls"))
+      (setq insert-directory-program (executable-find "gls")))
+    (setq dired-listing-switches "-agho --group-directories-first")))
+
+(use-package dired-subtree
+  :after dired
+  :bind (:map dired-mode-map
+         ("TAB"       . dired-subtree-toggle)
+         ("<backtab>" . dired-subtree-cycle)))
+
+;; Magit & Diff-hl
+(use-package magit
+  :commands (magit-status magit-dispatch magit-file-dispatch magit-project-status)
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+  (magit-diff-refine-hunk t)
+  (magit-save-repository-buffers 'dontask))
+
+(use-package diff-hl
+  :demand t
+  :hook
+  ((magit-pre-refresh  . diff-hl-magit-pre-refresh)
+   (magit-post-refresh . diff-hl-magit-post-refresh)
+   (vc-checkin         . diff-hl-update))
+  :config
+  (global-diff-hl-mode 1)
+  (diff-hl-flydiff-mode 1)
+  (unless (display-graphic-p)
+    (diff-hl-margin-mode 1)))
+
+;; Org & Org-roam
+(use-package org
+  :ensure nil
+  :mode ("\\.org\\'" . org-mode)
+  :custom
+  ;; Workflow & logging
+  (org-todo-keywords '((sequence "TODO(t)" "IN-PROGRESS(i)" "|" "CANCELLED(c)" "DONE(d)")))
+  (org-log-done 'time)
+  (org-log-into-drawer t)
+
+  ;; Visual hierarchy & folding
+  (org-hide-leading-stars t)
+  (org-hide-emphasis-markers t)
+  (org-pretty-entities t)
+  (org-ellipsis " ▾")
+  (org-startup-indented t)
+  (org-startup-folded 'content)
+  (org-cycle-separator-lines 2)
+  (org-return-follows-link t)
+  (org-M-RET-may-split-line '((default . nil)))
+
+  ;; Source blocks & Babel
+  (org-src-fontify-natively t)
+  (org-src-tab-acts-natively t)
+  (org-src-window-setup 'current-window)
+  (org-edit-src-content-indentation 0)
+  (org-confirm-babel-evaluate nil)
+  (org-agenda-files (file-expand-wildcards "~/org/agendas/*.org"))
+  :hook
+  (org-mode . (lambda ()
+                (auto-fill-mode 0)
+                (variable-pitch-mode 1)
+                (visual-line-mode 1)))
+  :config
+  ;; Keep code blocks, tables, and indentation monospaced under `variable-pitch-mode'
+  (dolist (face '(org-block
+                  org-block-begin-line
+                  org-block-end-line
+                  org-code
+                  org-verbatim
+                  org-table
+                  org-formula
+                  org-meta-line
+                  org-document-info-keyword
+                  org-checkbox
+                  org-indent))
+    (set-face-attribute face nil :inherit 'fixed-pitch))
+
+  ;; Fast `<el`, `<py`, `<sh`, `<ts` block expansion
+  (require 'org-tempo)
+  (dolist (tpl '(("el" . "src emacs-lisp")
+                 ("py" . "src python")
+                 ("sh" . "src shell")
+                 ("js" . "src javascript")
+                 ("ts" . "src typescript")
+                 ("go" . "src go")
+                 ("rs" . "src rust")))
+    (add-to-list 'org-structure-template-alist tpl)))
+
+;; Modern badges, bullets, tables & block styling (GUI + TUI compatible)
+(use-package org-modern
+  :hook ((org-mode . org-modern-mode)
+         (org-agenda-finalize . org-modern-agenda))
+  :custom
+  (org-modern-star 'replace)
+  (org-modern-replace-stars "◉○◈◇✳")
+  (org-modern-block-fringe nil)
+  (org-modern-table-vertical 1)
+  (org-modern-table-horizontal 0.2)
+  (org-modern-todo-faces
+   '(("IN-PROGRESS" :background "#8aadf4" :foreground "#24273a" :weight bold)
+     ("CANCELLED"   :background "#ed8796" :foreground "#24273a" :weight bold))))
+
+;; Reveal hidden emphasis markers, links & entities only in Evil Insert state
+(use-package org-appear
+  :hook (org-mode . org-appear-mode)
+  :custom
+  (org-appear-trigger 'manual)
+  (org-appear-autoemphasis t)
+  (org-appear-autolinks t)
+  (org-appear-autosubmarkers t)
+  (org-appear-autoentities t)
+  :config
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (add-hook 'evil-insert-state-entry-hook #'org-appear-manual-start nil t)
+              (add-hook 'evil-insert-state-exit-hook #'org-appear-manual-stop nil t))))
+
+;; Centered reading column for prose and notes
+(use-package olivetti
+  :hook (org-mode . olivetti-mode)
+  :custom
+  (olivetti-body-width 96))
+
+(use-package org-roam
+  :commands (org-roam-node-find org-roam-node-insert org-roam-capture
+             org-roam-buffer-toggle org-roam-dailies-goto-today)
+  :custom
+  (org-roam-directory (file-truename "~/Notes/Roam/"))
+  (org-roam-completion-everywhere t)
+  :config
+  (unless (file-directory-p org-roam-directory)
+    (make-directory org-roam-directory t))
+  (org-roam-db-autosync-mode 1))
+#+end_src
+
+* Coding Agent & LLM Workflows (=user-lisp/danish-agents.el=)
+
+** Agent Side-Window & Context Dispatch Module (=user-lisp/danish-agents.el=)
+
+Pins **Claude Code** (=agent-shell=), **Pi** (=eat=), and **OpenCode** (=eat=)
+sessions to a resilient right-hand side window (=no-delete-other-windows=) so
+=SPC w D= never destroys an active agent pane, and provides one-key region and
+Flymake diagnostic dispatch (=SPC a x= / =SPC a d=).
+
+#+begin_src emacs-lisp :tangle user-lisp/danish-agents.el :comments no
+;;; danish-agents.el --- Coding agent side-windows & context dispatch -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;; Integrates Claude Code, Pi, and OpenCode inside Emacs via `agent-shell',
+;; `eat', and `vterm' with resilient side-window layout rules and single-key
+;; region/diagnostic dispatch.
+
+;;; Code:
+
+(require 'project)
+(require 'subr-x)
+
+(declare-function eat "eat" (&optional program arg))
+(declare-function eat-term-send-string "eat" (terminal string))
+(declare-function vterm-send-string "vterm" (string &optional paste-p))
+(declare-function flymake-diagnostics "flymake" (&optional beg end))
+(declare-function flymake-diagnostic-beg "flymake" (diag))
+(declare-function flymake-diagnostic-type "flymake" (diag))
+(declare-function flymake-diagnostic-text "flymake" (diag))
+
+(defgroup danish-agents nil
+  "Workflows for CLI coding agents inside Emacs."
+  :group 'tools)
+
+(defcustom danish-agent-window-width 0.38
+  "Default width fraction for right-side coding agent windows."
+  :type 'float
+  :group 'danish-agents)
+
+(defun danish-agents--project-root ()
+  "Return the current project root or `default-directory'."
+  (if-let* ((proj (project-current)))
+      (project-root proj)
+    default-directory))
+
+(defun danish-agents--launch-eat-cli (name cmd)
+  "Launch or focus a project-scoped `eat' session named NAME running CMD."
+  (require 'eat)
+  (let* ((root (danish-agents--project-root))
+         (proj-name (file-name-nondirectory (directory-file-name root)))
+         (buf-name (format "*%s-agent:%s*" name proj-name))
+         (default-directory root))
+    (if-let* ((existing (get-buffer buf-name)))
+        (pop-to-buffer existing)
+      (let ((buf (eat cmd)))
+        (with-current-buffer buf
+          (rename-buffer buf-name t)
+          (setq-local mode-line-format nil))
+        (pop-to-buffer buf)))))
+
+;;;###autoload
+(defun danish-agent-run-pi ()
+  "Open or focus a project-scoped Pi coding agent session in `eat'."
+  (interactive)
+  (danish-agents--launch-eat-cli "pi" "pi"))
+
+;;;###autoload
+(defun danish-agent-run-opencode ()
+  "Open or focus a project-scoped OpenCode session in `eat'."
+  (interactive)
+  (danish-agents--launch-eat-cli "opencode" "opencode"))
+
+(defun danish-agents--active-agent-buffer ()
+  "Return the most recently used live coding agent buffer, or nil."
+  (seq-find
+   (lambda (buf)
+     (with-current-buffer buf
+       (or (derived-mode-p 'agent-shell-mode)
+           (string-match-p "\\*\\(claude\\|pi\\|opencode\\)-agent:"
+                           (buffer-name buf)))))
+   (buffer-list)))
+
+(defun danish-agents--dispatch-text (payload)
+  "Send PAYLOAD string to the active coding agent buffer or copy to kill-ring."
+  (if-let* ((target (danish-agents--active-agent-buffer)))
+      (with-current-buffer target
+        (cond
+         ((derived-mode-p 'agent-shell-mode)
+          (goto-char (point-max))
+          (insert payload)
+          (pop-to-buffer target))
+         ((derived-mode-p 'eat-mode)
+          (when (bound-and-true-p eat-terminal)
+            (eat-term-send-string eat-terminal payload))
+          (pop-to-buffer target))
+         ((derived-mode-p 'vterm-mode)
+          (vterm-send-string payload)
+          (pop-to-buffer target))))
+    (kill-new payload)
+    (message "No active agent buffer; copied context to clipboard/kill-ring.")))
+
+;;;###autoload
+(defun danish-agent-send-context ()
+  "Send active region or current file path to the active coding agent.
+When a region is active, formats it as a fenced code block with file and
+line-range metadata."
+  (interactive)
+  (let* ((root (danish-agents--project-root))
+         (rel-file (if buffer-file-name
+                       (file-relative-name buffer-file-name root)
+                     (buffer-name)))
+         (payload
+          (if (use-region-p)
+              (let* ((beg (region-beginning))
+                     (end (region-end))
+                     (l1 (line-number-at-pos beg))
+                     (l2 (line-number-at-pos end))
+                     (lang (string-remove-suffix "-ts-mode"
+                                                 (string-remove-suffix "-mode"
+                                                                       (symbol-name major-mode))))
+                     (code (buffer-substring-no-properties beg end)))
+                (format "\nIn `@%s` (lines %d-%d):\n```%s\n%s\n```\n"
+                        rel-file l1 l2 lang code))
+            (format " `@%s` " rel-file))))
+    (danish-agents--dispatch-text payload)))
+
+;;;###autoload
+(defun danish-agent-send-diagnostics ()
+  "Send current buffer Flymake diagnostics to the active coding agent."
+  (interactive)
+  (if (not (bound-and-true-p flymake-mode))
+      (user-error "Flymake is not active in this buffer")
+    (let* ((root (danish-agents--project-root))
+           (rel-file (if buffer-file-name
+                         (file-relative-name buffer-file-name root)
+                       (buffer-name)))
+           (diags (flymake-diagnostics)))
+      (if (null diags)
+          (message "No Flymake diagnostics in %s" rel-file)
+        (let ((lines
+               (mapcar (lambda (d)
+                         (format "- Line %d [%s]: %s"
+                                 (line-number-at-pos (flymake-diagnostic-beg d))
+                                 (flymake-diagnostic-type d)
+                                 (flymake-diagnostic-text d)))
+                       diags)))
+          (danish-agents--dispatch-text
+           (format "\nPlease fix these diagnostics in `@%s`:\n%s\n"
+                   rel-file (string-join lines "\n"))))))))
+
+;;;###autoload
+(defun danish-agents-init ()
+  "Register resilient side-window display rules for coding agent buffers."
+  (add-to-list 'display-buffer-alist
+               `("\\*\\(?:agent-shell\\|claude-agent\\|pi-agent\\|opencode-agent\\).*\\*"
+                 (display-buffer-in-side-window)
+                 (side . right)
+                 (slot . 0)
+                 (window-width . ,danish-agent-window-width)
+                 (window-parameters . ((no-delete-other-windows . t))))))
+
+(provide 'danish-agents)
+;;; danish-agents.el ends here
+#+end_src
+
+** Terminals (=eat= + =vterm=), =gptel= & =agent-shell= (=:vc=)
+
+#+begin_src emacs-lisp
+;; Register coding agent side-window layout rules
+(danish-agents-init)
+
+;; Eat terminal emulator (installed via Emacs 31 built-in `:vc')
+(use-package eat
+  :vc (:url "https://codeberg.org/akib/emacs-eat")
+  :commands (eat eat-project eat-other-window)
+  :custom
+  (eat-term-name "eat-truecolor")
+  (eat-kill-buffer-on-exit t)
+  (eat-enable-yank-to-terminal t)
+  :hook
+  (eshell-load . eat-eshell-mode)
+  :config
+  (with-eval-after-load 'evil
+    (evil-set-initial-state 'eat-mode 'emacs))
+  ;; Pass ESC and C-g directly to interactive TUI agents (Claude Code, Pi, OpenCode)
+  (define-key eat-semi-char-mode-map (kbd "ESC") #'eat-self-input)
+  (define-key eat-semi-char-mode-map (kbd "C-g") #'eat-self-input))
+
+;; Vterm terminal emulator
+(use-package vterm
+  :commands (vterm vterm-other-window)
+  :custom
+  (vterm-max-scrollback 20000)
+  (vterm-kill-buffer-on-exit t)
+  :config
+  (with-eval-after-load 'evil
+    (evil-set-initial-state 'vterm-mode 'emacs))
+  (define-key vterm-mode-map (kbd "<escape>") #'vterm-send-escape))
+
+;; Eshell
+(use-package eshell
+  :ensure nil
+  :commands eshell
+  :custom
+  (eshell-history-size 10000)
+  (eshell-hist-ignoredups t)
+  (eshell-scroll-to-bottom-on-input t)
+  (eshell-destroy-buffer-when-process-dies t))
+
+;; gptel — buffer & inline LLM workflows
+(use-package gptel
+  :commands (gptel gptel-send gptel-menu gptel-rewrite)
+  :custom
+  (gptel-default-mode 'org-mode)
+  (gptel-stream t)
+  (gptel-use-context 'system)
+  (gptel-display-buffer-action
+   '(display-buffer-in-side-window
+     (side . bottom)
+     (window-height . 0.35)))
+  :config
+  (setq gptel-backend
+        (gptel-make-ollama "Ollama"
+          :host "localhost:11434"
+          :stream t
+          :models '(llama3.2:latest qwen2.5-coder:latest))
+        gptel-model 'qwen2.5-coder:latest))
+
+;; agent-shell + dependencies via Emacs 31 built-in `:vc'
+(use-package shell-maker
+  :vc (:url "https://github.com/xenodium/shell-maker"))
+
+(use-package acp
+  :vc (:url "https://github.com/xenodium/acp.el"))
+
+(use-package agent-shell
+  :vc (:url "https://github.com/xenodium/agent-shell")
+  :after (shell-maker acp)
+  :commands (agent-shell
+             agent-shell-toggle
+             agent-shell-anthropic-claude
+             agent-shell-new)
+  :bind (:map agent-shell-mode-map
+         ("RET"     . newline)
+         ("C-c C-c" . shell-maker-submit)
+         ("C-c C-k" . agent-shell-interrupt))
+  :config
+  (with-eval-after-load 'evil
+    (evil-set-initial-state 'agent-shell-mode 'emacs))
+  (setq agent-shell-write-inhibit-minor-modes '(aggressive-indent-mode)))
+#+end_src
+
+* Closing
+
+#+begin_src emacs-lisp
+(provide 'init)
+;;; init.el ends here
+#+end_src
+
+# Local Variables:
+# eval: (add-hook 'after-save-hook (lambda () (let ((org-confirm-babel-evaluate nil)) (org-babel-tangle))) nil t)
+# End:

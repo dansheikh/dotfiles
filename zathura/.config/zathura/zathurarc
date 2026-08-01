@@ -1,0 +1,86 @@
+# ==============================================================================
+# ZATHURA CONFIGURATION FILE
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 📋 Clipboard & System Integration
+# ------------------------------------------------------------------------------
+# Automatically copy selected text directly to the system clipboard (Ctrl+V)
+set selection-clipboard clipboard
+
+# Allow Zathura to open external links in your default web browser
+set sandbox none
+
+# ------------------------------------------------------------------------------
+# 📜 Document Behavior & Scrolling
+# ------------------------------------------------------------------------------
+# Automatically reload the file when it changes on disk (perfect for LaTeX)
+set watch-file true
+
+# Always fit the page to width upon opening a document
+set adjust-open width
+
+# Enable smooth scrolling with a comfortable step size
+set scroll-step 60
+
+# Keep page boundaries when scrolling near edges
+set scroll-full-bleed false
+set scroll-wrap true
+
+# Show current page and total pages in the window title
+set window-title-page true
+
+# ------------------------------------------------------------------------------
+# 🎨 UI Appearance & Theme (Catppuccin Mocha)
+# ------------------------------------------------------------------------------
+# Enable Recolor (Inverted/Dark Mode) by default
+set recolor true
+
+# Theme Colors (Mocha Palette)
+set default-bg               "#1e1e2e" # Base
+set default-fg               "#cdd6f4" # Text
+set statusbar-bg             "#181825" # Mantle
+set statusbar-fg             "#cdd6f4" # Text
+set inputbar-bg              "#181825" # Mantle
+set inputbar-fg              "#cdd6f4" # Text
+
+# Notification Styling
+set notification-bg          "#11111b" # Crust
+set notification-fg          "#cdd6f4" # Text
+set notification-error-bg    "#11111b" # Crust
+set notification-error-fg    "#f38ba8" # Red
+set notification-warning-bg  "#11111b" # Crust
+set notification-warning-fg  "#f9e2af" # Yellow
+
+# Highlight & Search Colors
+set highlight-color          "#585b70" # Surface 2
+set highlight-active-color   "#f5c2e7" # Pink
+
+# Completion & Tab Index Index
+set index-bg                 "#1e1e2e" # Base
+set index-fg                 "#cdd6f4" # Text
+set index-active-bg          "#313244" # Surface 0
+set index-active-fg          "#cdd6f4" # Text
+
+# Recolor Mode Colors (PDF content mapping)
+set recolor-lightcolor       "#1e1e2e" # Base (Background becomes dark)
+set recolor-darkcolor        "#cdd6f4" # Text (Text becomes light)
+
+# ------------------------------------------------------------------------------
+# ⌨️ Keybindings
+# ------------------------------------------------------------------------------
+# Toggle dark mode (Recolor) on and off with 'i'
+map i recolor
+
+# Vim-style half-page scrolling
+map <C-d> scroll half-down
+map <C-u> scroll half-up
+
+# Intuitive Zooming
+map + zoom in
+map - zoom out
+map = zoom original
+
+# Quick page rotation
+map r rotate
+

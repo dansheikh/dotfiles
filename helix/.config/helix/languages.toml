@@ -1,0 +1,106 @@
+# ==============================================================================
+# 1. GLOBAL LSP CONFIGURATIONS
+# ==============================================================================
+[language-server.efm-langserver]
+command = "efm-langserver"
+
+[language-server.kotlin-language-server]
+command = "kotlin-language-server"
+[language-server.kotlin-language-server.config.kotlin]
+hints.typeHints = true
+hints.parameterHints = true
+hints.chainedHints = true
+
+[language-server.rust-analyzer.config]
+checkOnSave = { command = "clippy" }
+inlayHints = { bindingModeHints = { enable = true }, closingBraceHints = { enable = true } }
+
+[language-server.tsc]
+command = "bunx"
+args = ["--bun", "--no-install", "tsc", "--lsp", "--stdio"]
+
+# ==============================================================================
+# 2. INDIVIDUAL LANGUAGE DEFINITIONS
+# ==============================================================================
+[[language]]
+name = "go"
+auto-format = true
+language-servers = ["gopls", "efm-langserver"]
+
+[[language]]
+name = "javascript"
+auto-format = true
+language-servers = ["efm-langserver"]
+
+[[language]]
+name = "jsx"
+auto-format = true
+language-servers = ["efm-langserver"]
+
+[[language]]
+name = "kotlin"
+auto-format = true
+indent = { tab-width = 4, unit = "    " }
+roots = [
+  "settings.gradle.kts",
+  "build.gradle.kts",
+  "settings.gradle",
+  "build.gradle",
+  "pom.xml",
+]
+language-servers = [
+  { name = "kotlin-language-server", except-features = [
+    "format",
+  ] },
+  "efm-langserver",
+]
+
+[[language]]
+name = "lua"
+auto-format = true
+language-servers = ["lua-language-server", "efm-langserver"]
+
+[[language]]
+name = "make"
+indent = { tab-width = 4, unit = "\t" }
+
+[[language]]
+name = "nix"
+auto-format = true
+language-servers = ["efm-langserver"]
+
+[[language]]
+name = "python"
+auto-format = true
+roots = ["pyproject.toml", "setup.py", "requirements.txt"]
+language-servers = ["pyright"]
+
+[[language]]
+name = "rust"
+auto-format = true
+language-servers = ["rust-analyzer"]
+
+[[language]]
+name = "toml"
+auto-format = true
+language-servers = ["efm-langserver"]
+
+[[language]]
+name = "tsx"
+auto-format = true
+language-servers = [
+  { name = "tsc", except-features = [
+    "format",
+  ] },
+  "efm-langserver",
+]
+
+[[language]]
+name = "typescript"
+auto-format = true
+language-servers = [
+  { name = "tsc", except-features = [
+    "format",
+  ] },
+  "efm-langserver",
+]

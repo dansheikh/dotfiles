@@ -1,0 +1,302 @@
+# Starship Configuration - Catppuccin Macchiato Soft Pills (Multi-line Asymmetric)
+
+# ============================================================================
+# Root Layout Configuration
+# ============================================================================
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_commit\
+$git_status\
+$git_state\
+$fill\
+$kubernetes\
+$terraform\
+$docker_context\
+${custom.podman}\
+$python\
+$nodejs\
+$bun\
+$deno\
+$rust\
+$golang\
+$lua\
+$jobs\
+$cmd_duration
+$status$character"""
+
+right_format = ""
+continuation_prompt = '[∙](surface2) '
+command_timeout = 500
+scan_timeout = 10
+add_newline = true
+
+# ============================================================================
+# Palette Definitions (Catppuccin Macchiato)
+# ============================================================================
+palette = "catppuccin_macchiato"
+
+[palettes.catppuccin_macchiato]
+base = "#24273a"
+mantle = "#1e2030"
+crust = "#181926"
+surface0 = "#363a4f"
+surface1 = "#494d64"
+surface2 = "#5b6078"
+text = "#cad3f5"
+subtext0 = "#a5adcb"
+subtext1 = "#b8c0e0"
+lavender = "#b7bdf8"
+blue = "#8aadf4"
+sapphire = "#7dc4e4"
+sky = "#91d7e3"
+teal = "#8bd5ca"
+green = "#a6da95"
+yellow = "#eed49f"
+peach = "#f5a97f"
+maroon = "#ee99a0"
+red = "#ed8796"
+mauve = "#c6a0f6"
+pink = "#f5bde6"
+flamingo = "#f0c6c6"
+rosewater = "#f4dbd6"
+
+# ============================================================================
+# Line Spacer (Fill)
+# ============================================================================
+[fill]
+symbol = ' '
+disabled = false
+
+# ============================================================================
+# Line 2 Prompt Execution Character (No Connecting Curve)
+# ============================================================================
+[character]
+success_symbol = '[❯](bold lavender) '
+error_symbol = '[❯](bold red) '
+vimcmd_symbol = '[❮](bold green) '
+vimcmd_replace_one_symbol = '[❮](bold mauve) '
+vimcmd_replace_symbol = '[❮](bold mauve) '
+vimcmd_visual_symbol = '[❮](bold yellow) '
+
+# ============================================================================
+# Status (Exit Code)
+# ============================================================================
+[status]
+style = 'bold red'
+symbol = '✖ '
+format = '[$symbol$status]($style) '
+disabled = false
+recognize_signal_code = true
+pipestatus = false
+
+# ============================================================================
+# Left Pills: User & Hostname (Visible via SSH or as Root)
+# ============================================================================
+[username]
+show_always = false
+style_user = "fg:text bg:surface1"
+style_root = "bold fg:base bg:red"
+format = '[](fg:surface1)[$user]($style)'
+disabled = false
+
+[hostname]
+ssh_only = true
+ssh_symbol = '󰒍 '
+style = "fg:subtext0 bg:surface1"
+format = '[$ssh_symbol$hostname]($style)[](fg:surface1) '
+disabled = false
+
+# ============================================================================
+# Left Pill: Directory
+# ============================================================================
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+truncation_symbol = '…/'
+read_only = ' 󰌾'
+read_only_style = "fg:red bg:surface1"
+style = "fg:text bg:surface1"
+home_symbol = '~'
+repo_root_style = "bold fg:sapphire bg:surface1"
+format = '[](fg:surface1)[$path]($style)[$read_only]($read_only_style)[](fg:surface1) '
+repo_root_format = '[](fg:surface1)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)[](fg:surface1) '
+
+# ============================================================================
+# Left Pill: Git Context & Metrics
+# ============================================================================
+[git_branch]
+symbol = '󰊢 '
+style = "fg:mauve bg:surface0"
+format = '[](fg:surface0)[$symbol$branch(:$remote_branch)]($style)'
+truncation_length = 25
+truncation_symbol = '…'
+always_show_remote = false
+
+[git_commit]
+commit_hash_length = 7
+format = '[](fg:surface0)[$hash$tag](fg:teal bg:surface0)[](fg:surface0) '
+only_detached = true
+disabled = false
+tag_symbol = '🏷 '
+tag_disabled = false
+
+[git_status]
+style = "bg:surface0"
+format = '([ $all_status$ahead_behind]($style))[](fg:surface0) '
+ahead = '[󰛃$count](bold sky bg:surface0) '
+behind = '[󰛀$count](bold sky bg:surface0) '
+diverged = '[󰹹$ahead_count󰹺$behind_count](bold peach bg:surface0) '
+conflicted = '[󰞇$count](bold red bg:surface0) '
+deleted = '[$count](bold red bg:surface0) '
+renamed = '[󰑕$count](bold teal bg:surface0) '
+modified = '[$count](bold yellow bg:surface0) '
+staged = '[$count](bold green bg:surface0) '
+untracked = '[$count](subtext0 bg:surface0) '
+stashed = '[󰓦$count](bold lavender bg:surface0) '
+disabled = false
+ignore_submodules = false
+
+[git_state]
+format = '[](fg:surface0)[$state( $progress_current/$progress_total)](bold yellow bg:surface0)[](fg:surface0) '
+disabled = false
+
+# ============================================================================
+# Right Context: Cloud & Infrastructure (Flat)
+# ============================================================================
+[kubernetes]
+symbol = '󱃾 '
+style = 'bold sapphire'
+format = '[$symbol$context( \\($namespace\\))]($style) '
+disabled = false
+detect_files = ['k8s', 'kubeconfig']
+detect_extensions = ['k8s.yaml', 'k8s.yml']
+
+[kubernetes.context_aliases]
+'arn:aws:eks:(?P<var_region>[\\w-]+):(?P<var_account>[\\d]+):cluster/(?P<var_name>[\\w-]+)' = '$var_name'
+'gke_.*_(?P<var_cluster>[\\w-]+)' = '$var_cluster'
+
+[terraform]
+symbol = '󱁢 '
+style = 'bold lavender'
+format = '[$symbol$workspace]($style) '
+detect_extensions = ['tf', 'tfvars']
+detect_files = ['.terraform']
+disabled = false
+
+# ============================================================================
+# Right Context: Containers (Flat)
+# ============================================================================
+[docker_context]
+symbol = '󰡨 '
+style = 'bold blue'
+format = '[$symbol$context]($style) '
+only_with_files = true
+detect_files = [
+  'docker-compose.yml',
+  'docker-compose.yaml',
+  'Dockerfile',
+  'Containerfile',
+]
+detect_folders = []
+
+[custom.podman]
+symbol = ' '
+style = 'bold mauve'
+format = '[$symbol$output]($style) '
+command = "podman system connection default --format '{{.Name}}'"
+detect_files = ['Containerfile', 'podman-compose.yml', 'podman-compose.yaml']
+detect_extensions = ['containerfile']
+when = 'command -v podman'
+
+# ============================================================================
+# Right Context: Runtimes & Languages (Flat)
+# ============================================================================
+[python]
+symbol = '󱔎 '
+style = 'bold yellow'
+format = '[$symbol$version]($style) '
+pyenv_version_name = false
+python_binary = ['python3', 'python']
+detect_extensions = ['py']
+detect_files = [
+  'requirements.txt',
+  'pyproject.toml',
+  'Pipfile',
+  'setup.py',
+  '.python-version',
+]
+detect_folders = ['.venv', 'venv']
+
+[nodejs]
+symbol = '󰎙 '
+style = 'bold green'
+format = '[$symbol$version]($style) '
+detect_extensions = ['js', 'mjs', 'cjs', 'ts', 'mts', 'cts']
+detect_files = [
+  'package.json',
+  '.node-version',
+  '.nvmrc',
+  '!bunfig.toml',
+  '!bun.lock',
+  '!bun.lockb',
+  '!deno.json',
+  '!deno.jsonc',
+  '!deno.lock',
+]
+detect_folders = ['node_modules']
+
+[bun]
+symbol = '󰒓 '
+style = 'bold pink'
+format = '[$symbol$version]($style) '
+detect_extensions = []
+detect_files = ['bunfig.toml', 'bun.lock', 'bun.lockb']
+
+[deno]
+symbol = '🦕 '
+style = 'bold teal'
+format = '[$symbol$version]($style) '
+detect_extensions = []
+detect_files = ['deno.json', 'deno.jsonc', 'deno.lock', 'mod.ts', 'deps.ts']
+
+[rust]
+symbol = '󱘗 '
+style = 'bold red'
+format = '[$symbol$version]($style) '
+detect_extensions = ['rs']
+detect_files = ['Cargo.toml', 'Cargo.lock']
+
+[golang]
+symbol = '󰟓 '
+style = 'bold sapphire'
+format = '[$symbol$version]($style) '
+detect_extensions = ['go']
+detect_files = ['go.mod', 'go.sum', 'go.work']
+detect_folders = []
+
+[lua]
+symbol = '󰢱 '
+style = 'bold blue'
+format = '[$symbol$version]($style) '
+detect_extensions = ['lua']
+detect_files = ['.lua-version']
+detect_folders = ['lua']
+
+# ============================================================================
+# Right Context: Jobs & Command Execution Duration (Flat)
+# ============================================================================
+[jobs]
+symbol = '✦ '
+style = 'bold lavender'
+number_threshold = 1
+symbol_threshold = 1
+format = '[$symbol$number]($style) '
+
+[cmd_duration]
+min_time = 2_000
+style = 'bold peach'
+format = '[󱎫 $duration]($style) '
+show_milliseconds = false
