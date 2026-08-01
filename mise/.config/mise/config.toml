@@ -1,0 +1,17 @@
+[settings]
+# Experimental features and performance
+experimental = true
+legacy_version_file = true # Automatically parse .nvmrc, .python-version, etc.
+always_keep_download = false
+always_keep_install = false
+
+# Cache duration for remote version fetching (e.g., 7 days)
+fetch_remote_versions_cache = "7d"
+
+[tools]
+# Global default tool versions
+bun = "latest"
+go = "latest"
+java = "temurin-25"
+node = "latest"
+python = "latest"

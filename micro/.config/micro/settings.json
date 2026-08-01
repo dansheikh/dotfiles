@@ -1,0 +1,7 @@
+{
+    "autosave": 30,
+    "hlsearch": true,
+    "lsp.server": "go=gopls,lua=lua-language-server,nix=rnix-lsp,python=pyright,typescript=typescript-language-server",
+    "tabsize": 2,
+    "tabtospaces": true
+}

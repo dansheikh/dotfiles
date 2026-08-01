@@ -1,0 +1,44 @@
+customCommands:
+  - key: "<c-p>"
+    description: "Push a specific branch to origin"
+    context: "global"
+    loadingText: "Pushing..."
+    prompts:
+      - type: "menu"
+        title: "How to push?"
+        options:
+          - name: "Normal Push"
+            value: "push"
+          - name: "Force with Lease"
+            value: "push --force-with-lease"
+          - name: "Force"
+            value: "push --force"
+      - type: "menuFromCommand"
+        title: "Which branch to push?"
+        command: "git branch --format='%(refname:short)'"
+        filter: "(?P<branch>.*)"
+        valueFormat: "{{ .branch }}"
+        labelFormat: "{{ .branch | green }}"
+    command: "git {{index .PromptResponses 0}} origin {{index .PromptResponses 1}}"
+  - key: "U"
+    description: "Untrack file"
+    context: "files"
+    command: "git rm --cached {{.SelectedFile.Name}}"
+    output: terminal
+
+git:
+  commit:
+    autoWrapCommitMessage: false
+
+gui:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+
+keybinding:
+  universal:
+    return: "<esc>"
+
+os:
+  editCommand: "nvim"
+  editInTerminal: true

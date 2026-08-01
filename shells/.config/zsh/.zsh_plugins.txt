@@ -1,0 +1,29 @@
+# .zsh_plugins.txt - Antidote plugin configuration
+# Location: ~/.config/zsh/.zsh_plugins.txt
+#
+# Plugin loading order matters! Keep this order:
+# 1. Core utilities
+# 2. Completions
+# 3. fzf-tab (must be after completions, before syntax highlighting)
+# 4. Syntax highlighting (must be last)
+
+# Oh My Zsh core library and utilities
+ohmyzsh/ohmyzsh path:lib
+ohmyzsh/ohmyzsh path:plugins/colored-man-pages
+ohmyzsh/ohmyzsh path:plugins/extract
+
+# Abbreviations
+olets/zsh-abbr
+
+# Completions (must load before fzf-tab)
+zsh-users/zsh-completions
+
+# FZF-powered tab completion (must load after completions, before syntax highlighting)
+Aloxaf/fzf-tab
+
+# Suggestions and search
+zsh-users/zsh-autosuggestions
+zsh-users/zsh-history-substring-search
+
+# Syntax highlighting (must be last)
+zsh-users/zsh-syntax-highlighting
